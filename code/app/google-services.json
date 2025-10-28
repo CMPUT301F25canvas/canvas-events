@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "774375006157",
+    "project_id": "canvas-events-dev",
+    "storage_bucket": "canvas-events-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774375006157:android:ffaae7f435e382f1adae84",
+        "android_client_info": {
+          "package_name": "com.example.lotteryeventsystem"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCaI4OHEq6kqPT2XsRy6aZxbdjPR8rCAR4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

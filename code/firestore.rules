@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function authed() { return request.auth != null; }
+
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update, delete: if authed();
+      match /waitingList/{uid} {
+        allow read: if authed();
+        allow create, update, delete: if authed() && uid == request.auth.uid;
+      }
+    }
+
+    match /entrants/{uid} {
+      allow read: if authed();
+      allow create, update, delete: if authed() && uid == request.auth.uid;
+    }
+
+    match /invitations/{id} {
+      allow read: if authed();
+      allow create: if authed();
+      allow update: if authed() && request.resource.data.entrantId == request.auth.uid;
+    }
+
+    match /registrations/{id} {
+      allow read, create: if authed();
+    }
+
+    match /notifications/{uid}/items/{nid} {
+      allow read: if authed() && uid == request.auth.uid;
+      allow create, update: if authed();
+    }
+  }
+}

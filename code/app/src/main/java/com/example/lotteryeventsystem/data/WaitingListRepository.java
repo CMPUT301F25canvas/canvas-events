@@ -8,6 +8,7 @@ import com.google.firebase.firestore.*;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Join/leave waiting list with simple guard checks on reg window + naive waitingCount. */
 public class WaitingListRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String uid() { return FirebaseAuth.getInstance().getCurrentUser().getUid(); }
@@ -20,12 +21,15 @@ public class WaitingListRepository {
             Timestamp now = Timestamp.now();
             Timestamp open = ev.getTimestamp("regOpenAt");
             Timestamp close = ev.getTimestamp("regCloseAt");
-            if (open != null && now.compareTo(open) < 0)
+
+            if (open != null && now.compareTo(open) < 0) {
                 throw new FirebaseFirestoreException("Registration not open",
                         FirebaseFirestoreException.Code.FAILED_PRECONDITION);
-            if (close != null && now.compareTo(close) > 0)
+            }
+            if (close != null && now.compareTo(close) > 0) {
                 throw new FirebaseFirestoreException("Registration closed",
                         FirebaseFirestoreException.Code.FAILED_PRECONDITION);
+            }
 
             if (!tx.get(wlRef).exists()) {
                 Map<String,Object> wl = new HashMap<>();

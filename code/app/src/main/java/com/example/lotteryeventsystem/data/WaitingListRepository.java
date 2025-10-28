@@ -8,28 +8,27 @@ import com.google.firebase.firestore.*;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Join/leave waiting list with simple guard checks on reg window + naive waitingCount. */
+/** Join/leave waiting list with server-side transaction and count. */
 public class WaitingListRepository {
     private final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private String uid() { return FirebaseAuth.getInstance().getCurrentUser().getUid(); }
 
+    /** Join waiting list if window open; increments waitingCount once. */
     public Task<Void> joinWaitingList(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         DocumentReference wlRef = eventRef.collection("waitingList").document(uid());
         return db.runTransaction(tx -> {
             DocumentSnapshot ev = tx.get(eventRef);
+
             Timestamp now = Timestamp.now();
             Timestamp open = ev.getTimestamp("regOpenAt");
             Timestamp close = ev.getTimestamp("regCloseAt");
-
-            if (open != null && now.compareTo(open) < 0) {
+            if (open != null && now.compareTo(open) < 0)
                 throw new FirebaseFirestoreException("Registration not open",
                         FirebaseFirestoreException.Code.FAILED_PRECONDITION);
-            }
-            if (close != null && now.compareTo(close) > 0) {
+            if (close != null && now.compareTo(close) > 0)
                 throw new FirebaseFirestoreException("Registration closed",
                         FirebaseFirestoreException.Code.FAILED_PRECONDITION);
-            }
 
             if (!tx.get(wlRef).exists()) {
                 Map<String,Object> wl = new HashMap<>();
@@ -45,6 +44,7 @@ public class WaitingListRepository {
         });
     }
 
+    /** Leave waiting list; decrements waitingCount (never below 0). */
     public Task<Void> leaveWaitingList(String eventId) {
         DocumentReference eventRef = db.collection("events").document(eventId);
         DocumentReference wlRef = eventRef.collection("waitingList").document(uid());

@@ -13,20 +13,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="52dp"
-        android:layout_marginTop="15dp"
         android:backgroundTint="@color/purple"
         android:text="See Canceled Entrants"
         android:textColor="@color/black"
         android:textSize="25sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnNotify" />
+        tools:layout_editor_absoluteY="416dp" />
 
     <Button
         android:id="@+id/btnEnrolled"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="56dp"
+        android:layout_marginTop="24dp"
         android:backgroundTint="@color/purple"
         android:text="See Enrolled Entrants"
         android:textColor="@color/black"
@@ -35,50 +34,24 @@
         app:layout_constraintTop_toBottomOf="@+id/btnCanceled" />
 
     <Button
-        android:id="@+id/btnNotify"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="24dp"
-        android:backgroundTint="@color/purple"
-        android:text="Notify Chosen Entrants"
-        android:textColor="@color/black"
-        android:textSize="25sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/deadlineTime" />
-
-    <Button
         android:id="@+id/btnCancelEntrant"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="15dp"
+        android:layout_marginStart="88dp"
+        android:layout_marginTop="28dp"
         android:backgroundTint="@color/purple"
-        android:text="Cancel Entrants (2)"
+        android:text="Cancel Entrants"
         android:textColor="@color/black"
         android:textSize="25sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnEnrolled" />
 
-    <Button
-        android:id="@+id/btnReplace"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="15dp"
-        android:backgroundTint="@color/purple"
-        android:text="Draw Replacements (2)"
-        android:textColor="@color/black"
-        android:textSize="25sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnCancelEntrant" />
-
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="289dp"
         android:layout_height="185dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="40dp"
         android:contentDescription="Event Poster"
         android:src="@drawable/poster"
         app:layout_constraintStart_toStartOf="parent"

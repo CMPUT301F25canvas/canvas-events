@@ -22,9 +22,7 @@ public class MainActivity extends AppCompatActivity {
 
         btnCanceled = findViewById(R.id.btnCanceled);
         btnEnrolled = findViewById(R.id.btnEnrolled);
-        btnNotify = findViewById(R.id.btnNotify);
         btnCancelEntrant = findViewById(R.id.btnCancelEntrant);
-        btnReplace = findViewById(R.id.btnReplace);
 
         btnCanceled.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -35,24 +33,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        btnNotify.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Chosen Entrants Notified!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
         btnCancelEntrant.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "2 Unenrolled Entrants Canceled!", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        btnReplace.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "2 Replacement Entrants Drawn!", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                intent.putExtra("LIST_TYPE", "unenrolled");
+                startActivity(intent);
             }
         });
 

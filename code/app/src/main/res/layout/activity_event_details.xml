@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="10dp"
-    tools:context=".OrganizerEventListActivity">
+    tools:context=".OrganizerEventDetailsActivity">
 
 
     <FrameLayout
@@ -31,7 +31,6 @@
         android:id="@+id/event_detail_fragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/create_event_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header_fragment">
@@ -76,7 +75,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="HH:MM"
-            app:layout_constraintBottom_toTopOf=""
             app:layout_constraintEnd_toStartOf="@id/event_end_time"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_date" />
@@ -86,7 +84,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="HH:MM"
-            app:layout_constraintBottom_toTopOf=""
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/event_start_time"
             app:layout_constraintTop_toBottomOf="@id/event_date" />
@@ -96,23 +93,12 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:background="@drawable/qrcodeplaceholder"
-            app:layout_constraintBottom_toTopOf=""
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_end_time" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <Button
-        android:id="@+id/create_event_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create Event"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/event_detail_fragment" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"

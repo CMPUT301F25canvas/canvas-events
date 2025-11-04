@@ -1,8 +1,6 @@
 package com.example.lotteryeventsystem;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,8 +8,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-public class OrganizerEventListActivity extends AppCompatActivity {
-
+public class OrganizerEventDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -23,10 +20,5 @@ public class OrganizerEventListActivity extends AppCompatActivity {
             return insets;
         });
 
-        Button createEventButton = findViewById(R.id.create_event_button);
-        createEventButton.setOnClickListener(v -> {
-            Intent intent = new Intent(this, OrganizerEventCreateActivity.class);
-            startActivity(intent);
-        });
     }
 }

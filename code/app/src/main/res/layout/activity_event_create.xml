@@ -5,8 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".OrganizerEventListActivity">
-
+    tools:context=".OrganizerEventCreateActivity">
 
     <FrameLayout
         android:id="@+id/header_fragment"
@@ -26,33 +25,22 @@
 
     </FrameLayout>
 
+
     <FrameLayout
         android:id="@+id/event_list_fragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/create_event_button"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/header_fragment">
 
-    <include
-        layout="@layout/event_creation_layout"
-        android:id="@+id/event_creation_section" />
-
-
+        <include
+            android:id="@+id/event_creation_section"
+            layout="@layout/event_creation_layout" />
 
     </FrameLayout>
-
-    <Button
-        android:id="@+id/create_event_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Create Event"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
-        app:layout_constraintTop_toBottomOf="@id/event_list_fragment"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"

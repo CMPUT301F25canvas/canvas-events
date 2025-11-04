@@ -72,18 +72,9 @@ public class HomeFragment extends Fragment {
                     });
         }
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                adapter.getFilter().filter(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                adapter.getFilter().filter(newText);
-                return false;
-            }
+        searchView.setOnClickListener( v -> {
+            Toast.makeText(getContext(), "Events search returned", Toast.LENGTH_SHORT).show();
+            // TODO: all the search logic
         });
 
         filterButton.setOnClickListener(v -> {

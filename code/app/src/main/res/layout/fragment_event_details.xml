@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/fragment_container"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -14,6 +14,7 @@
         android:layout_height="60dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:scaleType="centerInside"
+        android:contentDescription="Go Back"
         android:src="@drawable/ic_back_arrow"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -89,5 +90,21 @@
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/header_title" />
+
+
+    <!-- Interaction Button -->
+    <Button
+        android:id="@+id/join_leave_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:paddingTop="15dp"
+        android:paddingBottom="15dp"
+        android:text="TEXT"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/event_qr_code" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

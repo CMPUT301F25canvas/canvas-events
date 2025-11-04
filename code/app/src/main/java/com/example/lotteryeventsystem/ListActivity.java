@@ -54,7 +54,7 @@ public class ListActivity extends AppCompatActivity {
             dataToShow = canceledEntrants;
             tvTitle.setText("Canceled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
-        } if ("unenrolled".equals(listType)) {
+        } else if ("unenrolled".equals(listType)) {
             dataToShow = unenrolledEntrants;
             tvTitle.setText("Unenrolled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.VISIBLE);

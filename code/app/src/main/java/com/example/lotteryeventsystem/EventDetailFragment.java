@@ -16,7 +16,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
-import org.w3c.dom.Text;
+import com.google.firebase.firestore.FirebaseFirestore;
+
 
 public class EventDetailFragment extends Fragment {
     public EventDetailFragment() {};
@@ -40,20 +41,20 @@ public class EventDetailFragment extends Fragment {
         });
 
 
-        TextView nameText = view.findViewById(R.id.header_title);
-        TextView descText = view.findViewById(R.id.event_description);
-        TextView dateText = view.findViewById(R.id.event_date);
-        TextView startText = view.findViewById(R.id.event_start_time);
-        TextView endText = view.findViewById(R.id.event_end_time);
-        ImageView poster;
+        String eventId = getArguments().getString("event_id");
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        if (getArguments() != null) {
-            nameText.setText(getArguments().getString("event_name", "Event Name"));
-            descText.setText(getArguments().getString("event_description", "No Description"));
-            dateText.setText("Date: " + getArguments().getString("event_date", "MM/DD/YYYY"));
-            startText.setText("Start: " + getArguments().getString("event_start_time", "HH:MM"));
-            endText.setText("   End: " + getArguments().getString("event_end_time", "HH:MM"));
-        }
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
+                        ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
+                        ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
+                        ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
+                        ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
+                    }
+                });
 
     }
 }

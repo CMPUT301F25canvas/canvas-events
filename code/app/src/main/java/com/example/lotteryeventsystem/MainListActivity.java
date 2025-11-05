@@ -7,13 +7,13 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainListActivity extends AppCompatActivity {
     private Button btnCanceled, btnEnrolled, btnNotify, btnCancelEntrant, btnReplace;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_new);
 
         btnCanceled = findViewById(R.id.btnCanceled);
         btnEnrolled = findViewById(R.id.btnEnrolled);
@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
         btnCanceled.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                Intent intent = new Intent(MainListActivity.this, ListActivity.class);
                 intent.putExtra("LIST_TYPE", "canceled");
                 startActivity(intent);
             }
@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         btnCancelEntrant.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                Intent intent = new Intent(MainListActivity.this, ListActivity.class);
                 intent.putExtra("LIST_TYPE", "unenrolled");
                 startActivity(intent);
             }
@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         btnEnrolled.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ListActivity.class);
+                Intent intent = new Intent(MainListActivity.this, ListActivity.class);
                 intent.putExtra("LIST_TYPE", "enrolled");
                 startActivity(intent);
             }

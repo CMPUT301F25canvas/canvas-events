@@ -54,10 +54,20 @@
             android:id="@+id/filter_button"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="10dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:scaleType="centerInside"
             android:src="@drawable/ic_filter"
+            android:contentDescription="Filter" />
+
+        <ImageButton
+            android:id="@+id/button_scan_qr"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_qr_code_scan"
             android:contentDescription="Filter" />
 
     </LinearLayout>

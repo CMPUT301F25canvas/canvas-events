@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,6 +17,7 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate;
     private Event currentEvent;
     private final String HARDCODED_EVENT_ID = "event_id3";
+    private ImageButton btnBack;
     //private String eventId;
 
     @Override
@@ -45,6 +47,7 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
         btnCanceled = findViewById(R.id.btnCanceled);
         btnEnrolled = findViewById(R.id.btnEnrolled);
         btnCancelEntrant = findViewById(R.id.btnCancelEntrant);
+        btnBack = findViewById(R.id.back_button);
 
         btnCanceled.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -73,6 +76,14 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
                 intent.putExtra("LIST_TYPE", "enrolled");
                 //intent.putExtra("EVENT_ID", eventId);
                 startActivity(intent);
+            }
+        });
+
+        btnBack.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Close this activity and return to MainActivity
+                finish();
             }
         });
     }
@@ -134,14 +145,6 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
                 eventDate.setText("Date");
             }
         }
-    }
-
-    private String formatTimestamp(com.google.firebase.Timestamp timestamp) {
-        if (timestamp != null) {
-            // Simple date formatting
-            return timestamp.toDate().toString();
-        }
-        return "Not specified";
     }
 
     private void showError(String message) {

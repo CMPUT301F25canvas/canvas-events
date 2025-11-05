@@ -7,16 +7,11 @@
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.lotteryeventsystem.HomeFragment"
-        android:label="@string/menu_home_label">
+        android:label="Home">
         <action
             android:id="@+id/action_homeFragment_to_eventDetailFragment"
-            app:destination="@id/eventDetailFragment" />
+            app:destination="@id/eventDetailFragment"/>
     </fragment>
-
-    <fragment
-        android:id="@+id/organizerFragment"
-        android:name="com.example.lotteryeventsystem.organizer.OrganizerFragment"
-        android:label="@string/menu_organizer_label" />
 
     <fragment
         android:id="@+id/profileFragment"
@@ -24,11 +19,11 @@
         android:label="@string/menu_profile_label" />
 
     <fragment
+        android:id="@+id/notificationFragment"
+        android:name="com.example.lotteryeventsystem.NotificationFragment"
+        android:label="Details" />
+
+    <fragment
         android:id="@+id/eventDetailFragment"
-        android:name="com.example.lotteryeventsystem.EventDetailFragment"
-        android:label="@string/event_detail_screen_title">
-        <argument
-            android:name="eventId"
-            app:argType="string" />
-    </fragment>
+        android:name="com.example.lotteryeventsystem.EventDetailFragment"/>
 </navigation>

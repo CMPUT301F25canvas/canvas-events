@@ -20,7 +20,6 @@
             android:text="Event Name"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/event_description_input_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,7 +33,6 @@
             android:layout_height="wrap_content"
             app:endIconMode="clear_text"
             app:helperText="Required"
-            app:layout_constraintBottom_toTopOf="@id/event_description_text"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_name_text">
@@ -59,7 +57,6 @@
             android:text="Event Description"
             android:textSize="20sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toTopOf="@id/event_description_input_layout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_name_input_layout" />
@@ -73,7 +70,7 @@
             app:helperText="Required"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_description_text">
+            app:layout_constraintTop_toBottomOf="@id/event_description_text" >
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/event_description_input"
@@ -100,18 +97,17 @@
             app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/date_button"
+            android:id="@+id/event_date_input_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             app:endIconMode="clear_text"
             app:helperText="Required"
             app:layout_constraintTop_toBottomOf="@id/event_date_text"
-            app:layout_constraintBottom_toTopOf="@id/event_time_text"
             app:layout_constraintStart_toStartOf="parent" >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/event_date_box"
+                android:id="@+id/event_date_input_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="YYYY-MM-DD"
@@ -127,9 +123,9 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:background="@drawable/calendar"
-            app:layout_constraintBottom_toTopOf="@id/event_time_text"
-            app:layout_constraintStart_toEndOf="@id/date_button"
+            app:layout_constraintStart_toEndOf="@id/entrant_limit_input_layout"
             app:layout_constraintTop_toBottomOf="@id/event_date_text"
+            app:layout_constraintBottom_toTopOf="@id/event_time_text"
             app:layout_constraintVertical_bias="0.35" />
 
         <TextView
@@ -142,42 +138,22 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/date_button"
+            app:layout_constraintTop_toBottomOf="@id/event_date_input_layout"
             app:layout_constraintVertical_bias="0.0" />
 
-        <TextView
-            android:id="@+id/start_time_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Start"
-            app:layout_constraintTop_toBottomOf="@id/event_time_text"
-            app:layout_constraintBottom_toTopOf="@id/start_time_button"
-            app:layout_constraintStart_toStartOf="parent"/>
-
-        <TextView
-            android:id="@+id/end_time_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="End"
-            app:layout_constraintBottom_toTopOf="@id/start_time_button"
-            app:layout_constraintStart_toEndOf="@id/start_time_text"
-            app:layout_constraintTop_toBottomOf="@id/event_time_text"
-            app:layout_constraintEnd_toEndOf="parent"/>
-
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/start_time_button"
+            android:id="@+id/start_time_input_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="110dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="20dp"
             app:endIconMode="clear_text"
             app:helperText="Required"
-            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/start_time_text">
+            app:layout_constraintTop_toBottomOf="@id/event_time_text" >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/event_start_time_box"
+                android:id="@+id/start_time_input_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="time"
@@ -192,25 +168,24 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/dropdownarrow"
-            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
-            app:layout_constraintStart_toEndOf="@id/start_time_button"
-            app:layout_constraintTop_toBottomOf="@id/start_time_text"
+            app:layout_constraintStart_toEndOf="@id/start_time_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_time_text"
+            app:layout_constraintBottom_toTopOf="@id/event_poster_text"
             app:layout_constraintVertical_bias="0.35" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/end_time_button"
+            android:id="@+id/end_time_input_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="110dp"
             android:layout_height="wrap_content"
             app:endIconMode="clear_text"
             app:helperText="Required"
-            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/start_time_button"
-            app:layout_constraintTop_toBottomOf="@id/start_time_text">
+            app:layout_constraintStart_toEndOf="@id/start_time_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_time_text">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/event_end_time_box"
+                android:id="@+id/end_time_input_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="time"
@@ -225,10 +200,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/dropdownarrow"
-            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
-            app:layout_constraintStart_toEndOf="@id/end_time_button"
-            app:layout_constraintTop_toBottomOf="@id/start_time_text"
-            app:layout_constraintVertical_bias="0.25" />
+            app:layout_constraintStart_toEndOf="@id/end_time_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_time_text"
+            app:layout_constraintBottom_toTopOf="@id/event_poster_text"
+            app:layout_constraintVertical_bias="0.35"/>
+
+        <TextView
+            android:id="@+id/event_poster_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Event Poster"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/start_time_input_layout"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <ImageButton
+            android:id="@+id/event_poster_upload_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:background="@drawable/add_button"
+            app:layout_constraintTop_toBottomOf="@id/event_poster_text"
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <TextView
             android:id="@+id/entrant_limit_text"
@@ -240,7 +237,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/start_time_button"
+            app:layout_constraintTop_toBottomOf="@id/event_poster_upload_button"
             app:layout_constraintVertical_bias="0.0" />
 
         <CheckBox
@@ -253,7 +250,7 @@
             app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/entrant_limit_input"
+            android:id="@+id/entrant_limit_input_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
@@ -266,7 +263,7 @@
             >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/entrant_limit_box"
+                android:id="@+id/entrant_limit_input_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Entrant Limit"
@@ -281,8 +278,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Create Event"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/entrant_limit_input"
+            app:layout_constraintTop_toBottomOf="@id/entrant_limit_input_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

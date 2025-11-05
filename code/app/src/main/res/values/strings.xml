@@ -1,3 +1,43 @@
 <resources>
     <string name="app_name">Lottery Event System</string>
+    <string name="menu_home_label">Home</string>
+    <string name="menu_profile_label">Profile</string>
+    <string name="menu_organizer_label">Organizer</string>
+
+    <!-- QR scanning -->
+    <string name="scan_home_instructions">Scan the QR code on an event poster to see full details.</string>
+    <string name="scan_home_reminder">You can still browse events without scanning, but the QR code is the fastest way to jump to the right page.</string>
+    <string name="scan_button_label">Scan event QR code</string>
+    <string name="scan_camera_permission_denied">Camera access is needed to scan event QR codes.</string>
+    <string name="scan_cancelled_message">Scan cancelled.</string>
+    <string name="scan_prompt">Point the camera at the event QR code</string>
+    <string name="scan_unknown_event_message">We could not read that event code. Try again.</string>
+
+    <!-- Event detail (will discuss which ones are needed, maybe too much...) -->
+    <string name="event_detail_missing_id">We were not given an event id.</string>
+    <string name="event_detail_error">We could not load this event right now.</string>
+    <string name="event_detail_not_found">This event was not found. Ask the organizer if the code is still valid.</string>
+    <string name="event_detail_name_fallback">Untitled event</string>
+    <string name="event_detail_description_fallback">The organizer has not shared a description yet.</string>
+    <string name="event_detail_location_fallback">Location coming soon</string>
+    <string name="event_detail_unknown_time">TBD</string>
+    <string name="event_detail_registration_window_format">Registration: %1$s — %2$s</string>
+    <string name="event_detail_capacity_format">Capacity: %1$s</string>
+    <string name="event_detail_screen_title">Event details</string>
+
+    <!-- Organizer tools (will discuss which ones are needed, are these necessary for the organizer as well?)-->
+    <string name="organizer_instructions">Enter the event id to manage invited entrants and draw replacements.</string>
+    <string name="organizer_event_id_hint">Event id (from QR code)</string>
+    <string name="organizer_load_button">Load event</string>
+    <string name="organizer_draw_button">Draw replacement entrant</string>
+    <string name="organizer_invited_header">Invited entrants</string>
+    <string name="organizer_decline_button">Mark as declined</string>
+    <string name="organizer_missing_event_id">Enter an event id first.</string>
+    <string name="organizer_event_loaded">Event ready. You can manage entrants now.</string>
+    <string name="organizer_event_not_found">Event not found. Double check the id.</string>
+    <string name="organizer_action_error">We hit a snag. Try again.</string>
+    <string name="organizer_draw_success">Invited %1$s.</string>
+    <string name="organizer_draw_empty">No one else is waiting. All invites declined.</string>
+    <string name="organizer_decline_success">%1$s marked as declined. New entrant invited if available.</string>
+    <string name="organizer_waiting_count_format">Waiting entrants: %1$d</string>
 </resources>

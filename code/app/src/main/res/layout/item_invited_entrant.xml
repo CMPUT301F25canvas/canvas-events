@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@android:color/white"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginTop="8dp"
+    android:elevation="2dp">
+
+    <TextView
+        android:id="@+id/text_entrant_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Material3.TitleSmall"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/text_entrant_contact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/button_mark_declined"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/organizer_decline_button" />
+
+</LinearLayout>

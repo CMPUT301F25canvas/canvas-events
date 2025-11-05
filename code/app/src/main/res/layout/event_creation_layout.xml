@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingHorizontal="20dp">
+
+
+        <TextView
+            android:id="@+id/event_name_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Event Name"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/event_description_input_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_name_input_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintBottom_toTopOf="@id/event_description_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_name_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_name_input"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Event Name"
+                android:inputType="text"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/event_description_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Event Description"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/event_description_input_layout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_name_input_layout" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/event_description_input_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_description_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_description_input"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Event Description"
+                android:inputType="text"
+                android:singleLine="false"
+                android:textSize="14sp"
+                android:textColor="@color/black" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/event_date_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Event Date"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_description_input_layout"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/date_button"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintTop_toBottomOf="@id/event_date_text"
+            app:layout_constraintBottom_toTopOf="@id/event_time_text"
+            app:layout_constraintStart_toStartOf="parent" >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_date_box"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="YYYY-MM-DD"
+                android:inputType="date"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/calendar_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="5dp"
+            android:background="@drawable/calendar"
+            app:layout_constraintBottom_toTopOf="@id/event_time_text"
+            app:layout_constraintStart_toEndOf="@id/date_button"
+            app:layout_constraintTop_toBottomOf="@id/event_date_text"
+            app:layout_constraintVertical_bias="0.35" />
+
+        <TextView
+            android:id="@+id/event_time_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Event Time"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/date_button"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <TextView
+            android:id="@+id/start_time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Start"
+            app:layout_constraintTop_toBottomOf="@id/event_time_text"
+            app:layout_constraintBottom_toTopOf="@id/start_time_button"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <TextView
+            android:id="@+id/end_time_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="End"
+            app:layout_constraintBottom_toTopOf="@id/start_time_button"
+            app:layout_constraintStart_toEndOf="@id/start_time_text"
+            app:layout_constraintTop_toBottomOf="@id/event_time_text"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/start_time_button"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/start_time_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_start_time_box"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="time"
+                android:hint="Start Time"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/start_time_dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dropdownarrow"
+            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
+            app:layout_constraintStart_toEndOf="@id/start_time_button"
+            app:layout_constraintTop_toBottomOf="@id/start_time_text"
+            app:layout_constraintVertical_bias="0.35" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/end_time_button"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/start_time_button"
+            app:layout_constraintTop_toBottomOf="@id/start_time_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_end_time_box"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="time"
+                android:hint="End Time"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/end_time_dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dropdownarrow"
+            app:layout_constraintBottom_toTopOf="@id/entrant_limit_text"
+            app:layout_constraintStart_toEndOf="@id/end_time_button"
+            app:layout_constraintTop_toBottomOf="@id/start_time_text"
+            app:layout_constraintVertical_bias="0.25" />
+
+        <TextView
+            android:id="@+id/entrant_limit_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Entrant Limit"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/start_time_button"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <CheckBox
+            android:id="@+id/entrant_limit_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Set Entrant Limit"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/entrant_limit_text"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/entrant_limit_input"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            android:visibility="invisible"
+            app:endIconMode="clear_text"
+            app:layout_constraintBottom_toTopOf="@id/create_event_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/entrant_limit_checkbox"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/entrant_limit_box"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Entrant Limit"
+                android:inputType="number"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/create_event_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create Event"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/entrant_limit_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.core.widget.NestedScrollView>

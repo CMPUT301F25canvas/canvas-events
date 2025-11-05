@@ -44,17 +44,8 @@ public class EventDetailFragment extends Fragment {
     private Button joinLeaveButton;
     private String deviceId;
 
-   /* public static final String ARG_EVENT_ID = "eventId";
+    public static final String ARG_EVENT_ID = "event_id";
 
-    private TextView titleView;
-    private TextView descriptionView;
-    private TextView locationView;
-    private TextView registrationWindowView;
-    private TextView capacityView;
-    private View progressView;
-    private View contentView;
-    private TextView messageView;
-*/
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -65,26 +56,17 @@ public class EventDetailFragment extends Fragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        /*super.onViewCreated(view, savedInstanceState);
-        titleView = view.findViewById(R.id.event_title);
-        descriptionView = view.findViewById(R.id.event_description);
-        locationView = view.findViewById(R.id.event_location);
-        registrationWindowView = view.findViewById(R.id.event_registration_window);
-        capacityView = view.findViewById(R.id.event_capacity);
-        progressView = view.findViewById(R.id.event_progress);
-        contentView = view.findViewById(R.id.event_content);
-        messageView = view.findViewById(R.id.event_message);
-
-        if (getArguments() != null) {
-            eventId = getArguments().getString(ARG_EVENT_ID);
-        }
-        loadEvent();*/
 
         ImageButton backButton = view.findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(view);
             navController.navigateUp(); // Navigates back to the previous fragment
         });
+
+        if (getArguments() != null) {
+            Toast.makeText(getContext(), "Event ID not found.", Toast.LENGTH_SHORT).show();
+            eventId = getArguments().getString(ARG_EVENT_ID); // Grab the event ID passed in
+        }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
@@ -106,7 +88,33 @@ public class EventDetailFragment extends Fragment {
         setupJoinLeaveButton(db);
     }
 
+    private void setupJoinLeaveButton(FirebaseFirestore db) {
+        DocumentReference attendeeRef = db.collection("events").document(eventId).collection("waitlist").document(deviceId);
 
+        attendeeRef.get().addOnSuccessListener( documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                joinLeaveButton.setText("Leave Waiting List");
+            } else {
+                joinLeaveButton.setText("Join Waiting List");
+            }
+        });
+
+        joinLeaveButton.setOnClickListener(v -> {
+            if (joinLeaveButton.getText().toString().equals("Join Waiting List")) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("joined_at", FieldValue.serverTimestamp());
+
+                attendeeRef.set(data).addOnSuccessListener(aVoid -> joinLeaveButton.setText("Leave Waiting List"));
+                Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
+
+            } else {
+                attendeeRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
+                Toast.makeText(getContext(), "You were removed to the waiting list!", Toast.LENGTH_SHORT).show();
+
+            }
+        });
+
+    }
 
     /*private void loadEvent() {
         if (eventId == null || eventId.isEmpty()) {
@@ -179,34 +187,6 @@ public class EventDetailFragment extends Fragment {
         }
         return value;
     }*/
-
-    private void setupJoinLeaveButton(FirebaseFirestore db) {
-        DocumentReference attendeeRef = db.collection("events").document(eventId).collection("attendees").document(deviceId);
-
-        attendeeRef.get().addOnSuccessListener( documentSnapshot -> {
-            if (documentSnapshot.exists()) {
-                joinLeaveButton.setText("Leave Waiting List");
-            } else {
-                joinLeaveButton.setText("Join Waiting List");
-            }
-        });
-
-        joinLeaveButton.setOnClickListener(v -> {
-            if (joinLeaveButton.getText().toString().equals("Join Waiting List")) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("joined_at", FieldValue.serverTimestamp());
-
-                attendeeRef.set(data).addOnSuccessListener(aVoid -> joinLeaveButton.setText("Leave Waiting List"));
-                Toast.makeText(getContext(), "You where added to the waiting list!", Toast.LENGTH_SHORT).show();
-
-            } else {
-                attendeeRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
-                Toast.makeText(getContext(), "You where removed to the waiting list!", Toast.LENGTH_SHORT).show();
-
-            }
-        });
-
-    }
 }
 
 

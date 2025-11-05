@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.LotteryEventSystem">
         <activity
-            android:name=".OrganizerEventListActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,10 +22,6 @@
         </activity>
         <activity
             android:name=".OrganizerEventCreateActivity"
-            android:exported="true" >
-        </activity>
-        <activity
-            android:name=".OrganizerEventDetailsActivity"
             android:exported="true" >
         </activity>
     </application>

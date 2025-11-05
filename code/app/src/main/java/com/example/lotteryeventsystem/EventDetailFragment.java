@@ -21,17 +21,30 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.example.lotteryeventsystem.di.ServiceLocator;
 import com.example.lotteryeventsystem.model.Event;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DateFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Shows details for a single event after scanning a QR code.
  */
 public class EventDetailFragment extends Fragment {
-    public static final String ARG_EVENT_ID = "eventId";
+    public EventDetailFragment() {};
+
+    private String eventId;
+    private Button joinLeaveButton;
+    private String deviceId;
+
+   /* public static final String ARG_EVENT_ID = "eventId";
 
     private TextView titleView;
     private TextView descriptionView;
@@ -41,43 +54,18 @@ public class EventDetailFragment extends Fragment {
     private View progressView;
     private View contentView;
     private TextView messageView;
-
-    @Nullable
-    private String eventId;
-
-    public EventDetailFragment() {
-    }
-import androidx.navigation.NavController;
-import androidx.navigation.Navigation;
-
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.FieldValue;
-import com.google.firebase.firestore.FirebaseFirestore;
-
-import java.util.HashMap;
-import java.util.Map;
-
-
-public class EventDetailFragment extends Fragment {
-    public EventDetailFragment() {};
-
-    private String eventId;
-    private Button joinLeaveButton;
-    private String deviceId;
-
-
-
+*/
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_event_detail, container, false);
+        return inflater.inflate(R.layout.fragment_event_details, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
+        /*super.onViewCreated(view, savedInstanceState);
         titleView = view.findViewById(R.id.event_title);
         descriptionView = view.findViewById(R.id.event_description);
         locationView = view.findViewById(R.id.event_location);
@@ -90,10 +78,37 @@ public class EventDetailFragment extends Fragment {
         if (getArguments() != null) {
             eventId = getArguments().getString(ARG_EVENT_ID);
         }
-        loadEvent();
+        loadEvent();*/
+
+        ImageButton backButton = view.findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(view);
+            navController.navigateUp(); // Navigates back to the previous fragment
+        });
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        eventId = getArguments().getString("event_id");
+        deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
+        joinLeaveButton = view.findViewById(R.id.join_leave_button);
+
+        db.collection("events").document(eventId)
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
+                        ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
+                        ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
+                        ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
+                        ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
+                    }
+                });
+        setupJoinLeaveButton(db);
     }
 
-    private void loadEvent() {
+
+
+    /*private void loadEvent() {
         if (eventId == null || eventId.isEmpty()) {
             showMessage(getString(R.string.event_detail_missing_id));
             return;
@@ -163,34 +178,7 @@ public class EventDetailFragment extends Fragment {
             return fallback;
         }
         return value;
-    }
-}
-
-        ImageButton backButton = view.findViewById(R.id.back_button);
-        backButton.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(view);
-            navController.navigateUp(); // Navigates back to the previous fragment
-        });
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-
-        eventId = getArguments().getString("event_id");
-        deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
-        joinLeaveButton = view.findViewById(R.id.join_leave_button);
-
-        db.collection("events").document(eventId)
-                .get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
-                        ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
-                        ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
-                        ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
-                        ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
-                    }
-                });
-        setupJoinLeaveButton(db);
-    }
+    }*/
 
     private void setupJoinLeaveButton(FirebaseFirestore db) {
         DocumentReference attendeeRef = db.collection("events").document(eventId).collection("attendees").document(deviceId);
@@ -199,7 +187,7 @@ public class EventDetailFragment extends Fragment {
             if (documentSnapshot.exists()) {
                 joinLeaveButton.setText("Leave Waiting List");
             } else {
-              joinLeaveButton.setText("Join Waiting List");
+                joinLeaveButton.setText("Join Waiting List");
             }
         });
 
@@ -220,5 +208,6 @@ public class EventDetailFragment extends Fragment {
 
     }
 }
+
 
 

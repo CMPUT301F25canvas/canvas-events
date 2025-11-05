@@ -46,21 +46,12 @@ public class HomeFragment extends Fragment {
     private ActivityResultLauncher<ScanOptions> scanLauncher;
     private Button scanButton;
 
-    public HomeFragment() {
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        registerPermissionLauncher();
-        registerScanLauncher();
     private ArrayAdapter<EventItem> adapter;
     private ArrayList<EventItem> itemsList;
 
     private static ArrayList<EventItem> cachedItems;
 
-    public HomeFragment() {
-    }
+    public HomeFragment() {}
 
     @Nullable
     @Override
@@ -70,7 +61,7 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    @Override
+    /*@Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         scanButton = view.findViewById(R.id.button_scan_qr);
@@ -136,7 +127,7 @@ public class HomeFragment extends Fragment {
             return;
         }
         Toast.makeText(getContext(), messageRes, Toast.LENGTH_SHORT).show();
-    }
+    }*/
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 

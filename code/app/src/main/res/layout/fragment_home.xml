@@ -1,35 +1,3 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:padding="32dp"
-    android:spacing="16dp">
-
-    <TextView
-        android:id="@+id/text_scan_hint"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/scan_home_instructions"
-        android:textAppearance="@style/TextAppearance.Material3.BodyLarge" />
-
-    <Button
-        android:id="@+id/button_scan_qr"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/scan_button_label" />
-
-    <TextView
-        android:id="@+id/text_scan_privacy"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="@string/scan_home_reminder"
-        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-        android:paddingTop="16dp" />
-
-</LinearLayout>
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"

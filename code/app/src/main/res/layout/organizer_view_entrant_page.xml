@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="10dp"
-    tools:context=".MainListActivity">
+    tools:context=".OrganizerEntrantListActivity">
 
 
     <FrameLayout
@@ -136,6 +136,7 @@
             android:backgroundTint="@color/purple"
             android:text="Edit Event"
             android:textColor="@color/black"
+            android:visibility="gone"
             android:textSize="25sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnCancelEntrant" />
@@ -150,6 +151,7 @@
             android:text="Download QR Code"
             android:textColor="@color/black"
             android:textSize="25sp"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editEvent" />
 

@@ -34,6 +34,10 @@ public class Event {
         this.entrantLimit = entrantLimit;
     }
 
+    public Event() {
+        // Firestore likes a public no-arg constructor.
+    }
+
     // Getters
     public String getName() {
         return name;

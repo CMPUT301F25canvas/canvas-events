@@ -31,7 +31,7 @@ public class WaitlistServiceTest {
 
     @Before
     public void setUp() {
-        repository = new FakeWaitlistRepository();
+        //repository = new FakeWaitlistRepository();
         waitlistService = new WaitlistService(repository, new Random(7));
     }
 
@@ -96,7 +96,7 @@ public class WaitlistServiceTest {
         }
     }
 
-    private static class FakeWaitlistRepository implements WaitlistRepository {
+    private static abstract class FakeWaitlistRepository implements WaitlistRepository {
         private final Map<String, Map<String, WaitlistEntry>> store = new HashMap<>();
         private final AtomicInteger declineCount = new AtomicInteger(0);
 

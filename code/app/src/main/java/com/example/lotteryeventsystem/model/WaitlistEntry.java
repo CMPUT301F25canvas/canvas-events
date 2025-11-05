@@ -16,6 +16,7 @@ public class WaitlistEntry {
     private WaitlistStatus status;
     private Timestamp joinedAt;
     private Timestamp invitedAt;
+    private String eventId;
 
     public WaitlistEntry() {
         // Firestore reflection needs this.
@@ -29,6 +30,14 @@ public class WaitlistEntry {
         this.entrantId = entrantId;
         this.entrantName = entrantName;
         this.status = status;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     /**

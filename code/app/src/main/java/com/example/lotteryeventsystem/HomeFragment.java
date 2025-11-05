@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
 
 public class HomeFragment extends Fragment {
     public HomeFragment() {}
@@ -17,6 +18,11 @@ public class HomeFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         // Inflate your layout for this fragment
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View admin_button = view.findViewById(R.id.admin_home);
+        admin_button.setOnClickListener(v-> NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.action_homeFragment_to_adminHomeFragment));
+        return view;
     }
+
+
 }

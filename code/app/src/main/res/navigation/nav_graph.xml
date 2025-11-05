@@ -1,21 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.lotteryeventsystem.HomeFragment"
-        android:label="Home" />
-
+        android:label="Home"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_homeFragment_to_adminHomeFragment"
+            app:destination="@id/adminHomeFragment"/>
+    </fragment>
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.lotteryeventsystem.ProfileFragment"
-        android:label="Details" />
+        android:label="Details"
+        tools:layout="@layout/fragment_profile"/>
 
     <fragment
         android:id="@+id/notificationFragment"
         android:name="com.example.lotteryeventsystem.NotificationFragment"
-        android:label="Details" />
+        android:label="Details"
+        tools:layout="@layout/fragment_notification"/>
+
+    <fragment
+        android:id="@+id/adminHomeFragment"
+        android:name="com.example.lotteryeventsystem.AdminHomeFragment"
+        android:label="Administrator"
+        tools:layout="@layout/fragment_admin_home">
+        <action
+            android:id="@+id/to_adminEventsViewFragment"
+            app:destination="@id/adminEventsViewFragment"/>
+        <action
+            android:id="@+id/to_adminProfileViewFragment"
+            app:destination="@id/adminProfileViewFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminProfileViewFragment"
+        android:name="com.example.lotteryeventsystem.AdminProfileViewFragment"
+        android:label="Admin Profile View">
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminEventsViewFragment"
+        android:name="com.example.lotteryeventsystem.AdminEventsViewFragment"
+        android:label="Admin Events View">
+    </fragment>
 </navigation>

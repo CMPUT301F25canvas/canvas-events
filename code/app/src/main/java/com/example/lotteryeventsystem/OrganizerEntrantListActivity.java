@@ -18,13 +18,13 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
     private Event currentEvent;
     private final String HARDCODED_EVENT_ID = "event_id3";
     private ImageButton btnBack;
-    //private String eventId;
+    private String eventId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.organizer_view_entrant_page);
-        //eventId = getIntent().getStringExtra("EVENT_ID");
+        eventId = getIntent().getStringExtra("EVENT_ID");
 
         eventName = findViewById(R.id.event_name);
         eventDescription = findViewById(R.id.event_description);
@@ -33,16 +33,9 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
         eventDate = findViewById(R.id.event_date);
 
         // Get event data from intent
-        currentEvent = (Event) getIntent().getSerializableExtra("EVENT_OBJECT");
+        loadEventFromFirestore(eventId);
 
-        // If EVENT_OBJECT wasn't passed, try to get individual fields
-        if (currentEvent == null) {
-            currentEvent = new Event();
-            //currentEvent.setId(getIntent().getStringExtra("EVENT_ID"));
-            // You might need to load the event from Firestore here
-        }
-
-        loadEventFromFirestore(HARDCODED_EVENT_ID);
+        //loadEventFromFirestore(HARDCODED_EVENT_ID);
 
         btnCanceled = findViewById(R.id.btnCanceled);
         btnEnrolled = findViewById(R.id.btnEnrolled);
@@ -54,7 +47,7 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEntrantListActivity.this, ListActivity.class);
                 intent.putExtra("LIST_TYPE", "canceled");
-                //intent.putExtra("EVENT_ID", eventId);
+                intent.putExtra("EVENT_ID", eventId);
                 startActivity(intent);
             }
         });
@@ -64,7 +57,7 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEntrantListActivity.this, ListActivity.class);
                 intent.putExtra("LIST_TYPE", "unenrolled");
-                //intent.putExtra("EVENT_ID", eventId);
+                intent.putExtra("EVENT_ID", eventId);
                 startActivity(intent);
             }
         });
@@ -74,7 +67,7 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Intent intent = new Intent(OrganizerEntrantListActivity.this, ListActivity.class);
                 intent.putExtra("LIST_TYPE", "enrolled");
-                //intent.putExtra("EVENT_ID", eventId);
+                intent.putExtra("EVENT_ID", eventId);
                 startActivity(intent);
             }
         });
@@ -87,21 +80,36 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
             }
         });
     }
-    private void loadEventFromFirestore(String HARDCODED_EVENT_ID) {
+    private void loadEventFromFirestore(String eventId) {
         FirebaseFirestore.getInstance()
                 .collection("events")
-                .document(HARDCODED_EVENT_ID)
+                .document(eventId)
                 .get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        currentEvent = documentSnapshot.toObject(Event.class);
-                        if (currentEvent != null) {
-                            displayEventInfo();
-                        } else {
-                            showError("Failed to parse event data");
+                        // Manual mapping to handle field name differences
+                        currentEvent = new Event();
+
+                        if (documentSnapshot.contains("name")) {
+                            currentEvent.setName(documentSnapshot.getString("name"));
                         }
+                        if (documentSnapshot.contains("description")) {
+                            currentEvent.setDescription(documentSnapshot.getString("description"));
+                        }
+                        if (documentSnapshot.contains("date")) {
+                            currentEvent.setDate(documentSnapshot.getString("date"));
+                        }
+                        if (documentSnapshot.contains("startTime")) {
+                            currentEvent.setStartTime(documentSnapshot.getString("startTime"));
+                        }
+                        if (documentSnapshot.contains("endTime")) {
+                            currentEvent.setEndTime(documentSnapshot.getString("endTime"));
+                        }
+
+                        displayEventInfo();
+
                     } else {
-                        showError("Event not found: " + HARDCODED_EVENT_ID);
+                        showError("Event not found: " + eventId);
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -132,23 +140,23 @@ public class OrganizerEntrantListActivity extends AppCompatActivity {
                 eventStartTime.setText("Start: Not specified");
             }
 
+            // Set end time
             if (currentEvent.getEndTime() != null) {
                 eventEndTime.setText(currentEvent.getEndTime());
             } else {
                 eventEndTime.setText("End: Not specified");
             }
 
-            // Set end time
+            // Set date
             if (currentEvent.getDate() != null) {
                 eventDate.setText(currentEvent.getDate());
             } else {
-                eventDate.setText("Date");
+                eventDate.setText("Date: Not specified");
             }
         }
     }
 
     private void showError(String message) {
-        // Display error in one of the TextViews
         eventName.setText("Error loading event");
         eventDescription.setText(message);
     }

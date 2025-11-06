@@ -40,7 +40,7 @@ public class ListActivity extends AppCompatActivity {
         tvTitle = findViewById(R.id.tvTitle);
         btnBack = findViewById(R.id.back_button);
         btnDeleteSelectedEntrant = findViewById(R.id.btnDeleteSelectedEntrant);
-        //eventId = getIntent().getStringExtra("EVENT_ID");
+        eventId = getIntent().getStringExtra("EVENT_ID");
         listType = getIntent().getStringExtra("LIST_TYPE");
 
         btnBack.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +86,7 @@ public class ListActivity extends AppCompatActivity {
     }
 
     private void loadDataFromFirebase() {
-        String testEventId = "event_id2";
+        //String testEventId = "event_id2";
         List<WaitlistStatus> statusesToLoad = new ArrayList<>();
 
         switch (listType) {
@@ -102,10 +102,7 @@ public class ListActivity extends AppCompatActivity {
                 break;
         }
 
-        System.out.println("DEBUG: Loading for event: " + testEventId);
-        System.out.println("DEBUG: Looking for statuses: " + statusesToLoad);
-
-        repository.getEntrantsByStatus(testEventId, statusesToLoad, new RepositoryCallback<List<WaitlistEntry>>() {
+        repository.getEntrantsByStatus(eventId, statusesToLoad, new RepositoryCallback<List<WaitlistEntry>>() {
             @Override
             public void onComplete(List<WaitlistEntry> result, Exception error) {
                 if (error == null && result != null) {
@@ -113,23 +110,23 @@ public class ListActivity extends AppCompatActivity {
                     // Convert WaitlistEntry to Entrant
                     entrantsList.addAll(result);
                     adapter.notifyDataSetChanged();
-                    System.out.println("DEBUG: Loaded " + result.size() + " entrants");
-                    for (WaitlistEntry entry : result) {
-                        System.out.println("DEBUG: " + entry.getEntrantName() + " - " + entry.getStatus());
+                    //System.out.println("DEBUG: Loaded " + result.size() + " entrants");
+                    //for (WaitlistEntry entry : result) {
+                        //System.out.println("DEBUG: " + entry.getEntrantName() + " - " + entry.getStatus());
                     }
-                } else {
-                    System.out.println("DEBUG: Error: " + error);
-                    error.printStackTrace();
-                }
+                //} else {
+                    //System.out.println("DEBUG: Error: " + error);
+                    //error.printStackTrace();
+                //}
             }
         });
     }
 
 
     private void deleteEntrantFromFirebase(WaitlistEntry entrant) {
-        String testEventId = "event_id2";
+        //String testEventId = "event_id2";
         // Update status to CANCELED in Firebase
-        repository.updateEntrantStatus(testEventId, entrant.getId(), WaitlistStatus.CANCELLED,
+        repository.updateEntrantStatus(eventId, entrant.getId(), WaitlistStatus.CANCELLED,
                 new RepositoryCallback<WaitlistEntry>() {
                     @Override
                     public void onComplete(WaitlistEntry updatedEntry, Exception error) {
@@ -138,8 +135,6 @@ public class ListActivity extends AppCompatActivity {
                             entrantsList.remove(entrantPosition);
                             entrantPosition = -1;
                             adapter.notifyDataSetChanged();
-                        } else {
-                            // Handle error
                         }
                     }
                 });

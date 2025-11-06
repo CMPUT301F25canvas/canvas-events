@@ -66,6 +66,7 @@ public class FirebaseWaitlistRepository implements WaitlistRepository {
                 .addOnFailureListener(e -> callback.onComplete(null, e));
     }
 
+    // New method added
     @Override
     public void updateEntrantStatus(String eventId,
                                     String entrantRecordId,

@@ -26,7 +26,7 @@ public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
         TextView tvItem = convertView.findViewById(R.id.tvItem);
 
         // Combine name and ID with a space
-        tvItem.setText(entrant.getEntrantName() + " " + entrant.getEntrantId());
+        tvItem.setText(entrant.getEntrantName());
 
         return convertView;
     }

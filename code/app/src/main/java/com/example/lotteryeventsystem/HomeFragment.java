@@ -58,7 +58,12 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        if (((MainActivity) requireActivity()).getAdmin()) {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_profileFragment_to_adminHomeFragment);
+        }
+        return view;
     }
 
 

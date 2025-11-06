@@ -81,6 +81,22 @@
             android:layout_height="1dp"
             android:background="@color/lighter_gray" />
 
+        <TextView
+            android:id="@+id/admin_login"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Login as Admin"
+            android:textSize="16sp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="?attr/selectableItemBackground" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/lighter_gray" />
+
         <!-- Delete Profile -->
         <TextView
             android:id="@+id/delete_profile"
@@ -93,6 +109,7 @@
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:background="?attr/selectableItemBackground" />
+
 
 
     </LinearLayout>

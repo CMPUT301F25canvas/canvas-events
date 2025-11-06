@@ -38,6 +38,10 @@ public class Event {
         this.entrant_limit = entrant_limit;
     }
 
+    public Event() {
+        // Firestore likes a public no-arg constructor.
+    }
+
     // Getters
     public String getId() {
         return id;

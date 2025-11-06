@@ -40,7 +40,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 /**
- * Home screen for entrants. Lets them scan a QR code to jump into an event.
+ * Home screen for entrants.
+ * Lets them scan a QR-code or click and event to jump into an event page.
  */
 public class HomeFragment extends Fragment {
     private ActivityResultLauncher<String> permissionLauncher;
@@ -116,6 +117,12 @@ public class HomeFragment extends Fragment {
 
 
     }
+
+    /**
+     * Launches the QR-code scanner.
+     * If it has permission start scanning
+     * Otherwise, get permission.
+     */
     private void launchScanner() {
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
@@ -125,6 +132,9 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    /**
+     * Starts the QR code scanning process with configured options.
+     */
     private void startScanning() {
         ScanOptions options = new ScanOptions();
         options.setPrompt(getString(R.string.scan_prompt));
@@ -134,6 +144,9 @@ public class HomeFragment extends Fragment {
         scanLauncher.launch(options);
     }
 
+    /**
+     * Registers a permission launcher to handle the result of the camera permission request.
+     */
     private void registerPermissionLauncher() {
         permissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestPermission(),
@@ -148,6 +161,9 @@ public class HomeFragment extends Fragment {
                 });
     }
 
+    /**
+     * Registers a launcher to handle the result of a QR code scan.
+     */
     private void registerScanLauncher() {
         scanLauncher = registerForActivityResult(new ScanContract(), result -> {
             if (result == null || result.getContents() == null) {
@@ -158,6 +174,11 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Handles the result of a QR code scan.
+     * Parses the scanned content to extract an event ID and navigates to the EventDetailFragment.
+     * @param contents the scanned QR code contents
+     */
     private void handleScanResult(String contents) {
         String eventId = EventLinkParser.parseEventId(contents);
         if (eventId == null || eventId.isEmpty()) {
@@ -170,6 +191,10 @@ public class HomeFragment extends Fragment {
                 .navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
     }
 
+    /**
+     * Displays a short toast message using the provided string.
+     * @param messageRes
+     */
     private void showToast(int messageRes) {
         if (getContext() == null) {
             return;

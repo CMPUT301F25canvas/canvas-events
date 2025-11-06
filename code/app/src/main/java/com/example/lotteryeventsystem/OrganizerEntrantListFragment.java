@@ -36,8 +36,9 @@ public class OrganizerEntrantListFragment extends Fragment {
         View view = inflater.inflate(R.layout.organizer_view_entrant_page, container, false);
 
         // Get event ID from arguments
-        if (getArguments() != null) {
-            eventId = getArguments().getString("EVENT_ID");
+        Bundle args = getArguments();
+        if (args != null) {
+            eventId = args.getString("EVENT_ID");
         }
 
         // Initialize views using the inflated view

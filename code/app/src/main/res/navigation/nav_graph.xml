@@ -30,17 +30,12 @@
 
     <!-- Organizer Fragment Screens -->
     <fragment
-        android:id="@+id/organizerEventDetailFragment"
-        android:name="com.example.lotteryeventsystem.OrganizerEventDetailFragment"
-        android:label="Event Details" />
-
-    <fragment
         android:id="@+id/organizerEventListFragment"
         android:name="com.example.lotteryeventsystem.OrganizerEventListFragment"
         android:label="Organizer">
         <action
-            android:id="@+id/action_organizerEventListFragment_to_organizerEventDetailFragment"
-            app:destination="@id/organizerEventDetailFragment"/>
+            android:id="@+id/action_organizerEventListFragment_to_organizerEntrantListFragment"
+            app:destination="@id/organizerEntrantListFragment"/>
         <action
             android:id="@+id/action_organizerEventListFragment_to_organizerEventCreateFragment"
             app:destination="@id/organizerEventCreateFragment"/>
@@ -50,4 +45,14 @@
         android:id="@+id/organizerEventCreateFragment"
         android:name="com.example.lotteryeventsystem.OrganizerEventCreateFragment"
         android:label="Event Creation Form" />
+
+    <fragment
+        android:id="@+id/organizerEntrantListFragment"
+        android:name="com.example.lotteryeventsystem.OrganizerEntrantListFragment"
+        android:label="Event Details" >
+        <argument
+            android:name="EVENT_ID"
+            app:argType="string" />
+    </fragment>
+
 </navigation>

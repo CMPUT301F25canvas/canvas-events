@@ -9,7 +9,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
-import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -17,14 +16,13 @@ import androidx.navigation.Navigation;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.journeyapps.barcodescanner.ScanOptions;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public class OrganizerEventListFragment extends Fragment {
     private ArrayAdapter<Event> eventAdapter;
@@ -86,16 +84,14 @@ public class OrganizerEventListFragment extends Fragment {
             navController.navigate(R.id.action_organizerEventListFragment_to_organizerEventCreateFragment);
         });
 
-        // List View On Click Listener
+        // List View On Click Listener - Passes eventId to the organizerEventListFragment
         eventListView.setOnItemClickListener((parent, itemView, position, id) -> {
             Event event = eventsList.get(position);
             Bundle args = new Bundle();
-
-            // TODO: NEED EMILY'S FRAGMENT DETAILS FILE HERE
-            args.putString(OrganizerEventDetailFragment.ARG_EVENT_ID, event.getId());
+            args.putString("EVENT_ID", event.getId());
 
             NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_organizerEventListFragment_to_organizerEventDetailFragment, args);
+            navController.navigate(R.id.action_organizerEventListFragment_to_organizerEntrantListFragment, args);
         });
     }
 }

@@ -92,8 +92,8 @@ public class OrganizerEventCreateActivity extends AppCompatActivity {
         });
 
         // Event Date
-        TextInputLayout eventDateLayout = findViewById(R.id.date_button);
-        TextInputEditText eventDateInput = findViewById(R.id.event_date_box);
+        TextInputLayout eventDateLayout = findViewById(R.id.event_date_input_layout);
+        TextInputEditText eventDateInput = findViewById(R.id.event_date_input_text);
 
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
@@ -153,8 +153,8 @@ public class OrganizerEventCreateActivity extends AppCompatActivity {
 
 
         // Event Start Time
-        TextInputLayout startTimeLayout = findViewById(R.id.start_time_button);
-        TextInputEditText startTimeInput = findViewById(R.id.event_start_time_box);
+        TextInputLayout startTimeLayout = findViewById(R.id.start_time_input_layout);
+        TextInputEditText startTimeInput = findViewById(R.id.start_time_input_text);
 
         ImageButton startTimeButton = findViewById(R.id.start_time_dropdown);
         startTimeButton.setOnClickListener(v -> {
@@ -184,8 +184,8 @@ public class OrganizerEventCreateActivity extends AppCompatActivity {
 
 
         // Event End Time
-        TextInputLayout endTimeLayout = findViewById(R.id.end_time_button);
-        TextInputEditText endTimeInput = findViewById(R.id.event_end_time_box);
+        TextInputLayout endTimeLayout = findViewById(R.id.end_time_input_layout);
+        TextInputEditText endTimeInput = findViewById(R.id.end_time_input_text);
 
         ImageButton endTimeButton = findViewById(R.id.end_time_dropdown);
 
@@ -216,8 +216,8 @@ public class OrganizerEventCreateActivity extends AppCompatActivity {
 
 
         // Entrant Limit
-        TextInputLayout entrantLimitLayout = findViewById(R.id.entrant_limit_input);
-        TextInputEditText entrantLimitInput = findViewById(R.id.entrant_limit_box);
+        TextInputLayout entrantLimitLayout = findViewById(R.id.entrant_limit_input_layout);
+        TextInputEditText entrantLimitInput = findViewById(R.id.entrant_limit_input_text);
         entrantLimitInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {

@@ -3,6 +3,7 @@ package com.example.lotteryeventsystem;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.ListView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -23,10 +24,17 @@ public class OrganizerEventListActivity extends AppCompatActivity {
             return insets;
         });
 
+        // Switches to the event creation form
         Button createEventButton = findViewById(R.id.create_event_button);
         createEventButton.setOnClickListener(v -> {
             Intent intent = new Intent(this, OrganizerEventCreateActivity.class);
             startActivity(intent);
         });
+
+        // List View On Click Listener
+        ListView organizerEventList = findViewById(R.id.organizer_event_list);
+
+
+
     }
 }

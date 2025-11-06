@@ -8,7 +8,6 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +17,9 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import org.jetbrains.annotations.NotNull;
+import org.w3c.dom.Text;
+
 public class ProfileFragment extends Fragment {
     public ProfileFragment() {}
 
@@ -26,36 +28,26 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_profile, container, false);
-        TextView adminLogin = view.findViewById(R.id.admin_login);
-        adminLogin.setOnClickListener(v->showAdminLoginDialog());
-        return view;
+        return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
-    public void showAdminLoginDialog(){
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Admin Login");
+    public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
+        TextView PersonalInformation = view.findViewById(R.id.personal_info);
+        TextView MyCreatedEvents = view.findViewById(R.id.my_created_events);
+        TextView DeleteProfile = view.findViewById(R.id.delete_profile);
 
-        EditText input = new EditText(getContext());
-        input.setHint("Enter Admin code");
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        builder.setView(input);
-
-        builder.setPositiveButton("Confirm", (dialog, which) -> {
-            String adminId = input.getText().toString().trim();
-            if (adminId.isEmpty()) {
-                Toast.makeText(getContext(), "Admin ID cannot be empty", Toast.LENGTH_SHORT).show();
-            } else {
-                if (adminId.equals("canvas")) {
-                    ((MainActivity) requireActivity()).setAdmin(true);
-                }
-                Toast.makeText(getContext(), "Logged in as Admin", Toast.LENGTH_SHORT).show();
-            }
+        PersonalInformation.setOnClickListener( v -> {
+            // TODO: Everything
         });
 
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+        MyCreatedEvents.setOnClickListener( v -> {
+            // TODO: Everything
+        });
 
-        // Show the popup
-        builder.show();
+        DeleteProfile.setOnClickListener( v -> {
+            // TODO: Everything
+        });
     }
+
+
 }

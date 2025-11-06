@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 
 import androidx.annotation.NonNull;
@@ -45,6 +46,7 @@ public class OrganizerEventListFragment extends Fragment {
 
         ListView eventListView = view.findViewById(R.id.organizer_event_list);
         Button createEventButton = view.findViewById(R.id.create_event_button);
+        ImageButton backButton = view.findViewById(R.id.back_button);
 
         eventsList = new ArrayList<>();
         eventAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, eventsList);
@@ -92,6 +94,11 @@ public class OrganizerEventListFragment extends Fragment {
 
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.action_organizerEventListFragment_to_organizerEntrantListFragment, args);
+        });
+
+        backButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(view);
+            navController.navigateUp(); // Navigates back to the previous fragment
         });
     }
 }

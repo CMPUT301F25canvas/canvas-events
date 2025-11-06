@@ -16,7 +16,11 @@
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.lotteryeventsystem.ProfileFragment"
-        android:label="@string/menu_profile_label" />
+        android:label="@string/menu_profile_label" >
+        <action
+            android:id="@+id/action_profileFragment_to_organizerEventListFragment"
+            app:destination="@id/organizerEventListFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/notificationFragment"

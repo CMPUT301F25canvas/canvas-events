@@ -1,5 +1,8 @@
 package com.example.lotteryeventsystem;
 
+import static android.view.View.INVISIBLE;
+import static android.view.View.VISIBLE;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -8,6 +11,7 @@ import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +39,44 @@ public class ProfileFragment extends Fragment {
         TextView PersonalInformation = view.findViewById(R.id.personal_info);
         TextView MyCreatedEvents = view.findViewById(R.id.my_created_events);
         TextView DeleteProfile = view.findViewById(R.id.delete_profile);
+        TextView adminLogin = view.findViewById(R.id.admin_login);
+        if (((MainActivity) requireActivity()).getAdmin()){
+            adminLogin.setText("Logout as Admin");
+        }
+        else {
+            adminLogin.setText("Login as Admin");
+        }
+        adminLogin.setOnClickListener(v-> {
+            if (adminLogin.getText().equals("Login as Admin")) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Admin Login");
+
+                EditText input = new EditText(getContext());
+                input.setHint("Enter Admin code");
+                input.setInputType(InputType.TYPE_CLASS_TEXT);
+                builder.setView(input);
+
+                builder.setPositiveButton("Confirm", (dialog, which) -> {
+                    String adminId = input.getText().toString().trim();
+                    if (adminId.isEmpty()) {
+                        Toast.makeText(getContext(), "Admin ID cannot be empty", Toast.LENGTH_SHORT).show();
+                    } else {
+                        if (adminId.equals("canvas")) {
+                            ((MainActivity) requireActivity()).setAdmin(true);
+                            adminLogin.setText("Logout as Admin");
+                            Toast.makeText(getContext(), "Logged in as Admin", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+                builder.setNegativeButton("Cancel", (dialog, which) -> dialog.cancel());
+                builder.show();
+            } else {
+                ((MainActivity) requireActivity()).setAdmin(false);
+                adminLogin.setText("Login as Admin");
+                Toast.makeText(getContext(), "Logged out as Admin", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         PersonalInformation.setOnClickListener( v -> {
             // TODO: Everything

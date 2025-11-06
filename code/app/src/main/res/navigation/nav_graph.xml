@@ -25,6 +25,35 @@
         tools:layout="@layout/fragment_profile"/>
 
     <fragment
+        android:id="@+id/adminHomeFragment"
+        android:name="com.example.lotteryeventsystem.AdminHomeFragment"
+        tools:layout="@layout/admin_home_fragment">
+        <action
+            android:id="@+id/action_adminHomeFragment_to_homeFragment"
+            app:destination="@id/homeFragment"/>
+        <action
+            android:id="@+id/action_adminHomeFragment_to_adminEventsFragment"
+            app:destination="@id/adminEventsFragment"/>
+        <action
+            android:id="@+id/action_adminHomeFragment_to_adminProfilesFragment"
+            app:destination="@id/adminProfilesFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminEventsFragment"
+        android:name="com.example.lotteryeventsystem.AdminViewEvents"
+        android:label="Events">
+        <action
+            android:id="@+id/action_adminEventFragment_to_eventDetailFragment"
+            app:destination="@id/eventDetailFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/adminProfilesFragment"
+        android:name="com.example.lotteryeventsystem.AdminViewProfiles"
+        android:label="Profiles" />
+
+    <fragment
         android:id="@+id/notificationFragment"
         android:name="com.example.lotteryeventsystem.NotificationFragment"
         android:label="Details" />
@@ -33,16 +62,6 @@
         android:id="@+id/eventDetailFragment"
         android:name="com.example.lotteryeventsystem.EventDetailFragment"
         tools:layout="@layout/activity_event_details"/>
-
-    <fragment
-        android:id="@+id/adminHomeFragment"
-        android:name="com.example.lotteryeventsystem.AdminHomeFragment"
-        tools:layout="@layout/admin_home_fragment"/>
-=======
-        android:name="com.example.lotteryeventsystem.EventDetailFragment"/>
-
-
-    <!-- Organizer Fragment Screens -->
     <fragment
         android:id="@+id/organizerEventDetailFragment"
         android:name="com.example.lotteryeventsystem.OrganizerEventDetailFragment"
@@ -61,8 +80,7 @@
     </fragment>
 
     <fragment
-        android:id="@+id/organizrEventCreateFragment"
+        android:id="@+id/organizerEventCreateFragment"
         android:name="com.example.lotteryeventsystem.OrganizerEventCreateFragment"
         android:label="Event Creation Form" />
->>>>>>> origin/main
 </navigation>

@@ -1,5 +1,7 @@
 package com.example.lotteryeventsystem;
 
+import static android.view.View.INVISIBLE;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.media.Image;
@@ -8,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -70,7 +73,10 @@ public class HomeFragment extends Fragment {
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        TextView title = view.findViewById(R.id.home_label);
+        title.setText("Home");
+        ImageButton backArrow = view.findViewById(R.id.back_image_button);
+        backArrow.setVisibility(INVISIBLE);
         ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
         SearchView searchView = view.findViewById(R.id.search_view);
         ImageButton filterButton = view.findViewById(R.id.filter_button);

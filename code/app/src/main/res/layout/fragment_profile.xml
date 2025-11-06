@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_gravity="bottom"
-            android:background="@android:color/darker_gray" />
+            android:background="@color/darker_gray" />
 
     </FrameLayout>
 
@@ -47,61 +47,53 @@
         app:layout_constraintTop_toBottomOf="@id/header_fragment"
         >
 
-        <!-- Menu Items -->
-        <LinearLayout
+        <!-- Personal Information -->
+        <TextView
+            android:id="@+id/personal_info"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:elevation="2dp">
+            android:layout_height="48dp"
+            android:text="Personal Information"
+            android:textSize="16sp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="?attr/selectableItemBackground" />
 
-            <!-- Personal Information -->
-            <TextView
-                android:id="@+id/personal_info"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Personal Information"
-                android:textSize="16sp"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:background="?attr/selectableItemBackground" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/lighter_gray" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/lighter_gray" />
+        <!-- Our Events -->
+        <TextView
+            android:id="@+id/my_created_events"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="My Created Events"
+            android:textSize="16sp"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="?attr/selectableItemBackground" />
 
-            <!-- Our Events -->
-            <TextView
-                android:id="@+id/my_created_events"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="My Created Events"
-                android:textSize="16sp"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:background="?attr/selectableItemBackground" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/lighter_gray" />
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@android:color/lighter_gray" />
+        <!-- Delete Profile -->
+        <TextView
+            android:id="@+id/delete_profile"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Delete Profile"
+            android:textSize="16sp"
+            android:textColor="#FF6B6B"
+            android:gravity="center_vertical"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="?attr/selectableItemBackground" />
 
-            <!-- Delete Profile -->
-            <TextView
-                android:id="@+id/delete_profile"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Delete Profile"
-                android:textSize="16sp"
-                android:textColor="#FF6B6B"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:background="?attr/selectableItemBackground" />
-
-        </LinearLayout>
 
     </LinearLayout>
 

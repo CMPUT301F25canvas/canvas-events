@@ -10,6 +10,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Text;
@@ -35,7 +37,8 @@ public class ProfileFragment extends Fragment {
         });
 
         MyCreatedEvents.setOnClickListener( v -> {
-            // TODO: Everything
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_profileFragment_to_organizerEventListFragment);
         });
 
         DeleteProfile.setOnClickListener( v -> {

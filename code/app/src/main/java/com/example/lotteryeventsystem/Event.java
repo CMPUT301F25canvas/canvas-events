@@ -70,7 +70,7 @@ public class Event {
         return end_time;
     }
 
-    public Integer getEntrantLimit() {
+    public Number getEntrantLimit() {
         return entrant_limit;
     }
 

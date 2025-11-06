@@ -66,6 +66,7 @@ public class FirebaseWaitlistRepository implements WaitlistRepository {
                 .addOnFailureListener(e -> callback.onComplete(null, e));
     }
 
+    // New method added
     @Override
     public void updateEntrantStatus(String eventId,
                                     String entrantRecordId,
@@ -85,6 +86,37 @@ public class FirebaseWaitlistRepository implements WaitlistRepository {
         docRef.update(updates)
                 .continueWithTask(task -> docRef.get())
                 .addOnSuccessListener(snapshot -> callback.onComplete(mapEntry(snapshot), null))
+                .addOnFailureListener(e -> callback.onComplete(null, e));
+    }
+
+    @Override
+    public void getEntrantsByStatus(String eventId, List<WaitlistStatus> statuses, RepositoryCallback<List<WaitlistEntry>> callback) {
+        // Convert WaitlistStatus enums to string list for Firestore query
+        List<String> statusStrings = new ArrayList<>();
+        for (WaitlistStatus status : statuses) {
+            statusStrings.add(status.name());
+        }
+
+        // Query the attendees subcollection (not waitlist - based on your structure)
+        firestore.collection("events")
+                .document(eventId)
+                .collection("waitlist")  // Use "attendees" instead of "waitlist"
+                .whereIn("status", statusStrings)  // Filter by multiple statuses
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<WaitlistEntry> entries = new ArrayList<>();
+                    if (querySnapshot != null) {
+                        for (DocumentSnapshot snapshot : querySnapshot.getDocuments()) {
+                            WaitlistEntry entry = mapEntry(snapshot);
+                            // Ensure eventId is set on the entry
+                            if (entry.getEventId() == null) {
+                                entry.setEventId(eventId);
+                            }
+                            entries.add(entry);
+                        }
+                    }
+                    callback.onComplete(entries, null);
+                })
                 .addOnFailureListener(e -> callback.onComplete(null, e));
     }
 

@@ -83,7 +83,8 @@ public class ProfileFragment extends Fragment {
         });
 
         MyCreatedEvents.setOnClickListener( v -> {
-            // TODO: Everything
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_profileFragment_to_organizerEventListFragment);
         });
 
         DeleteProfile.setOnClickListener( v -> {

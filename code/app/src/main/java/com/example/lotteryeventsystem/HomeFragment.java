@@ -1,9 +1,17 @@
 package com.example.lotteryeventsystem;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -13,7 +21,13 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
+
+import com.example.lotteryeventsystem.util.EventLinkParser;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
@@ -25,28 +39,33 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * Home screen for entrants. Lets them scan a QR code to jump into an event.
+ */
 public class HomeFragment extends Fragment {
+    private ActivityResultLauncher<String> permissionLauncher;
+    private ActivityResultLauncher<ScanOptions> scanLauncher;
+
     private ArrayAdapter<EventItem> adapter;
     private ArrayList<EventItem> itemsList;
 
     private static ArrayList<EventItem> cachedItems;
 
-    public HomeFragment() {
-    }
+    public HomeFragment() {}
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        // Inflate your layout for this fragment
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
-    @Override
+
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
         SearchView searchView = view.findViewById(R.id.search_view);
         ImageButton filterButton = view.findViewById(R.id.filter_button);
         ListView listView = view.findViewById(R.id.list_view);
@@ -82,18 +101,79 @@ public class HomeFragment extends Fragment {
             // TODO: all the dialog and filtering
         });
 
+        registerPermissionLauncher();
+        registerScanLauncher();
+        scanButton.setOnClickListener(v -> launchScanner());
+
         listView.setOnItemClickListener((parent, itemView, position, id) -> {
             EventItem event = itemsList.get(position);
             Bundle args = new Bundle();
-            args.putString("event_name", event.name);
-            args.putString("event_id", event.id);
+            args.putString(EventDetailFragment.ARG_EVENT_ID, event.id);
 
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
         });
 
 
-        //MISSING STUFF
+    }
+    private void launchScanner() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            startScanning();
+        } else {
+            permissionLauncher.launch(Manifest.permission.CAMERA);
+        }
     }
 
+    private void startScanning() {
+        ScanOptions options = new ScanOptions();
+        options.setPrompt(getString(R.string.scan_prompt));
+        options.setDesiredBarcodeFormats(ScanOptions.QR_CODE);
+        options.setBeepEnabled(false);
+        options.setOrientationLocked(false);
+        scanLauncher.launch(options);
+    }
+
+    private void registerPermissionLauncher() {
+        permissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        startScanning();
+                    } else if (getContext() != null) {
+                        Toast.makeText(getContext(),
+                                R.string.scan_camera_permission_denied,
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
+
+    private void registerScanLauncher() {
+        scanLauncher = registerForActivityResult(new ScanContract(), result -> {
+            if (result == null || result.getContents() == null) {
+                showToast(R.string.scan_cancelled_message);
+                return;
+            }
+            handleScanResult(result.getContents());
+        });
+    }
+
+    private void handleScanResult(String contents) {
+        String eventId = EventLinkParser.parseEventId(contents);
+        if (eventId == null || eventId.isEmpty()) {
+            showToast(R.string.scan_unknown_event_message);
+            return;
+        }
+        Bundle args = new Bundle();
+        args.putString(EventDetailFragment.ARG_EVENT_ID, eventId);
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
+    }
+
+    private void showToast(int messageRes) {
+        if (getContext() == null) {
+            return;
+        }
+        Toast.makeText(getContext(), messageRes, Toast.LENGTH_SHORT).show();
+    }
 }

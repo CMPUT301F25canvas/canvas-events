@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/organizer_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:spacing="12dp">
+
+            <TextView
+                android:id="@+id/text_organizer_instructions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/organizer_instructions"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                android:paddingBottom="8dp" />
+
+            <EditText
+                android:id="@+id/input_event_id"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/organizer_event_id_hint"
+                android:inputType="text"
+                android:maxLines="1" />
+
+            <Button
+                android:id="@+id/button_load_event"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/organizer_load_button" />
+
+            <TextView
+                android:id="@+id/text_event_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.TitleLarge"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:paddingTop="16dp" />
+
+            <TextView
+                android:id="@+id/text_waiting_count"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:visibility="gone" />
+
+            <Button
+                android:id="@+id/button_draw_replacement"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="@string/organizer_draw_button"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/text_invited_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/organizer_invited_header"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:visibility="gone"
+                android:paddingTop="20dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/list_invited"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+            <TextView
+                android:id="@+id/text_status_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:paddingTop="12dp"
+                android:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/organizer_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+</FrameLayout>

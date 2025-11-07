@@ -164,11 +164,11 @@ public class OrganizerEntrantListFragment extends Fragment {
                         if (documentSnapshot.contains("date")) {
                             currentEvent.setDate(documentSnapshot.getString("date"));
                         }
-                        if (documentSnapshot.contains("start_time")) {
-                            currentEvent.setStartTime(documentSnapshot.getString("start_time"));
+                        if (documentSnapshot.contains("startTime")) {
+                            currentEvent.setStartTime(documentSnapshot.getString("startTime"));
                         }
-                        if (documentSnapshot.contains("end_time")) {
-                            currentEvent.setEndTime(documentSnapshot.getString("end_time"));
+                        if (documentSnapshot.contains("endTime")) {
+                            currentEvent.setEndTime(documentSnapshot.getString("endTime"));
                         }
                         displayEventInfo();
                     } else {

@@ -13,6 +13,8 @@ import java.util.Locale;
 
 public class OrganizerEventCreateViewModelTest {
 
+    // TODO: this test case is having issues because of the usage of private MutableLiveData<String> in the class.
+
     private OrganizerEventCreateViewModel viewModel;
     private DateTimeFormatter dateFormatter;
     private DateTimeFormatter timeFormatter;

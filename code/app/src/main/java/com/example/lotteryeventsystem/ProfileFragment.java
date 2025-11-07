@@ -39,9 +39,28 @@ import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 
+/**
+ * Combined MVC code for the Profile page
+ *
+ * @author Ethan Kinch
+ * @author Other Author
+ */
 public class ProfileFragment extends Fragment {
+    /**
+     * Empty required constructor
+     */
     public ProfileFragment() {}
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     * This method inflates the fragment's layout, retrieves arguments, and initializes
+     * the UI components and data loading.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     * @return The View for the fragment's UI, or null
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -50,6 +69,12 @@ public class ProfileFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
+    /**
+     * Once the view is created, we set up listeners for the profile options.
+     *
+     * @param view The Profile view (fragment_profile.xml)
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         TextView PersonalInformation = view.findViewById(R.id.personal_info);
         TextView MyCreatedEvents = view.findViewById(R.id.my_created_events);
@@ -122,8 +147,9 @@ public class ProfileFragment extends Fragment {
         });
     }
 
-    // if this is being accessed from outside, it needs to be refactored
-    // TODO: Their events should probably be deleted also
+    /**
+     * Deletes the user's profile from firebase. Does not delete their events.
+     */
     private void deleteProfile() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);

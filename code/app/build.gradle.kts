@@ -52,6 +52,7 @@ dependencies {
     implementation("com.google.zxing:core:3.5.3")
     implementation(libs.firebase.firestore)
     implementation(libs.ext.junit)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
     androidTestImplementation("androidx.test:core:1.5.0")

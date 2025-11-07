@@ -4,6 +4,7 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -13,10 +14,13 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
@@ -33,21 +37,25 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+
 public class OrganizerEventCreateFragment extends Fragment {
+
+    EventRepository eventRepository;
 
     String name;
     String description;
-    String eventDate;
+    String date;
     String eventStart;
     String eventEnd;
+    String eventPosterURL;
+    boolean geolocationRequirement;
     Integer entrantLimit;
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @androidx.annotation.Nullable ViewGroup container,
-                             @androidx.annotation.Nullable Bundle savedInstanceState) {
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_event_create, container, false);
     }
 
@@ -55,7 +63,16 @@ public class OrganizerEventCreateFragment extends Fragment {
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        eventRepository = new EventRepository();
+
         // Connecting all of the elements
+        // Back Button
+        ImageButton backButton = view.findViewById(R.id.back_button);
+        backButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(view);
+            navController.navigateUp(); // Navigates back to the previous fragment
+        });
+
         // Event Name
         TextInputEditText eventNameInput = view.findViewById(R.id.event_name_input);
         eventNameInput.addTextChangedListener(new TextWatcher() {
@@ -93,7 +110,6 @@ public class OrganizerEventCreateFragment extends Fragment {
         // Event Date
         TextInputLayout eventDateLayout = view.findViewById(R.id.event_date_input_layout);
         TextInputEditText eventDateInput = view.findViewById(R.id.event_date_input_text);
-
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
         eventDateInput.addTextChangedListener(new TextWatcher() {
@@ -107,7 +123,7 @@ public class OrganizerEventCreateFragment extends Fragment {
                     return;
                 }
                 try {
-                    eventDate = inputText;
+                    date = inputText;
                     // Clear any previous error if successful
                     eventDateLayout.setError(null);
                 } catch (DateTimeParseException e) {
@@ -141,15 +157,13 @@ public class OrganizerEventCreateFragment extends Fragment {
                 LocalDate eventDate = instant.atZone(utcZone).toLocalDate();
 
                 // Format as YYYY-MM-DD
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                String formattedDate = eventDate.format(formatter);
+                String formattedDate = eventDate.format(dateFormatter);
 
                 // Display and store
                 eventDateInput.setText(formattedDate);
-                this.eventDate = eventDate.toString(); // keep LocalDate for later use
+                this.date = eventDate.toString(); // keep LocalDate for later use
             });
         });
-
 
         // Event Start Time
         TextInputLayout startTimeLayout = view.findViewById(R.id.start_time_input_layout);
@@ -180,7 +194,6 @@ public class OrganizerEventCreateFragment extends Fragment {
                 this.eventStart = eventTime.toString();
             });
         });
-
 
         // Event End Time
         TextInputLayout endTimeLayout = view.findViewById(R.id.end_time_input_layout);
@@ -213,6 +226,18 @@ public class OrganizerEventCreateFragment extends Fragment {
             });
         });
 
+        // Event Poster
+        // TODO: HOW TO UPLOAD EVENT POSTER
+        // https://www.geeksforgeeks.org/android/android-how-to-upload-an-image-on-firebase-storage/
+
+        // Geolocation Requirement
+        CheckBox geolocationCheckBox = view.findViewById(R.id.geolocation_requirement_checkbox);
+        geolocationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
+                geolocationRequirement = isChecked;
+            }
+        });
 
         // Entrant Limit
         TextInputLayout entrantLimitLayout = view.findViewById(R.id.entrant_limit_input_layout);
@@ -254,20 +279,46 @@ public class OrganizerEventCreateFragment extends Fragment {
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Check if all required inputs are filled
-                if (name != null && description != null && eventDate != null && eventStart != null && eventEnd != null) {
-                    // Check if entrant limit is checked off
-                    if (entrantLimit == null) {
-//                        Event newEvent = new Event(name, description, eventDate, eventStart, eventEnd);
-                    } else {
-//                        Event newEvent = new Event(name, description, eventDate, eventStart, eventEnd, entrantLimit);
-                    }
 
-                    // TODO: store information into database
-                    // TODO: generate new QR Code and store
-                    // TODO: move to event details screen?
+                // Check if all required inputs are filled
+                if (name != null && description != null && date != null && eventStart != null && eventEnd != null) {
+
+                    String organizerID = Settings.Secure.getString(requireContext().getContentResolver(),
+                            Settings.Secure.ANDROID_ID);
+
+                    
+                    eventRepository.generateEventID().addOnSuccessListener(snapshot -> {
+                        long count = snapshot.getCount() + 1;
+                        String eventID = "event_id" + count;
+
+                        Event newEvent = new Event(eventID, organizerID, name, description, date, eventStart, eventEnd);
+
+                        if (eventPosterURL != null) {
+                            newEvent.setPosterURL(eventPosterURL);
+                        }
+
+                        newEvent.setGeolocationRequirement(geolocationRequirement);
+
+                        if (entrantLimit != null) {
+                            newEvent.setEntrantLimit(entrantLimit);
+                        }
+
+                        // Generate QR Code Bitmap
+    //                    Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
+
+                        // Add event to firebase
+                        eventRepository.addEvent(newEvent);
+
+                        // Update the ListView
+
+                        // Move to Event Detail Screen
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+                    });
+
+
                 } else {
-                    // TODO: display error output message
+                    Toast.makeText(getContext(), "Fill in the Required Fields", Toast.LENGTH_LONG).show();
                 }
             }
         });

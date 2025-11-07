@@ -2,6 +2,7 @@ package com.example.lotteryeventsystem;
 
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Event {
     private String eventID;
@@ -11,10 +12,13 @@ public class Event {
     private String date;
     private String startTime;
     private String endTime;
+    private String registrationStart;
+    private String registrationEnd;
+    private Number sampleSize;
+    private List<String> categories;
     private String posterURL; // Optional
     private boolean geolocationRequirement;
     private Number entrantLimit; // Optional
-    private ArrayList<String> waitlist;
 
 
     public Event() {
@@ -67,6 +71,22 @@ public class Event {
         return endTime;
     }
 
+    public String getRegistrationStart() {
+        return registrationStart;
+    }
+
+    public String getRegistrationEnd() {
+        return registrationEnd;
+    }
+
+    public Number getSampleSize() {
+        return sampleSize;
+    }
+
+    public List<String> getCategories() {
+        return categories;
+    }
+
     public String getPosterURL() {
         return posterURL;
     }
@@ -104,8 +124,24 @@ public class Event {
         this.startTime = startTime;
     }
 
+    public void setCategories(List<String> categories) {
+        this.categories = categories;
+    }
+
     public void setEndTime(String endTime) {
         this.endTime = endTime;
+    }
+
+    public void setRegistrationStart(String registrationStart) {
+        this.registrationStart = registrationStart;
+    }
+
+    public void setRegistrationEnd(String registrationEnd) {
+        this.registrationEnd = registrationEnd;
+    }
+
+    public void setSampleSize(Number sampleSize) {
+        this.sampleSize = sampleSize;
     }
 
     public void setPosterURL(String posterURL) {

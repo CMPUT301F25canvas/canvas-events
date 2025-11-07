@@ -82,7 +82,7 @@
             android:text="Login as Admin"
             android:textSize="16sp"
             android:gravity="center_vertical"
-            android:paddingStart="16dp"
+            android:paddingStart="10dp"
             android:paddingEnd="16dp"
             android:background="?attr/selectableItemBackground" />
 

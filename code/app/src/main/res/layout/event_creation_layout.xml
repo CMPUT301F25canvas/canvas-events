@@ -170,7 +170,7 @@
             android:background="@drawable/dropdownarrow"
             app:layout_constraintStart_toEndOf="@id/start_time_input_layout"
             app:layout_constraintTop_toBottomOf="@id/event_time_text"
-            app:layout_constraintBottom_toTopOf="@id/event_poster_text"
+            app:layout_constraintBottom_toTopOf="@id/event_registration_window_text"
             app:layout_constraintVertical_bias="0.35" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -202,8 +202,135 @@
             android:background="@drawable/dropdownarrow"
             app:layout_constraintStart_toEndOf="@id/end_time_input_layout"
             app:layout_constraintTop_toBottomOf="@id/event_time_text"
-            app:layout_constraintBottom_toTopOf="@id/event_poster_text"
+            app:layout_constraintBottom_toTopOf="@id/event_registration_window_text"
             app:layout_constraintVertical_bias="0.35"/>
+
+        <TextView
+            android:id="@+id/event_registration_window_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Registration Window"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/start_time_input_layout"
+            app:layout_constraintVertical_bias="0.0" />
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/registration_start_input_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_registration_window_text" >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/registration_start_input_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="time"
+                android:hint="Registration Start"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/registration_start_dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dropdownarrow"
+            app:layout_constraintStart_toEndOf="@id/registration_start_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_registration_window_text"
+            app:layout_constraintBottom_toTopOf="@id/event_sample_size_text"
+            app:layout_constraintVertical_bias="0.35" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/registration_end_input_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/registration_start_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_registration_window_text">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/registration_end_input_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:inputType="time"
+                android:hint="Registration End"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/registration_end_dropdown"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/dropdownarrow"
+            app:layout_constraintStart_toEndOf="@id/registration_end_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_registration_window_text"
+            app:layout_constraintBottom_toTopOf="@id/event_sample_size_text"
+            app:layout_constraintVertical_bias="0.35"/>
+
+        <TextView
+            android:id="@+id/event_sample_size_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Entrant Sample Size"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/registration_start_input_layout"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sample_size_input_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="20dp"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_sample_size_text"
+            >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sample_size_input_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Entrant Limit"
+                android:inputType="number"
+                android:paddingHorizontal="10dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/event_categories_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="20dp"
+            android:text="Event Categories"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sample_size_input_layout"
+            app:layout_constraintVertical_bias="0.0" />
 
         <TextView
             android:id="@+id/event_poster_text"
@@ -215,7 +342,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/start_time_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_categories_text"
             app:layout_constraintVertical_bias="0.0" />
 
         <ImageButton

@@ -35,6 +35,12 @@ public class AdminHomeFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Sets up the admin home page, and activates the admin options.
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         // Get references to your views

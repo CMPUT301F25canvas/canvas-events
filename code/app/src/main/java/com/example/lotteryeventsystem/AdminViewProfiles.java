@@ -2,6 +2,7 @@ package com.example.lotteryeventsystem;
 
 import static android.view.View.INVISIBLE;
 
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,6 +28,7 @@ import com.journeyapps.barcodescanner.ScanOptions;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class AdminViewProfiles extends Fragment {
     private ActivityResultLauncher<String> permissionLauncher;
@@ -41,6 +43,14 @@ public class AdminViewProfiles extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
+    /**
+     * When a user ID is clicked, it shows a popup that displays user information and gives the admin an option
+     * to delete the user profile.
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         TextView title = view.findViewById(R.id.home_label);
@@ -85,12 +95,39 @@ public class AdminViewProfiles extends Fragment {
 
         listView.setOnItemClickListener((parent, itemView, position, id) -> {
             String profileId = itemsList.get(position);
-            title.setText(profileId);
-//            Bundle args = new Bundle();
-//            args.putString(EventDetailFragment.ARG_EVENT_ID, event.id);
-//
-//            NavController navController = Navigation.findNavController(requireView());
-//            navController.navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
+            FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+            db.collection("users").document(profileId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Map<String, Object> data = documentSnapshot.getData();
+                        if (data == null || data.isEmpty()) {
+                            Toast.makeText(requireContext(), "Error: No data available for this user", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+                        StringBuilder info = new StringBuilder();
+                        for (Map.Entry<String, Object> entry : data.entrySet()) {
+                            info.append(entry.getKey())
+                                    .append(": ").append(entry.getValue()).append("\n");
+                        }
+                        new AlertDialog.Builder(requireContext()).setTitle("User Profile")
+                                .setMessage(info.toString())
+                                .setPositiveButton("Delete", (dialog, which) -> {
+                                    new AlertDialog.Builder(requireContext())
+                                            .setTitle("Confirm Deletion")
+                                            .setMessage("Are you sure you want to delete this user?")
+                                            .setPositiveButton("Yes", (confirmDialog, cWhich) -> {
+                                                FireBaseDeleteFuncs.deleteUserProfile(db, profileId, requireContext());
+                                                itemsList.remove(position);
+                                                adapter.notifyDataSetChanged();
+                                            })
+                                            .show();
+                                })
+                                .show();
+                    } else {
+                        Toast.makeText(requireContext(), "Error: Profile doesn't exist", Toast.LENGTH_SHORT).show();
+                    }
+                });
         });
 
         backArrow.setOnClickListener(v-> {

@@ -43,13 +43,19 @@ public class AdminViewEvents extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
+    /**
+     * When a list item is clicked on, it opens the fragment displays the event details
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         TextView title = view.findViewById(R.id.home_label);
         title.setText("Events");
         ImageButton backArrow = view.findViewById(R.id.back_image_button);
         ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
-        scanButton.setVisibility(INVISIBLE);
+        scanButton.setVisibility(INVISIBLE);        // Removes the scan option for admin
         SearchView searchView = view.findViewById(R.id.search_view);
         ImageButton filterButton = view.findViewById(R.id.filter_button);
         ListView listView = view.findViewById(R.id.list_view);
@@ -58,10 +64,6 @@ public class AdminViewEvents extends Fragment {
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, itemsList);
         listView.setAdapter(adapter);
 
-        if (cachedItems != null) {
-            itemsList.addAll(cachedItems);
-            adapter.notifyDataSetChanged();
-        } else {
             FirebaseFirestore db = FirebaseFirestore.getInstance();
             db.collection("events")
                     .get()
@@ -73,7 +75,6 @@ public class AdminViewEvents extends Fragment {
                         cachedItems = new ArrayList<>(itemsList);
                         adapter.notifyDataSetChanged();
                     });
-        }
 
         searchView.setOnClickListener( v -> {
             Toast.makeText(getContext(), "Events search returned", Toast.LENGTH_SHORT).show();

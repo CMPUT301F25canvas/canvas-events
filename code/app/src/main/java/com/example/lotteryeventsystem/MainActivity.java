@@ -18,7 +18,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
-    private boolean isAdmin = false;
+    private boolean isAdmin = false; // True if the user is in admin mode
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -29,7 +29,8 @@
             android:layout_height="wrap_content"
             android:src="@drawable/back_button"
             android:contentDescription="Back Button"
-            android:background="?android:attr/selectableItemBackground" />
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"/>
 
         <View
             android:layout_width="match_parent"
@@ -57,6 +58,8 @@
             android:id="@+id/name"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:maxLength = "50"
+            android:maxLines="1"
             android:hint="..."
             android:textSize="16sp"
             android:textColor="#FF6B6B"
@@ -75,7 +78,8 @@
             android:id="@+id/email"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:maxLength = "254"
+            android:maxLength="254"
+            android:maxLines="1"
             android:hint="..."
             android:textSize="16sp"
             android:textColor="#FF6B6B"
@@ -94,6 +98,8 @@
             android:id="@+id/phone_number"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:maxLength="20"
+            android:maxLines="1"
             android:hint="..."
             android:autofillHints="Name1"
             android:textSize="16sp"

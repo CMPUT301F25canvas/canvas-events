@@ -100,6 +100,10 @@
     <fragment
         android:id="@+id/personalInfoFragment"
         android:name="com.example.lotteryeventsystem.PersonalInfoFragment"
-        tools:layout="@layout/fragment_personal_info" />
+        tools:layout="@layout/fragment_personal_info">
+    <action
+        android:id="@+id/personalInfoFragment_to_profileFragment"
+        app:destination="@id/profileFragment"/>
+    </fragment>
 
 </navigation>

@@ -26,6 +26,9 @@
         <action
             android:id="@+id/action_profileFragment_to_organizerEventListFragment"
             app:destination="@id/organizerEventListFragment" />
+        <action
+            android:id="@+id/profileFragment_to_personalInfoFragment"
+            app:destination="@id/personalInfoFragment"/>
     </fragment>
 
     <fragment
@@ -65,12 +68,12 @@
     <fragment
         android:id="@+id/eventDetailFragment"
         android:name="com.example.lotteryeventsystem.EventDetailFragment"
-        tools:layout="@layout/activity_event_details"/>
-    <fragment
-        android:id="@+id/organizerEventDetailFragment"
-        android:name="com.example.lotteryeventsystem.OrganizerEventDetailFragment"
-        android:label="Event Details" />
+        android:label="Event Details"
+        tools:layout="@layout/activity_event_details">
+    </fragment>
 
+
+    <!-- Organizer Fragment Screens -->
     <fragment
         android:id="@+id/organizerEventListFragment"
         android:name="com.example.lotteryeventsystem.OrganizerEventListFragment"
@@ -86,7 +89,11 @@
     <fragment
         android:id="@+id/organizerEventCreateFragment"
         android:name="com.example.lotteryeventsystem.OrganizerEventCreateFragment"
-        android:label="Event Creation Form" />
+        android:label="Event Creation Form" >
+        <action
+            android:id="@+id/action_organizerEventCreateFragment_to_organizerEventListFragment"
+            app:destination="@id/organizerEventListFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/organizerEntrantListFragment"
@@ -96,5 +103,10 @@
             android:name="EVENT_ID"
             app:argType="string" />
     </fragment>
+
+    <fragment
+        android:id="@+id/personalInfoFragment"
+        android:name="com.example.lotteryeventsystem.PersonalInfoFragment"
+        tools:layout="@layout/fragment_personal_info" />
 
 </navigation>

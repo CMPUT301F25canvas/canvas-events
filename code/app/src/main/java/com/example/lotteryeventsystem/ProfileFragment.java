@@ -5,9 +5,12 @@ import static android.view.View.VISIBLE;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.InputType;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +24,20 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Text;
+
+import java.util.ArrayList;
 
 public class ProfileFragment extends Fragment {
     public ProfileFragment() {}
@@ -79,18 +94,56 @@ public class ProfileFragment extends Fragment {
         });
 
         PersonalInformation.setOnClickListener( v -> {
-            // TODO: Everything
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.profileFragment_to_personalInfoFragment);
         });
 
         MyCreatedEvents.setOnClickListener( v -> {
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_profileFragment_to_organizerEventListFragment);
+            // TODO: Everything
         });
 
         DeleteProfile.setOnClickListener( v -> {
-            // TODO: Everything
+            AlertDialog alertDialog = new AlertDialog.Builder(getContext()).create();
+            alertDialog.setMessage("Are you sure you want to PERMANENTLY DELETE your account?");
+            alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "Yes",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            deleteProfile();
+                        }
+                    });
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Cancel",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            alertDialog.show();
         });
     }
 
+    // if this is being accessed from outside, it needs to be refactored
+    // TODO: Their events should probably be deleted also
+    private void deleteProfile() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        // https://firebase.google.com/docs/firestore/manage-data/delete-data#java
+        db.collection("users").document(deviceId)
+                .delete()
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(), "Account Deleted", Toast.LENGTH_SHORT).show();
+                        Log.d(this.toString(), "DocumentSnapshot successfully deleted!");
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Toast.makeText(getContext(), "Account Deletion Failed", Toast.LENGTH_SHORT).show();
+                        Log.w(this.toString(), "Error deleting document", e);
+                    }
+                });
+    }
 
 }

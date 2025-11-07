@@ -1,59 +1,56 @@
 package com.example.lotteryeventsystem;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.qrcode.QRCodeWriter;
-
+import java.util.ArrayList;
 
 public class Event {
-    private String id;
-    private String creatorId;
+    private String eventID;
+    private String organizerID;
     private String name;
     private String description;
     private String date;
-    private String start_time;
-    private String end_time;
-    private Number entrant_limit;
-    private String QRCodeURL;
+    private String startTime;
+    private String endTime;
+    private String posterURL; // Optional
+    private boolean geolocationRequirement;
+    private Number entrantLimit; // Optional
+    private ArrayList<String> waitlist;
 
-    public Event(String id, String name, String creatorId, String description,
-                 String date, String start_time, String end_time) {
-        this.id = id;
-        this.creatorId = creatorId;
+
+    public Event() {
+
+    } // For firestore
+
+    public Event(String eventID, String organizerID, String name, String description,
+                 String date, String startTime, String endTime) {
+        this.eventID = eventID;
+        this.organizerID = organizerID;
         this.name = name;
         this.description = description;
         this.date = date;
-        this.start_time = start_time;
-        this.end_time = end_time;
-        this.entrant_limit = null; // Set null if no limit
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.entrantLimit = null; // Set null if no limit
     }
 
-    public Event(String id, String name, String creatorId, String description,
-                 String date, String start_time, String end_time,
-                 Number entrant_limit) {
-        this(id, name, creatorId, description, date, start_time, end_time);
-        this.entrant_limit = entrant_limit;
-    }
-
-    public Event() {
-        // Firestore likes a public no-arg constructor.
+    @Override
+    public String toString() {
+        return name;
     }
 
     // Getters
-    public String getId() {
-        return id;
+    public String getEventID() {
+        return eventID;
+    }
+
+    public String getOrganizerID() {
+        return organizerID;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getCreatorId() {
-        return creatorId;
-    }
     public String getDescription() {
         return description;
     }
@@ -63,18 +60,34 @@ public class Event {
     }
 
     public String getStartTime() {
-        return start_time;
+        return startTime;
     }
 
     public String getEndTime() {
-        return end_time;
+        return endTime;
+    }
+
+    public String getPosterURL() {
+        return posterURL;
+    }
+
+    public boolean getGeolocationRequirement() {
+        return geolocationRequirement;
     }
 
     public Number getEntrantLimit() {
-        return entrant_limit;
+        return entrantLimit;
     }
 
-    // Setter
+    // Setters
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
+    }
+
+    public void setOrganizerID(String organizerID) {
+        this.organizerID = organizerID;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -87,38 +100,24 @@ public class Event {
         this.date = date;
     }
 
-    public void setStartTime(String start_time) {
-        this.start_time = start_time;
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
-    public void setEndTime(String end_time) {
-        this.end_time = end_time;
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 
-    public void setEntrantLimit(Integer entrant_limit) {
-        this.entrant_limit = entrant_limit;
+    public void setPosterURL(String posterURL) {
+        this.posterURL = posterURL;
     }
 
-    public Bitmap GenerateQRCode(String content) {
-        /**
-         * Function to
-         */
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            int size = 512; // pixels
-            com.google.zxing.common.BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size);
-            Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565);
+    public void setGeolocationRequirement(boolean geolocationRequirement) {
+        this.geolocationRequirement = geolocationRequirement;
+    }
 
-            for (int x = 0; x < size; x++) {
-                for (int y = 0; y < size; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            return bitmap;
-        } catch (WriterException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public void setEntrantLimit(Integer entrantLimit) {
+        this.entrantLimit = entrantLimit;
     }
 
 }

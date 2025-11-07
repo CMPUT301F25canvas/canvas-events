@@ -22,10 +22,28 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * Combined MVC code for the Personal Info page
+ *
+ * @author Ethan Kinch
+ */
 public class PersonalInfoFragment extends Fragment {
+    /**
+     * Empty required constructor
+     */
     public PersonalInfoFragment() {
     }
 
+    /**
+     * Called to have the fragment instantiate its user interface view.
+     * This method inflates the fragment's layout, retrieves arguments, and initializes
+     * the UI components and data loading.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     * @return The View for the fragment's UI, or null
+     */
     @Nullable
     @Override
     public View onCreateView(@Nullable LayoutInflater inflater,
@@ -34,6 +52,13 @@ public class PersonalInfoFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_personal_info, container, false);
     }
 
+    /**
+     * Once the view is created, we instantiate the three user fields from the database.
+     * We also set up listeners such that when a field is edited, it is sent to the database
+     *
+     * @param view The PersonalInfo view (fragment_personal_info.xml)
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         // View stuff
         ImageButton backButton = view.findViewById(R.id.back_button);

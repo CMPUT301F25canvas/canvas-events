@@ -25,6 +25,10 @@ import java.util.Objects;
 
 import androidx.annotation.Nullable;
 
+/**
+ * Displays a list of events created by a user.
+ * User is identified by their device number
+ */
 public class OrganizerEventListFragment extends Fragment {
     private ArrayAdapter<Event> eventAdapter;
     private ArrayList<Event> eventsList;
@@ -41,7 +45,12 @@ public class OrganizerEventListFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_organizer_event_list, container, false);
     }
 
-
+    /**
+     * Logic for when the OrganizerEventList View was created
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 

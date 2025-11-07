@@ -69,8 +69,8 @@ public class EventRepository {
 
     /**
      * Retreieves the list of events that are of the given
-     * @param category
-     * @return
+     * @param category the category to search for
+     * @return - unimplemented
      */
     public Task<QuerySnapshot> getEventsByCategory(String category) {
         return null;
@@ -79,8 +79,8 @@ public class EventRepository {
 
     /**
      * Retrieves the waitlist for the given event
-     * @param eventID
-     * @return
+     * @param eventID the event to get retrieve waitlist from
+     * @return - the waitlist of the given event
      */
     public Task<QuerySnapshot> getEntrants(String eventID) {
         return db.collection("events")

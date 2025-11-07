@@ -54,8 +54,11 @@ public class OrganizerEntrantListFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.organizer_view_entrant_page, container, false);
-        if (getArguments() != null) {
-            eventId = getArguments().getString("EVENT_ID");
+
+        // Get event ID from arguments
+        Bundle args = getArguments();
+        if (args != null) {
+            eventId = args.getString("EVENT_ID");
         }
         eventName = view.findViewById(R.id.event_name);
         eventDescription = view.findViewById(R.id.event_description);

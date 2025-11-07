@@ -40,4 +40,6 @@
     <string name="organizer_draw_empty">No one else is waiting. All invites declined.</string>
     <string name="organizer_decline_success">%1$s marked as declined. New entrant invited if available.</string>
     <string name="organizer_waiting_count_format">Waiting entrants: %1$d</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

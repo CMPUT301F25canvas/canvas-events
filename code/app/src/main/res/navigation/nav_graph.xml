@@ -26,6 +26,9 @@
         <action
             android:id="@+id/action_profileFragment_to_organizerEventListFragment"
             app:destination="@id/organizerEventListFragment" />
+        <action
+            android:id="@+id/profileFragment_to_personalInfoFragment"
+            app:destination="@id/personalInfoFragment"/>
     </fragment>
 
     <fragment
@@ -100,5 +103,10 @@
             android:name="EVENT_ID"
             app:argType="string" />
     </fragment>
+
+    <fragment
+        android:id="@+id/personalInfoFragment"
+        android:name="com.example.lotteryeventsystem.PersonalInfoFragment"
+        tools:layout="@layout/fragment_personal_info" />
 
 </navigation>

@@ -69,10 +69,11 @@ public class OrganizerEventListFragment extends Fragment {
                         for (var doc : snapshot) {
                             Event event = doc.toObject(Event.class);
                             eventsList.add(event);
+
                         }
+                        cachedItems = new ArrayList<Event>(eventsList);
+                        eventAdapter.notifyDataSetChanged();
                     });
-            cachedItems = new ArrayList<Event>(eventsList);
-            eventAdapter.notifyDataSetChanged();
         }
 
         // Navigates to the event creation form

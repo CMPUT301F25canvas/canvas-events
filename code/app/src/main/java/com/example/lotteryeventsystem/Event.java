@@ -4,16 +4,16 @@ package com.example.lotteryeventsystem;
 import java.util.ArrayList;
 
 public class Event {
-    private String event_id;
-    private String organizer_id;
+    private String eventID;
+    private String organizerID;
     private String name;
     private String description;
     private String date;
-    private String start_time;
-    private String end_time;
+    private String startTime;
+    private String endTime;
     private String posterURL; // Optional
-    private boolean geolocation;
-    private Number entrant_limit; // Optional
+    private boolean geolocationRequirement;
+    private Number entrantLimit; // Optional
     private ArrayList<String> waitlist;
 
 
@@ -21,25 +21,30 @@ public class Event {
 
     } // For firestore
 
-    public Event(String event_id, String organizer_id, String name, String description,
-                 String date, String start_time, String end_time) {
-        this.event_id = event_id;
-        this.organizer_id = organizer_id;
+    public Event(String eventID, String organizerID, String name, String description,
+                 String date, String startTime, String endTime) {
+        this.eventID = eventID;
+        this.organizerID = organizerID;
         this.name = name;
         this.description = description;
         this.date = date;
-        this.start_time = start_time;
-        this.end_time = end_time;
-        this.entrant_limit = null; // Set null if no limit
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.entrantLimit = null; // Set null if no limit
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 
     // Getters
     public String getEventID() {
-        return event_id;
+        return eventID;
     }
 
     public String getOrganizerID() {
-        return organizer_id;
+        return organizerID;
     }
 
     public String getName() {
@@ -55,11 +60,11 @@ public class Event {
     }
 
     public String getStartTime() {
-        return start_time;
+        return startTime;
     }
 
     public String getEndTime() {
-        return end_time;
+        return endTime;
     }
 
     public String getPosterURL() {
@@ -67,20 +72,20 @@ public class Event {
     }
 
     public boolean getGeolocationRequirement() {
-        return geolocation;
+        return geolocationRequirement;
     }
 
     public Number getEntrantLimit() {
-        return entrant_limit;
+        return entrantLimit;
     }
 
     // Setters
-    public void setEventID(String event_id) {
-        this.event_id = event_id;
+    public void setEventID(String eventID) {
+        this.eventID = eventID;
     }
 
-    public void setOrganizerID(String organizer_id) {
-        this.organizer_id = organizer_id;
+    public void setOrganizerID(String organizerID) {
+        this.organizerID = organizerID;
     }
 
     public void setName(String name) {
@@ -95,24 +100,24 @@ public class Event {
         this.date = date;
     }
 
-    public void setStartTime(String start_time) {
-        this.start_time = start_time;
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 
-    public void setEndTime(String end_time) {
-        this.end_time = end_time;
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
     }
 
     public void setPosterURL(String posterURL) {
         this.posterURL = posterURL;
     }
 
-    public void setGeolocationRequirement(boolean geolocation) {
-        this.geolocation = geolocation;
+    public void setGeolocationRequirement(boolean geolocationRequirement) {
+        this.geolocationRequirement = geolocationRequirement;
     }
 
-    public void setEntrantLimit(Integer entrant_limit) {
-        this.entrant_limit = entrant_limit;
+    public void setEntrantLimit(Integer entrantLimit) {
+        this.entrantLimit = entrantLimit;
     }
 
 }

@@ -59,11 +59,11 @@ public class EventRepository {
 
     /**
      * Retrieves the list of events created by the given organizer
-     * @param organizer_id Android device ID of the organizer
+     * @param organizerID Android device ID of the organizer
      */
-    public Task<QuerySnapshot> getEventsByOrganizer(String organizer_id) {
+    public Task<QuerySnapshot> getEventsByOrganizer(String organizerID) {
         return db.collection("events")
-                .whereEqualTo("organizer_id", organizer_id)
+                .whereEqualTo("organizerID", organizerID)
                 .get();
     }
 
@@ -79,12 +79,12 @@ public class EventRepository {
 
     /**
      * Retrieves the waitlist for the given event
-     * @param event_id
+     * @param eventID
      * @return
      */
-    public Task<QuerySnapshot> getEntrants(String event_id) {
+    public Task<QuerySnapshot> getEntrants(String eventID) {
         return db.collection("events")
-                .document(event_id)
+                .document(eventID)
                 .collection("waitlist")
                 .get();
     }

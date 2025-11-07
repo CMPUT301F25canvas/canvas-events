@@ -88,8 +88,8 @@
         android:name="com.example.lotteryeventsystem.OrganizerEventCreateFragment"
         android:label="Event Creation Form" >
         <action
-            android:id="@+id/action_organizerEventCreateFragment_to_organizerEntrantListFragment"
-            app:destination="@id/organizerEntrantListFragment" />
+            android:id="@+id/action_organizerEventCreateFragment_to_organizerEventListFragment"
+            app:destination="@id/organizerEventListFragment" />
     </fragment>
 
     <fragment

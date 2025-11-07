@@ -36,7 +36,6 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public class OrganizerEventCreateFragment extends Fragment {
@@ -45,11 +44,11 @@ public class OrganizerEventCreateFragment extends Fragment {
 
     String name;
     String description;
-    String eventDate;
+    String date;
     String eventStart;
     String eventEnd;
     String eventPosterURL;
-    boolean geolocationRequired;
+    boolean geolocationRequirement;
     Integer entrantLimit;
 
     @Nullable
@@ -124,7 +123,7 @@ public class OrganizerEventCreateFragment extends Fragment {
                     return;
                 }
                 try {
-                    eventDate = inputText;
+                    date = inputText;
                     // Clear any previous error if successful
                     eventDateLayout.setError(null);
                 } catch (DateTimeParseException e) {
@@ -162,7 +161,7 @@ public class OrganizerEventCreateFragment extends Fragment {
 
                 // Display and store
                 eventDateInput.setText(formattedDate);
-                this.eventDate = eventDate.toString(); // keep LocalDate for later use
+                this.date = eventDate.toString(); // keep LocalDate for later use
             });
         });
 
@@ -236,7 +235,7 @@ public class OrganizerEventCreateFragment extends Fragment {
         geolocationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
-                geolocationRequired = isChecked;
+                geolocationRequirement = isChecked;
             }
         });
 
@@ -282,9 +281,9 @@ public class OrganizerEventCreateFragment extends Fragment {
             public void onClick(View v) {
 
                 // Check if all required inputs are filled
-                if (name != null && description != null && eventDate != null && eventStart != null && eventEnd != null) {
+                if (name != null && description != null && date != null && eventStart != null && eventEnd != null) {
 
-                    String creatorID = Settings.Secure.getString(requireContext().getContentResolver(),
+                    String organizerID = Settings.Secure.getString(requireContext().getContentResolver(),
                             Settings.Secure.ANDROID_ID);
 
                     
@@ -292,13 +291,13 @@ public class OrganizerEventCreateFragment extends Fragment {
                         long count = snapshot.getCount() + 1;
                         String eventID = "event_id" + count;
 
-                        Event newEvent = new Event(eventID, creatorID, name, description, eventDate, eventStart, eventEnd);
+                        Event newEvent = new Event(eventID, organizerID, name, description, date, eventStart, eventEnd);
 
                         if (eventPosterURL != null) {
                             newEvent.setPosterURL(eventPosterURL);
                         }
 
-                        newEvent.setGeolocationRequirement(geolocationRequired);
+                        newEvent.setGeolocationRequirement(geolocationRequirement);
 
                         if (entrantLimit != null) {
                             newEvent.setEntrantLimit(entrantLimit);
@@ -310,12 +309,11 @@ public class OrganizerEventCreateFragment extends Fragment {
                         // Add event to firebase
                         eventRepository.addEvent(newEvent);
 
-                        // Move to Event Detail Screen
-                        Bundle args = new Bundle();
-                        args.putString("EVENT_ID", newEvent.getEventID());
+                        // Update the ListView
 
+                        // Move to Event Detail Screen
                         NavController navController = Navigation.findNavController(requireView());
-                        navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEntrantListFragment, args);
+                        navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
                     });
 
 

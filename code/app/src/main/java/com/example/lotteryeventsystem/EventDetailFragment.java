@@ -2,6 +2,7 @@ package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +32,10 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -88,10 +92,34 @@ public class EventDetailFragment extends Fragment {
         setupJoinLeaveButton(db);
     }
 
+    /**
+     * Sets up the "Join/Leave Waiting List" button for an event.
+     * Checks if the current device/user is already on the event's waitlist in Firestore:
+     *  <ul>
+     *      <li>If the device is on the waitlist, sets the button text to "Leave Waiting List".</li>
+     *      <li>If not, sets the button text to "Join Waiting List".</li>
+     *  </ul>
+     *
+     * @param db the FirebaseFirestore instance used to access the event waitlist collection
+     */
     private void setupJoinLeaveButton(FirebaseFirestore db) {
-        DocumentReference attendeeRef = db.collection("events").document(eventId).collection("waitlist").document(deviceId);
+        DocumentReference waitlistRef = db.collection("events").document(eventId).collection("waitlist").document(deviceId);
+        DocumentReference userRef = db.collection("users").document(deviceId);
 
-        attendeeRef.get().addOnSuccessListener( documentSnapshot -> {
+        userRef.get().addOnSuccessListener( documentSnapshot -> {
+            if (!documentSnapshot.exists()) {
+                List<String> enrolledEvents = Arrays.asList(eventId);
+                List<String> organizedEvents = new ArrayList<>();
+
+                Map<String, Object> userData = new HashMap<>();
+                userData.put("enrolled_events", enrolledEvents);
+                userData.put("organized_events", organizedEvents);
+
+                userRef.set(userData);
+            }
+        });
+
+        waitlistRef.get().addOnSuccessListener( documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 joinLeaveButton.setText("Leave Waiting List");
             } else {
@@ -101,14 +129,16 @@ public class EventDetailFragment extends Fragment {
 
         joinLeaveButton.setOnClickListener(v -> {
             if (joinLeaveButton.getText().toString().equals("Join Waiting List")) {
-                Map<String, Object> data = new HashMap<>();
-                data.put("joined_at", FieldValue.serverTimestamp());
+                Map<String, Object> eventData = new HashMap<>();
+                eventData.put("status", "WAITING");
+                waitlistRef.set(eventData).addOnSuccessListener(aVoid -> joinLeaveButton.setText("Leave Waiting List"));
+                userRef.update("enrolled_events", FieldValue.arrayUnion(eventId));
 
-                attendeeRef.set(data).addOnSuccessListener(aVoid -> joinLeaveButton.setText("Leave Waiting List"));
                 Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
 
             } else {
-                attendeeRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
+                waitlistRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
+                userRef.update("enrolled_events", FieldValue.arrayRemove(eventId));
                 Toast.makeText(getContext(), "You were removed to the waiting list!", Toast.LENGTH_SHORT).show();
 
             }

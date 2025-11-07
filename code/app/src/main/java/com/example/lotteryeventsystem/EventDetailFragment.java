@@ -27,9 +27,11 @@ import androidx.navigation.Navigation;
 
 import com.example.lotteryeventsystem.di.ServiceLocator;
 import com.example.lotteryeventsystem.model.Event;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -77,7 +79,6 @@ public class EventDetailFragment extends Fragment {
         eventId = getArguments().getString("event_id");
         deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
         joinLeaveButton = view.findViewById(R.id.join_leave_button);
-
         db.collection("events").document(eventId)
                 .get()
                 .addOnSuccessListener(doc -> {
@@ -89,11 +90,15 @@ public class EventDetailFragment extends Fragment {
                         ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
                     }
                 });
-        setupJoinLeaveButton(db);
+        if (((MainActivity) requireActivity()).getAdmin()) {
+            setupDeleteEventButton(db);
+        } else {
+            setupJoinLeaveButton(db);
+        }
     }
 
     /**
-     * Sets up the "Join/Leave Waiting List" button for an event.
+     * Sets up the "Join/Leave Waiting List" button for an event. If the user is in admin mode, the button is set up as a "Delete event"
      * Checks if the current device/user is already on the event's waitlist in Firestore:
      *  <ul>
      *      <li>If the device is on the waitlist, sets the button text to "Leave Waiting List".</li>
@@ -217,6 +222,14 @@ public class EventDetailFragment extends Fragment {
         }
         return value;
     }*/
+
+    private void setupDeleteEventButton(FirebaseFirestore db) {
+        joinLeaveButton.setText("Delete Event");
+        joinLeaveButton.setOnClickListener(v -> {
+            FireBaseDeleteFuncs.deleteEvent(db, eventId, requireContext());
+
+        });
+    }
 }
 
 

@@ -1,28 +1,30 @@
 package com.example.lotteryeventsystem;
 
-import android.graphics.Bitmap;
-import android.graphics.Color;
 
-import com.google.zxing.BarcodeFormat;
-import com.google.zxing.WriterException;
-import com.google.zxing.qrcode.QRCodeWriter;
-
+import java.util.ArrayList;
 
 public class Event {
-    private String id;
-    private String creatorId;
+    private String event_id;
+    private String organizer_id;
     private String name;
     private String description;
     private String date;
     private String start_time;
     private String end_time;
-    private Number entrant_limit;
-    private String QRCodeURL;
+    private String posterURL; // Optional
+    private boolean geolocation;
+    private Number entrant_limit; // Optional
+    private ArrayList<String> waitlist;
 
-    public Event(String id, String name, String creatorId, String description,
+
+    public Event() {
+
+    } // For firestore
+
+    public Event(String event_id, String organizer_id, String name, String description,
                  String date, String start_time, String end_time) {
-        this.id = id;
-        this.creatorId = creatorId;
+        this.event_id = event_id;
+        this.organizer_id = organizer_id;
         this.name = name;
         this.description = description;
         this.date = date;
@@ -31,29 +33,19 @@ public class Event {
         this.entrant_limit = null; // Set null if no limit
     }
 
-    public Event(String id, String name, String creatorId, String description,
-                 String date, String start_time, String end_time,
-                 Number entrant_limit) {
-        this(id, name, creatorId, description, date, start_time, end_time);
-        this.entrant_limit = entrant_limit;
-    }
-
-    public Event() {
-        // Firestore likes a public no-arg constructor.
-    }
-
     // Getters
-    public String getId() {
-        return id;
+    public String getEventID() {
+        return event_id;
+    }
+
+    public String getOrganizerID() {
+        return organizer_id;
     }
 
     public String getName() {
         return name;
     }
 
-    public String getCreatorId() {
-        return creatorId;
-    }
     public String getDescription() {
         return description;
     }
@@ -70,11 +62,27 @@ public class Event {
         return end_time;
     }
 
+    public String getPosterURL() {
+        return posterURL;
+    }
+
+    public boolean getGeolocationRequirement() {
+        return geolocation;
+    }
+
     public Number getEntrantLimit() {
         return entrant_limit;
     }
 
-    // Setter
+    // Setters
+    public void setEventID(String event_id) {
+        this.event_id = event_id;
+    }
+
+    public void setOrganizerID(String organizer_id) {
+        this.organizer_id = organizer_id;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -95,30 +103,16 @@ public class Event {
         this.end_time = end_time;
     }
 
-    public void setEntrantLimit(Integer entrant_limit) {
-        this.entrant_limit = entrant_limit;
+    public void setPosterURL(String posterURL) {
+        this.posterURL = posterURL;
     }
 
-    public Bitmap GenerateQRCode(String content) {
-        /**
-         * Function to
-         */
-        QRCodeWriter writer = new QRCodeWriter();
-        try {
-            int size = 512; // pixels
-            com.google.zxing.common.BitMatrix bitMatrix = writer.encode(content, BarcodeFormat.QR_CODE, size, size);
-            Bitmap bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.RGB_565);
+    public void setGeolocationRequirement(boolean geolocation) {
+        this.geolocation = geolocation;
+    }
 
-            for (int x = 0; x < size; x++) {
-                for (int y = 0; y < size; y++) {
-                    bitmap.setPixel(x, y, bitMatrix.get(x, y) ? Color.BLACK : Color.WHITE);
-                }
-            }
-            return bitmap;
-        } catch (WriterException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public void setEntrantLimit(Integer entrant_limit) {
+        this.entrant_limit = entrant_limit;
     }
 
 }

@@ -28,6 +28,7 @@ import androidx.annotation.Nullable;
 public class OrganizerEventListFragment extends Fragment {
     private ArrayAdapter<Event> eventAdapter;
     private ArrayList<Event> eventsList;
+    private EventRepository eventRepository;
 
     private static ArrayList<Event> cachedItems;
 
@@ -44,11 +45,13 @@ public class OrganizerEventListFragment extends Fragment {
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        eventRepository = new EventRepository();
+
         ListView eventListView = view.findViewById(R.id.organizer_event_list);
         Button createEventButton = view.findViewById(R.id.create_event_button);
         ImageButton backButton = view.findViewById(R.id.back_button);
 
-        eventsList = new ArrayList<>();
+        eventsList = new ArrayList<Event>();
         eventAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, eventsList);
         eventListView.setAdapter(eventAdapter);
 
@@ -60,24 +63,16 @@ public class OrganizerEventListFragment extends Fragment {
             eventsList.addAll(cachedItems);
             eventAdapter.notifyDataSetChanged();
         } else {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("events")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            String creator_id = doc.getString("creator_id");
-
-                            // Only add events created by this user
-                            if (Objects.equals(creator_id, androidDeviceId))
-                                eventsList.add(new Event(
-                                    doc.getId(), doc.getString("name"), doc.getString("creator_id"),
-                                    doc.getString("description"), doc.getString("date"), doc.getString("start_time"),
-                                    doc.getString("end_time"), doc.getDouble("entrant_limit")
-                            ));
+            // Add organizer events into an Array List
+            eventRepository.getEventsByOrganizer(androidDeviceId)
+                    .addOnSuccessListener(snapshot -> {
+                        for (var doc : snapshot) {
+                            Event event = doc.toObject(Event.class);
+                            eventsList.add(event);
                         }
-                        cachedItems = new ArrayList<>(eventsList);
-                        eventAdapter.notifyDataSetChanged();
                     });
+            cachedItems = new ArrayList<Event>(eventsList);
+            eventAdapter.notifyDataSetChanged();
         }
 
         // Navigates to the event creation form
@@ -90,7 +85,7 @@ public class OrganizerEventListFragment extends Fragment {
         eventListView.setOnItemClickListener((parent, itemView, position, id) -> {
             Event event = eventsList.get(position);
             Bundle args = new Bundle();
-            args.putString("EVENT_ID", event.getId());
+            args.putString("EVENT_ID", event.getEventID());
 
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.action_organizerEventListFragment_to_organizerEntrantListFragment, args);

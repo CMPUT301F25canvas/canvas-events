@@ -15,8 +15,11 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -47,11 +50,34 @@ import java.util.function.Consumer;
  */
 public class OrganizerEventCreateFragment extends Fragment {
 
-    private OrganizerEventCreateViewModel viewModel;
+//    private OrganizerEventCreateViewModel viewModel;
+    private EventCreationForm eventCreationForm;
     private EventRepository eventRepository;
-
+    private ActivityResultLauncher<String> pickImageLauncher;
+    private ImageView imageView; // Stores the image being saved?
     String posterURL; // temporary will change
 
+
+    // Callback Interface for when an image is uploaded
+    public interface ImageUploadCallback {
+        void onUploaded(String imageUrl);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Opens gallery for uploading an image
+        pickImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        imageView.setImageURI(uri); // preview
+                        eventCreationForm.setLocalImageUri(uri); // saves the selected image locally first
+                    }
+                }
+        );
+    }
 
     @Nullable
     @Override
@@ -65,7 +91,9 @@ public class OrganizerEventCreateFragment extends Fragment {
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         eventRepository = new EventRepository();
-        viewModel = new ViewModelProvider(this).get(OrganizerEventCreateViewModel.class);
+        eventCreationForm = new EventCreationForm();
+        Event event = new Event();
+//        viewModel = new ViewModelProvider(this).get(OrganizerEventCreateViewModel.class);
 
         // Connecting all of the elements
         // Back Button
@@ -77,39 +105,41 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         // Event Name
         TextInputLayout eventNameLayout = view.findViewById(R.id.event_name_input_layout);
-        viewModel.getName().observe(getViewLifecycleOwner(), name -> {
-            if (name != null && !name.isEmpty()) {
-                eventNameLayout.setError(null);
-            }
-        });
         TextInputEditText eventNameInput = view.findViewById(R.id.event_name_input);
-        setupTextWatcher(eventNameInput, text -> viewModel.setName(text));
+        setupTextWatcher(eventNameInput, event::setName);
 
         // Event Description
         TextInputLayout eventDescriptionLayout = view.findViewById(R.id.event_description_input_layout);
-        viewModel.getDescription().observe(getViewLifecycleOwner(), description -> {
-            if (description != null && !description.isEmpty()) {
-                eventDescriptionLayout.setError(null);
-            }
-        });
         TextInputEditText eventDescriptionInput = view.findViewById(R.id.event_description_input);
-        setupTextWatcher(eventDescriptionInput, text -> viewModel.setDescription(text));
+        setupTextWatcher(eventDescriptionInput, event::setDescription);
 
         // Event Date
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         TextInputLayout eventDateLayout = view.findViewById(R.id.event_date_input_layout);
-        viewModel.getDate().observe(getViewLifecycleOwner(), date -> {
-            if (date != null && !date.isEmpty()) {
-                try {
-                    LocalDate.parse(date, dateFormatter);
-                    eventDateLayout.setError(null);
-                } catch (DateTimeParseException e) {
-                    eventDateLayout.setError("Invalid Format - use YYYY-MM-DD");
+        TextInputEditText eventDateInput = view.findViewById(R.id.event_date_input_text);
+        eventDateInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String date = s.toString();
+                event.setDate(date);
+                if (!date.isEmpty()) {
+                    try {
+                        LocalDate.parse(date, dateFormatter);
+                        eventDateLayout.setError(null);
+                    } catch (DateTimeParseException e) {
+                        eventDateLayout.setError("Invalid Format - use YYYY-MM-DD");
+                    }
                 }
             }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
-        TextInputEditText eventDateInput = view.findViewById(R.id.event_date_input_text);
-        setupTextWatcher(eventDateInput, text -> viewModel.setDate(text));
 
         ImageButton eventCalendarButton = view.findViewById(R.id.calendar_button);
         eventCalendarButton.setOnClickListener(v -> {
@@ -132,18 +162,30 @@ public class OrganizerEventCreateFragment extends Fragment {
         // Event Start Time
         DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
         TextInputLayout startTimeLayout = view.findViewById(R.id.start_time_input_layout);
-        viewModel.getEventStart().observe(getViewLifecycleOwner(), time -> {
-            if (time != null && !time.isEmpty()) {
-                try {
-                    LocalTime.parse(time, timeFormatter);
-                    startTimeLayout.setError(null);
-                } catch (DateTimeParseException e) {
-                    startTimeLayout.setError("Invalid Format - use YYYY-MM-DD");
+        TextInputEditText startTimeInput = view.findViewById(R.id.start_time_input_text);
+        startTimeInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String time = s.toString();
+                event.setStartTime(time);
+                if (!time.isEmpty()) {
+                    try {
+                        LocalTime.parse(time, timeFormatter);
+                        startTimeLayout.setError(null);
+                    } catch (DateTimeParseException e) {
+                        startTimeLayout.setError("Invalid Format - use HH:MM AM or HH:MM PM");
+                    }
                 }
             }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
-        TextInputEditText startTimeInput = view.findViewById(R.id.start_time_input_text);
-        setupTextWatcher(startTimeInput, text -> viewModel.setEventStart(text));
 
         ImageButton startTimeButton = view.findViewById(R.id.start_time_dropdown);
         startTimeButton.setOnClickListener(v -> {
@@ -168,18 +210,30 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         // Event End Time
         TextInputLayout endTimeLayout = view.findViewById(R.id.end_time_input_layout);
-        viewModel.getEventEnd().observe(getViewLifecycleOwner(), time -> {
-            if (time != null && !time.isEmpty()) {
-                try {
-                    LocalTime.parse(time, timeFormatter);
-                    endTimeLayout.setError(null);
-                } catch (DateTimeParseException e) {
-                    endTimeLayout.setError("Invalid Format - use YYYY-MM-DD");
+        TextInputEditText endTimeInput = view.findViewById(R.id.end_time_input_text);
+        endTimeInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String time = s.toString();
+                event.setEndTime(time);
+                if (!time.isEmpty()) {
+                    try {
+                        LocalTime.parse(time, timeFormatter);
+                        endTimeLayout.setError(null);
+                    } catch (DateTimeParseException e) {
+                        endTimeLayout.setError("Invalid Format - use HH:MM AM or HH:MM PM");
+                    }
                 }
             }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
-        TextInputEditText endTimeInput = view.findViewById(R.id.end_time_input_text);
-        setupTextWatcher(endTimeInput, text -> viewModel.setEventEnd(text));
 
         ImageButton endTimeButton = view.findViewById(R.id.end_time_dropdown);
         endTimeButton.setOnClickListener(v -> {
@@ -205,18 +259,30 @@ public class OrganizerEventCreateFragment extends Fragment {
         // Registration Window
         // Registration Start
         TextInputLayout registrationStartLayout = view.findViewById(R.id.registration_start_input_layout);
-        viewModel.getRegistrationStart().observe(getViewLifecycleOwner(), registrationStart -> {
-            if (registrationStart != null && !registrationStart.isEmpty()) {
-                try {
-                    LocalDate.parse(registrationStart, dateFormatter);
-                    registrationStartLayout.setError(null);
-                } catch (DateTimeParseException e) {
-                    registrationStartLayout.setError("Invalid Format - use YYYY-MM-DD");
+        TextInputEditText registrationStartInput = view.findViewById(R.id.registration_start_input_text);
+        registrationStartInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String date = s.toString();
+                event.setRegistrationStart(date);
+                if (!date.isEmpty()) {
+                    try {
+                        LocalDate.parse(date, dateFormatter);
+                        registrationStartLayout.setError(null);
+                    } catch (DateTimeParseException e) {
+                        registrationStartLayout.setError("Invalid Format - use YYYY-MM-DD");
+                    }
                 }
             }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
-        TextInputEditText registrationStartInput = view.findViewById(R.id.registration_start_input_text);
-        setupTextWatcher(registrationStartInput, text -> viewModel.setRegistrationStart(text));
 
         ImageButton registrationStartDropdown = view.findViewById(R.id.registration_start_dropdown);
         registrationStartDropdown.setOnClickListener(v -> {
@@ -238,18 +304,30 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         // Registration End
         TextInputLayout registrationEndLayout = view.findViewById(R.id.registration_end_input_layout);
-        viewModel.getRegistrationEnd().observe(getViewLifecycleOwner(), registrationEnd -> {
-            if (registrationEnd != null && !registrationEnd.isEmpty()) {
-                try {
-                    LocalDate.parse(registrationEnd, dateFormatter);
-                    registrationEndLayout.setError(null);
-                } catch (DateTimeParseException e) {
-                    registrationEndLayout.setError("Invalid Format - use YYYY-MM-DD");
+        TextInputEditText registrationEndInput = view.findViewById(R.id.registration_end_input_text);
+        registrationEndInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String date = s.toString();
+                event.setRegistrationEnd(date);
+                if (!date.isEmpty()) {
+                    try {
+                        LocalDate.parse(date, dateFormatter);
+                        registrationEndLayout.setError(null);
+                    } catch (DateTimeParseException e) {
+                        registrationEndLayout.setError("Invalid Format - use YYYY-MM-DD");
+                    }
                 }
             }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
         });
-        TextInputEditText registrationEndInput = view.findViewById(R.id.registration_end_input_text);
-        setupTextWatcher(registrationEndInput, text -> viewModel.setRegistrationEnd(text));
 
         ImageButton registrationEndDropdown = view.findViewById(R.id.registration_end_dropdown);
         registrationEndDropdown.setOnClickListener(v -> {
@@ -271,17 +349,12 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         // Sample Size
         TextInputLayout sampleSizeLayout = view.findViewById(R.id.sample_size_input_layout);
-        viewModel.getSampleSize().observe(getViewLifecycleOwner(), sampleSize -> {
-            if (sampleSize != null) {
-                sampleSizeLayout.setError(null);
-            }
-        });
         TextInputEditText sampleSizeInput = view.findViewById(R.id.sample_size_input_text);
         setupTextWatcher(sampleSizeInput, text -> {
             if (!text.isEmpty()) {
-                viewModel.setSampleSize(Integer.parseInt(text));
+                event.setSampleSize(Integer.parseInt(text));
             } else {
-                viewModel.setSampleSize(null);
+                event.setSampleSize(null);
             }
         });
 
@@ -289,31 +362,28 @@ public class OrganizerEventCreateFragment extends Fragment {
         // TODO: Add event categories
 
         // Event Poster
-        // TODO: HOW TO UPLOAD EVENT POSTER
-        // https://www.geeksforgeeks.org/android/android-how-to-upload-an-image-on-firebase-storage/
+        ImageButton eventPosterButton = view.findViewById(R.id.event_poster_upload_button);
+        eventPosterButton.setOnClickListener(v -> {
+            pickImageLauncher.launch("image/*");
+        });
 
         // Geolocation Requirement
         CheckBox geolocationCheckBox = view.findViewById(R.id.geolocation_requirement_checkbox);
         geolocationCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
-                viewModel.setGeolocationRequirement(isChecked);
+                event.setGeolocationRequirement(isChecked);
             }
         });
 
         // Entrant Limit
         TextInputLayout entrantLimitLayout = view.findViewById(R.id.entrant_limit_input_layout);
-        viewModel.getEntrantLimit().observe(getViewLifecycleOwner(), entrantLimit -> {
-            if (entrantLimit != null) {
-                entrantLimitLayout.setError(null);
-            }
-        });
         TextInputEditText entrantLimitInput = view.findViewById(R.id.entrant_limit_input_text);
         setupTextWatcher(entrantLimitInput, text -> {
             if (!text.isEmpty()) {
-                viewModel.setEntrantLimit(Integer.parseInt(text));
+                event.setEntrantLimit(Integer.parseInt(text));
             } else {
-                viewModel.setEntrantLimit(null);
+                event.setEntrantLimit(null);
             }
         });
 
@@ -339,22 +409,23 @@ public class OrganizerEventCreateFragment extends Fragment {
             public void onClick(View v) {
 
                 // Checks if the event is filled in correctly before creating it
-                if (viewModel.isEventValid()) {
+                if (eventCreationForm.isEventValid(event)) {
 
-                    if (!viewModel.eventDateValid(viewModel.getDateValue(), dateFormatter)) {
+                    if (!eventCreationForm.eventDateValid(event.getDate(), dateFormatter)) {
                         Toast.makeText(getContext(), "Event date has already passed", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    if (!viewModel.eventTimeValid(viewModel.getEventStartValue(), viewModel.getEventEndValue(), timeFormatter)) {
+                    if (!eventCreationForm.eventTimeValid(event.getStartTime(), event.getEndTime(), timeFormatter)) {
                         Toast.makeText(getContext(), "Check start and end time", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    if (!viewModel.registrationPeriodValid(viewModel.getDateValue(), viewModel.getRegistrationStartValue(), viewModel.getRegistrationEndValue(), dateFormatter)) {
+                    if (!eventCreationForm.registrationPeriodValid(event.getDate(), event.getRegistrationStart(), event.getRegistrationEnd(), dateFormatter)) {
                         Toast.makeText(getContext(), "Registration Period is not valid", Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    createEvent();
+                    // Create Event if everything is valid
+                    createEvent(event);
                 } else {
                     Toast.makeText(getContext(), "Fill in the Required Fields", Toast.LENGTH_LONG).show();
                 }
@@ -387,7 +458,8 @@ public class OrganizerEventCreateFragment extends Fragment {
     /**
      * Method for creating the Event, filling in the parameters and adding it to the Firestore database
      */
-    private void createEvent() {
+    private void createEvent(Event event) {
+        // Load the organizerID to store into database
         String organizerID = Settings.Secure.getString(requireContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
 
@@ -395,18 +467,17 @@ public class OrganizerEventCreateFragment extends Fragment {
             long count = snapshot.getCount() + 1;
             String eventID = "event_id" + count;
 
-            Event newEvent = new Event(eventID, organizerID, viewModel.getNameValue(), viewModel.getDescriptionValue(),
-                    viewModel.getDateValue(), viewModel.getEventStartValue(), viewModel.getEventEndValue());
+            event.setEventID(eventID);
+            event.setOrganizerID(organizerID);
 
-            // TODO: change to actually save posterURL
-            if (posterURL != null) {
-                newEvent.setPosterURL(posterURL);
-            }
-
-            newEvent.setGeolocationRequirement(viewModel.getGeolocationRequirementValue());
-
-            if (viewModel.getEntrantLimitValue() != null) {
-                newEvent.setEntrantLimit(viewModel.getEntrantLimitValue());
+            // Check if an event poster was uploaded
+            if (eventCreationForm.getLocalImageUri() != null) {
+                eventRepository.uploadPosterToFirebase(eventCreationForm.getLocalImageUri(), eventID, new ImageUploadCallback() {
+                    @Override
+                    public void onUploaded(String imageUrl) {
+                        event.setPosterURL(imageUrl); // Sets the image URL to store in firebase
+                    }
+                });
             }
 
             // TODO: generate QR code and save into database
@@ -414,17 +485,16 @@ public class OrganizerEventCreateFragment extends Fragment {
             // Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
 
             // Add event to firebase
-            eventRepository.addEvent(newEvent);
+            eventRepository.addEvent(event);
+
 
             // Update the ListView
             // TODO: figure out why ListView is not updating
 
-            // Clear the Event Creation Form after success
-            viewModel.clearForm();
-
-            // Move to Event Detail Screen
+            // Move to Event List Screen
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+            // TODO: navigate to the event_list screen instead maybe
         });
     }
 }

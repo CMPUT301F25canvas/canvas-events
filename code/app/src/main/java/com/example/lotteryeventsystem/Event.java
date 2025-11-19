@@ -19,6 +19,7 @@ public class Event {
     private String posterURL; // Optional
     private boolean geolocationRequirement;
     private Integer entrantLimit; // Optional
+    private String QRCodeURL;
 
 
     // For firestore
@@ -98,6 +99,9 @@ public class Event {
     public Integer getEntrantLimit() {
         return entrantLimit;
     }
+    public String getQRCodeURL() {
+        return QRCodeURL;
+    }
 
     // Setters
     public void setEventID(String eventID) {
@@ -156,4 +160,7 @@ public class Event {
         this.entrantLimit = entrantLimit;
     }
 
+    public void setQRCodeURL(String QRCodeURL) {
+        this.QRCodeURL = QRCodeURL;
+    }
 }

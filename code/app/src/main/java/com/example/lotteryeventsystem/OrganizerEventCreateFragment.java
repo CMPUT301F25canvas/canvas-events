@@ -3,6 +3,7 @@ package com.example.lotteryeventsystem;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -61,6 +62,10 @@ public class OrganizerEventCreateFragment extends Fragment {
     // Callback Interface for when an image is uploaded
     public interface ImageUploadCallback {
         void onUploaded(String imageUrl);
+    }
+
+    public interface QRCodeUploadCallback {
+        void onQRCodeUploaded(String qrCodeURL);
     }
 
     @Override
@@ -359,7 +364,7 @@ public class OrganizerEventCreateFragment extends Fragment {
         });
 
         // Event Categories
-        // TODO: Add event categories
+        // TODO: ADD EVENT CATEGORIES
 
         // Event Poster
         ImageButton eventPosterButton = view.findViewById(R.id.event_poster_upload_button);
@@ -451,7 +456,6 @@ public class OrganizerEventCreateFragment extends Fragment {
         });
     }
 
-
     // TODO: refactor to put datepicker logic method here
     // TODO: refactor to put timepicker logic method here
 
@@ -472,21 +476,20 @@ public class OrganizerEventCreateFragment extends Fragment {
 
             // Check if an event poster was uploaded
             if (eventCreationForm.getLocalImageUri() != null) {
-                eventRepository.uploadPosterToFirebase(eventCreationForm.getLocalImageUri(), eventID, new ImageUploadCallback() {
-                    @Override
-                    public void onUploaded(String imageUrl) {
-                        event.setPosterURL(imageUrl); // Sets the image URL to store in firebase
-                    }
+                eventRepository.uploadPosterToFirebase(eventCreationForm.getLocalImageUri(), eventID, imageUrl ->  {
+                    event.setPosterURL(imageUrl); // Sets the image URL to store in firebase
                 });
             }
 
-            // TODO: generate QR code and save into database
             // Generate QR Code Bitmap
-            // Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
+            Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
+            // Upload QR Code to Firebase
+            eventRepository.uploadQRCodeToFirebase(qrBitmap, eventID, qrCodeURL -> {
+                event.setQRCodeURL(qrCodeURL);
+            });
 
             // Add event to firebase
             eventRepository.addEvent(event);
-
 
             // Update the ListView
             // TODO: figure out why ListView is not updating

@@ -115,7 +115,10 @@ public class EventRepository {
                 });
     }
 
-    public void uploadQRCodeToFirebase(Bitmap qrBitmap, String eventID, QRCodeUploadCallback callback) {
+
+
+
+    public void uploadQRCodeToFirebase(Bitmap qrBitmap, String eventID, OrganizerEventCreateFragment.QRCodeUploadCallback callback) {
         if (qrBitmap == null) return;
 
         StorageReference ref = storage.getReference()
@@ -129,8 +132,8 @@ public class EventRepository {
         ref.putBytes(data)
                 .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl()
                         .addOnSuccessListener(uri -> {
-                            // Return the URL via callback
-                        }))
+                            callback.onQRCodeUploaded(uri.toString());
+                        }));
 
     }
 

@@ -14,11 +14,11 @@ public class Event {
     private String endTime;
     private String registrationStart;
     private String registrationEnd;
-    private Number sampleSize;
+    private Integer sampleSize;
     private List<String> categories;
     private String posterURL; // Optional
     private boolean geolocationRequirement;
-    private Number entrantLimit; // Optional
+    private Integer entrantLimit; // Optional
 
 
     public Event() {
@@ -79,7 +79,7 @@ public class Event {
         return registrationEnd;
     }
 
-    public Number getSampleSize() {
+    public Integer getSampleSize() {
         return sampleSize;
     }
 
@@ -95,7 +95,7 @@ public class Event {
         return geolocationRequirement;
     }
 
-    public Number getEntrantLimit() {
+    public Integer getEntrantLimit() {
         return entrantLimit;
     }
 
@@ -140,7 +140,7 @@ public class Event {
         this.registrationEnd = registrationEnd;
     }
 
-    public void setSampleSize(Number sampleSize) {
+    public void setSampleSize(Integer sampleSize) {
         this.sampleSize = sampleSize;
     }
 

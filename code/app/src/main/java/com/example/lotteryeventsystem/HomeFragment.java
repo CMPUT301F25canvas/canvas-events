@@ -73,6 +73,11 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadEvents();
+    }
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -80,9 +85,6 @@ public class HomeFragment extends Fragment {
         title.setText("Upcoming Events");
         ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
         ImageButton filterButton = view.findViewById(R.id.filter_button);
-        TextView tabUpcoming = view.findViewById(R.id.tab_upcoming);
-        TextView tabPrevious = view.findViewById(R.id.tab_previous);
-        View tabIndicator = view.findViewById(R.id.tab_indicator);
         TextInputEditText searchInput = view.findViewById(R.id.search_input);
         RecyclerView recyclerView = view.findViewById(R.id.events_recycler);
 
@@ -97,39 +99,33 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
 
-        if (cachedItems != null) {
-            itemsList.addAll(cachedItems);
-            adapter.notifyDataSetChanged();
-        } else {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("events")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            EventItem item = mapToEventItem(doc);
-                            itemsList.add(item);
-                        }
-                        cachedItems = new ArrayList<>(itemsList);
-                        applyFilter("");
-                    });
-        }
+        reloadEvents();
 
         filterButton.setOnClickListener(v -> showFilterDialog());
 
         registerPermissionLauncher();
         registerScanLauncher();
         scanButton.setOnClickListener(v -> showQrDialog());
-        tabPrevious.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Previous events coming soon", Toast.LENGTH_SHORT).show());
-        tabUpcoming.setOnClickListener(v -> {
-            tabIndicator.setTranslationX(0);
-            applyFilter(searchInput.getText() != null ? searchInput.getText().toString() : "");
-        });
 
         searchInput.addTextChangedListener(new SimpleTextWatcher(text ->
                 applyFilter(text != null ? text : "")));
 
 
+    }
+
+    private void reloadEvents() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("events")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    itemsList.clear();
+                    for (QueryDocumentSnapshot doc: queryDocumentSnapshots) {
+                        EventItem item = mapToEventItem(doc);
+                        itemsList.add(item);
+                    }
+                    cachedItems = new ArrayList<>(itemsList);
+                    applyFilter("");
+                });
     }
 
     /**

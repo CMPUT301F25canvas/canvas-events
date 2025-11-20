@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.ext.junit)
     implementation(libs.firebase.storage)
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
     androidTestImplementation("androidx.test:core:1.5.0")
     androidTestImplementation("androidx.test:rules:1.5.0")
@@ -63,4 +64,7 @@ dependencies {
     // firebase
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
     implementation("com.google.firebase:firebase-firestore:25.1.1")
+    // Glide
+    implementation("com.github.bumptech.glide:glide:4.12.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
 }

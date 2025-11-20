@@ -116,8 +116,6 @@ public class EventRepository {
     }
 
 
-
-
     public void uploadQRCodeToFirebase(Bitmap qrBitmap, String eventID, OrganizerEventCreateFragment.QRCodeUploadCallback callback) {
         if (qrBitmap == null) return;
 

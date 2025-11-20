@@ -1,46 +1,47 @@
 package com.example.lotteryeventsystem;
 
-import static android.view.View.INVISIBLE;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
-import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.SearchView;
-import android.widget.Toast;
-
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.fragment.NavHostFragment;
-
-import com.example.lotteryeventsystem.util.EventLinkParser;
-import com.journeyapps.barcodescanner.ScanContract;
-import com.journeyapps.barcodescanner.ScanOptions;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.lotteryeventsystem.util.EventLinkParser;
+import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.datepicker.MaterialDatePicker;
+import com.journeyapps.barcodescanner.ScanContract;
+import com.journeyapps.barcodescanner.ScanOptions;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.function.Consumer;
 
 /**
  * Home screen for entrants.
@@ -50,8 +51,10 @@ public class HomeFragment extends Fragment {
     private ActivityResultLauncher<String> permissionLauncher;
     private ActivityResultLauncher<ScanOptions> scanLauncher;
 
-    private ArrayAdapter<EventItem> adapter;
+    private HomeEventAdapter adapter;
     private ArrayList<EventItem> itemsList;
+    private ArrayList<EventItem> filteredItems;
+    private final FilterState filterState = new FilterState();
 
     private static ArrayList<EventItem> cachedItems;
 
@@ -73,18 +76,26 @@ public class HomeFragment extends Fragment {
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        TextView title = view.findViewById(R.id.home_label);
-        title.setText("Home");
-        ImageButton backArrow = view.findViewById(R.id.back_image_button);
-        backArrow.setVisibility(INVISIBLE);
+        TextView title = view.findViewById(R.id.home_header);
+        title.setText("Upcoming Events");
         ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
-        SearchView searchView = view.findViewById(R.id.search_view);
         ImageButton filterButton = view.findViewById(R.id.filter_button);
-        ListView listView = view.findViewById(R.id.list_view);
+        TextView tabUpcoming = view.findViewById(R.id.tab_upcoming);
+        TextView tabPrevious = view.findViewById(R.id.tab_previous);
+        View tabIndicator = view.findViewById(R.id.tab_indicator);
+        TextInputEditText searchInput = view.findViewById(R.id.search_input);
+        RecyclerView recyclerView = view.findViewById(R.id.events_recycler);
 
         itemsList = new ArrayList<>();
-        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, itemsList);
-        listView.setAdapter(adapter);
+        filteredItems = new ArrayList<>();
+        adapter = new HomeEventAdapter(item -> {
+            Bundle args = new Bundle();
+            args.putString(EventDetailFragment.ARG_EVENT_ID, item.id);
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
+        });
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
 
         if (cachedItems != null) {
             itemsList.addAll(cachedItems);
@@ -95,36 +106,28 @@ public class HomeFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(querySnapshot -> {
                         for (QueryDocumentSnapshot doc : querySnapshot) {
-                            String name = doc.getString("name");
-                            if (name != null) itemsList.add(new EventItem(doc.getId(), name));
+                            EventItem item = mapToEventItem(doc);
+                            itemsList.add(item);
                         }
                         cachedItems = new ArrayList<>(itemsList);
-                        adapter.notifyDataSetChanged();
+                        applyFilter("");
                     });
         }
 
-        searchView.setOnClickListener( v -> {
-            Toast.makeText(getContext(), "Events search returned", Toast.LENGTH_SHORT).show();
-            // TODO: all the search logic
-        });
-
-        filterButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Filter Clicked!", Toast.LENGTH_SHORT).show();
-            // TODO: all the dialog and filtering
-        });
+        filterButton.setOnClickListener(v -> showFilterDialog());
 
         registerPermissionLauncher();
         registerScanLauncher();
-        scanButton.setOnClickListener(v -> launchScanner());
-
-        listView.setOnItemClickListener((parent, itemView, position, id) -> {
-            EventItem event = itemsList.get(position);
-            Bundle args = new Bundle();
-            args.putString(EventDetailFragment.ARG_EVENT_ID, event.id);
-
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
+        scanButton.setOnClickListener(v -> showQrDialog());
+        tabPrevious.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Previous events coming soon", Toast.LENGTH_SHORT).show());
+        tabUpcoming.setOnClickListener(v -> {
+            tabIndicator.setTranslationX(0);
+            applyFilter(searchInput.getText() != null ? searchInput.getText().toString() : "");
         });
+
+        searchInput.addTextChangedListener(new SimpleTextWatcher(text ->
+                applyFilter(text != null ? text : "")));
 
 
     }
@@ -211,5 +214,320 @@ public class HomeFragment extends Fragment {
             return;
         }
         Toast.makeText(getContext(), messageRes, Toast.LENGTH_SHORT).show();
+    }
+
+    private void applyFilter(String query) {
+        filteredItems.clear();
+        String lower = query.toLowerCase();
+        for (EventItem item : itemsList) {
+            String name = item.name != null ? item.name.toLowerCase() : "";
+            String description = item.description != null ? item.description.toLowerCase() : "";
+            boolean passesQuery = lower.isEmpty() || name.contains(lower) || description.contains(lower);
+            boolean passesCategory = matchesCategory(item);
+            boolean passesDate = matchesDate(item);
+            boolean passesAvailability = matchesAvailability(item);
+            boolean passesDistance = matchesDistance(item);
+            if (passesQuery && passesCategory && passesDate && passesAvailability && passesDistance) {
+                filteredItems.add(item);
+            }
+        }
+        adapter.submitList(new ArrayList<>(filteredItems));
+    }
+
+    private boolean matchesCategory(EventItem item) {
+        if (filterState.category == null || filterState.category.equals("any")) {
+            return true;
+        }
+        if (item.categories == null || item.categories.isEmpty()) {
+            return false;
+        }
+        for (String cat : item.categories) {
+            if (cat != null && cat.equalsIgnoreCase(filterState.category)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean matchesDate(EventItem item) {
+        if (filterState.fromDate == null && filterState.toDate == null) {
+            return true;
+        }
+        LocalDate eventDate = parseDate(item.dateHighlight);
+        if (eventDate == null) {
+            return true;
+        }
+        if (filterState.fromDate != null && eventDate.isBefore(filterState.fromDate)) {
+            return false;
+        }
+        if (filterState.toDate != null && eventDate.isAfter(filterState.toDate)) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean matchesAvailability(EventItem item) {
+        if (!filterState.onlyAvailable) {
+            return true;
+        }
+        // Placeholder: assume available if no capacity data.
+        return true;
+    }
+
+    private boolean matchesDistance(EventItem item) {
+        if (filterState.maxDistanceKm == null) {
+            return true;
+        }
+        if (item.latitude == null || item.longitude == null) {
+            return true;
+        }
+        double[] userLocation = tryGetUserLocation();
+        if (userLocation == null) {
+            return true;
+        }
+        double distance = haversine(userLocation[0], userLocation[1], item.latitude, item.longitude);
+        return distance <= filterState.maxDistanceKm;
+    }
+
+    private EventItem mapToEventItem(QueryDocumentSnapshot doc) {
+        String name = doc.getString("name");
+        String description = doc.getString("description");
+        String date = doc.getString("date");
+        String registrationStart = doc.getString("registrationStart");
+        String registrationEnd = doc.getString("registrationEnd");
+        @SuppressWarnings("unchecked")
+        List<String> categories = (List<String>) doc.get("categories");
+        Double latitude = doc.getDouble("latitude");
+        Double longitude = doc.getDouble("longitude");
+
+        String highlight = registrationStart != null && !registrationStart.isEmpty()
+                ? registrationStart
+                : date;
+        String range = buildRange(registrationStart, registrationEnd, date);
+
+        return new EventItem(doc.getId(),
+                name != null ? name : getString(R.string.event_detail_name_fallback),
+                description != null ? description : "",
+                highlight,
+                range,
+                categories,
+                latitude,
+                longitude);
+    }
+
+    private String buildRange(String start, String end, String fallbackDate) {
+        if (start != null && end != null && !start.isEmpty() && !end.isEmpty()) {
+            return formatRange(start) + " - " + formatRange(end);
+        }
+        if (fallbackDate != null && !fallbackDate.isEmpty()) {
+            return formatRange(fallbackDate);
+        }
+        return getString(R.string.event_detail_unknown_time);
+    }
+
+    private String formatRange(String raw) {
+        String[] patterns = {"yyyy-MM-dd", "MMM dd, yyyy", "MMM dd yyyy"};
+        for (String pattern : patterns) {
+            try {
+                LocalDate date = LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+                return date.format(DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        return raw;
+    }
+
+    private LocalDate parseDate(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return null;
+        }
+        String[] patterns = {"yyyy-MM-dd", "MM/dd/yyyy", "MMM dd, yyyy", "MMM dd yyyy"};
+        for (String pattern : patterns) {
+            try {
+                return LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        return null;
+    }
+
+    private void showQrDialog() {
+        if (getContext() == null) {
+            return;
+        }
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_qr_entry, null);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        TextInputEditText codeInput = dialogView.findViewById(R.id.qr_code_input);
+        View scanWithCamera = dialogView.findViewById(R.id.qr_scan_with_camera);
+        View cancel = dialogView.findViewById(R.id.qr_cancel_button);
+        View openEvent = dialogView.findViewById(R.id.qr_open_button);
+
+        scanWithCamera.setOnClickListener(v -> {
+            dialog.dismiss();
+            launchScanner();
+        });
+        cancel.setOnClickListener(v -> dialog.dismiss());
+        openEvent.setOnClickListener(v -> {
+            String code = codeInput.getText() != null ? codeInput.getText().toString().trim() : "";
+            if (code.isEmpty()) {
+                showToast(R.string.scan_unknown_event_message);
+            } else {
+                handleScanResult(code);
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
+
+    private void showFilterDialog() {
+        if (getContext() == null) {
+            return;
+        }
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_filter_events, null);
+        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setView(dialogView)
+                .setCancelable(true)
+                .create();
+
+        android.widget.RadioGroup categoryGroup = dialogView.findViewById(R.id.category_group);
+        TextInputEditText dateFrom = dialogView.findViewById(R.id.date_from_input);
+        TextInputEditText dateTo = dialogView.findViewById(R.id.date_to_input);
+        android.widget.CheckBox availability = dialogView.findViewById(R.id.availability_check);
+        TextInputEditText distanceInput = dialogView.findViewById(R.id.distance_input);
+
+        dialogView.findViewById(R.id.filter_cancel_button).setOnClickListener(v -> dialog.dismiss());
+        dialogView.findViewById(R.id.filter_clear_button).setOnClickListener(v -> {
+            categoryGroup.check(R.id.category_any);
+            dateFrom.setText("");
+            dateTo.setText("");
+            availability.setChecked(false);
+            distanceInput.setText("");
+            filterState.category = "any";
+            filterState.fromDate = null;
+            filterState.toDate = null;
+            filterState.onlyAvailable = false;
+            filterState.maxDistanceKm = null;
+            applyFilter(searchInputValueSafe());
+        });
+        View.OnClickListener datePickerListener = pickerView -> {
+            boolean isFrom = pickerView.getId() == R.id.date_from_input;
+            MaterialDatePicker<Long> picker = MaterialDatePicker.Builder.datePicker()
+                    .setTitleText(isFrom ? "Choose start date" : "Choose end date")
+                    .build();
+            picker.addOnPositiveButtonClickListener(selection -> {
+                LocalDate chosen = Instant.ofEpochMilli(selection)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate();
+                String formatted = chosen.format(DateTimeFormatter.ofPattern("MMM dd, yyyy", Locale.ENGLISH));
+                if (isFrom) {
+                    dateFrom.setText(formatted);
+                } else {
+                    dateTo.setText(formatted);
+                }
+            });
+            picker.show(getParentFragmentManager(), "DATE_PICKER");
+        };
+        dateFrom.setOnClickListener(datePickerListener);
+        dateTo.setOnClickListener(datePickerListener);
+        dialogView.findViewById(R.id.filter_apply_button).setOnClickListener(v -> {
+            int checked = categoryGroup.getCheckedRadioButtonId();
+            if (checked == R.id.category_art) {
+                filterState.category = "Art";
+            } else if (checked == R.id.category_tech) {
+                filterState.category = "Technology";
+            } else if (checked == R.id.category_wellness) {
+                filterState.category = "Wellness";
+            } else {
+                filterState.category = "any";
+            }
+            filterState.fromDate = parseDate(dateFrom.getText() != null ? dateFrom.getText().toString() : null);
+            filterState.toDate = parseDate(dateTo.getText() != null ? dateTo.getText().toString() : null);
+            filterState.onlyAvailable = availability.isChecked();
+            String distanceText = distanceInput.getText() != null ? distanceInput.getText().toString().trim() : "";
+            filterState.maxDistanceKm = distanceText.isEmpty() ? null : safeParseDouble(distanceText);
+            applyFilter(searchInputValueSafe());
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+
+    private String searchInputValueSafe() {
+        TextInputEditText searchInput = getView() != null ? getView().findViewById(R.id.search_input) : null;
+        if (searchInput == null || searchInput.getText() == null) {
+            return "";
+        }
+        return searchInput.getText().toString();
+    }
+
+    private Double safeParseDouble(String text) {
+        try {
+            return Double.parseDouble(text);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private double[] tryGetUserLocation() {
+        android.location.LocationManager locationManager = (android.location.LocationManager) requireContext().getSystemService(android.content.Context.LOCATION_SERVICE);
+        if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return null;
+        }
+        android.location.Location location = locationManager.getLastKnownLocation(android.location.LocationManager.NETWORK_PROVIDER);
+        if (location == null) {
+            location = locationManager.getLastKnownLocation(android.location.LocationManager.GPS_PROVIDER);
+        }
+        if (location == null) {
+            return null;
+        }
+        return new double[]{location.getLatitude(), location.getLongitude()};
+    }
+
+    private double haversine(double lat1, double lon1, double lat2, double lon2) {
+        double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    private static class FilterState {
+        String category = "any";
+        LocalDate fromDate;
+        LocalDate toDate;
+        boolean onlyAvailable = false;
+        Double maxDistanceKm;
+    }
+
+    /**
+     * Lightweight watcher to avoid anonymous classes everywhere.
+     */
+    private static class SimpleTextWatcher implements android.text.TextWatcher {
+        private final Consumer<String> onChange;
+
+        SimpleTextWatcher(Consumer<String> onChange) {
+            this.onChange = onChange;
+        }
+
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(android.text.Editable s) {
+            onChange.accept(s != null ? s.toString() : "");
+        }
     }
 }

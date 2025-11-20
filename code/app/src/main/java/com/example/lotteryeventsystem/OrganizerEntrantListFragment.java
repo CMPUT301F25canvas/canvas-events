@@ -22,7 +22,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * @see Event
  */
 public class OrganizerEntrantListFragment extends Fragment {
-    private Button btnCanceled, btnEnrolled, btnCancelEntrant, btnEdit, btnDownloadQR;
+    private Button btnViewEntrants, btnEdit, btnDownloadQR;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate;
     private Event currentEvent;
     private ImageButton btnBack;
@@ -65,49 +65,16 @@ public class OrganizerEntrantListFragment extends Fragment {
         eventStartTime = view.findViewById(R.id.event_start_time);
         eventEndTime = view.findViewById(R.id.event_end_time);
         eventDate = view.findViewById(R.id.event_date);
-        btnCanceled = view.findViewById(R.id.btnCanceled);
-        btnEnrolled = view.findViewById(R.id.btnEnrolled);
-        btnCancelEntrant = view.findViewById(R.id.btnCancelEntrant);
+        btnViewEntrants = view.findViewById(R.id.btnViewEntrants);
         btnBack = view.findViewById(R.id.back_button);
         btnEdit = view.findViewById(R.id.editEvent);
         btnDownloadQR = view.findViewById(R.id.downloadQR);
         loadEventFromFirestore(eventId);
 
-        btnCanceled.setOnClickListener(new View.OnClickListener() {
-            /**
-             * Navigates to the canceled entrants list fragment.
-             *
-             * @param v the View that was clicked
-             */
+        btnViewEntrants.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EntrantListFragment fragment = EntrantListFragment.newInstance(eventId, "canceled");
-                replaceFragment(fragment);
-            }
-        });
-
-        btnCancelEntrant.setOnClickListener(new View.OnClickListener() {
-            /**
-             * Navigates to the unenrolled entrants list fragment.
-             *
-             * @param v the View that was clicked
-             */
-            @Override
-            public void onClick(View v) {
-                EntrantListFragment fragment = EntrantListFragment.newInstance(eventId, "unenrolled");
-                replaceFragment(fragment);
-            }
-        });
-
-        btnEnrolled.setOnClickListener(new View.OnClickListener() {
-            /**
-             * Navigates to the enrolled entrants list fragment.
-             *
-             * @param v the View that was clicked
-             */
-            @Override
-            public void onClick(View v) {
-                EntrantListFragment fragment = EntrantListFragment.newInstance(eventId, "enrolled");
+                EntrantListFragment fragment = EntrantListFragment.newInstance(eventId, "all");
                 replaceFragment(fragment);
             }
         });
@@ -200,17 +167,17 @@ public class OrganizerEntrantListFragment extends Fragment {
                 eventDescription.setText("No Description");
             }
             if (currentEvent.getStartTime() != null) {
-                eventStartTime.setText(currentEvent.getStartTime());
+                eventStartTime.setText("Start: " + currentEvent.getStartTime());
             } else {
                 eventStartTime.setText("Start: Not specified");
             }
             if (currentEvent.getEndTime() != null) {
-                eventEndTime.setText(currentEvent.getEndTime());
+                eventEndTime.setText("End: " + currentEvent.getEndTime());
             } else {
                 eventEndTime.setText("End: Not specified");
             }
             if (currentEvent.getDate() != null) {
-                eventDate.setText(currentEvent.getDate());
+                eventDate.setText("Date: " + currentEvent.getDate());
             } else {
                 eventDate.setText("Date: Not specified");
             }

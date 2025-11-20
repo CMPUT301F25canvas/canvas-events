@@ -8,8 +8,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical"
-        android:padding="32dp"
-        android:spacing="16dp">
+        android:padding="32dp">
 
     <TextView
         android:id="@+id/text_scan_hint"

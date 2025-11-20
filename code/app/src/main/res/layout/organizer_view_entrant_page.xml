@@ -28,11 +28,10 @@
 
         <ImageButton
             android:id="@+id/back_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="?android:attr/selectableItemBackground"
-            android:contentDescription="Back Button"
-            android:src="@drawable/back_button" />
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:background="@drawable/ic_back_arrow"
+            android:contentDescription="Back Button" />
 
     </FrameLayout>
 
@@ -98,43 +97,17 @@
             app:layout_constraintTop_toBottomOf="@id/event_date" />
 
         <Button
-            android:id="@+id/btnCanceled"
+            android:id="@+id/btnViewEntrants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="52dp"
-            android:layout_marginTop="44dp"
+            android:layout_marginStart="108dp"
+            android:layout_marginTop="76dp"
             android:backgroundTint="@color/purple"
-            android:text="See Canceled Entrants"
+            android:text="See Entrants"
             android:textColor="@color/black"
             android:textSize="25sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/event_end_time" />
-
-        <Button
-            android:id="@+id/btnEnrolled"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="56dp"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/purple"
-            android:text="See Enrolled Entrants"
-            android:textColor="@color/black"
-            android:textSize="25sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnCanceled" />
-
-        <Button
-            android:id="@+id/btnCancelEntrant"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="88dp"
-            android:layout_marginTop="28dp"
-            android:backgroundTint="@color/purple"
-            android:text="Cancel Entrants"
-            android:textColor="@color/black"
-            android:textSize="25sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnEnrolled" />
 
         <Button
             android:id="@+id/editEvent"
@@ -145,10 +118,10 @@
             android:backgroundTint="@color/purple"
             android:text="Edit Event"
             android:textColor="@color/black"
-            android:visibility="gone"
             android:textSize="25sp"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnCancelEntrant" />
+            app:layout_constraintTop_toBottomOf="@+id/btnViewEntrants" />
 
         <Button
             android:id="@+id/downloadQR"

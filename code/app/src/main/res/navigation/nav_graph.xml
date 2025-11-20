@@ -122,6 +122,19 @@
         <argument
             android:name="EVENT_ID"
             app:argType="string" />
+        <action
+            android:id="@+id/action_organizerEntrantListFragment_to_EntrantListFragment"
+            app:destination="@id/EntrantListFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/EntrantListFragment"
+        android:name="com.example.lotteryeventsystem.EntrantListFragment"
+        android:label="Entrant Lists" >
+    <argument
+        android:name="LIST_TYPE"
+        app:argType="string"
+        android:defaultValue="waiting" />
     </fragment>
 
     <fragment

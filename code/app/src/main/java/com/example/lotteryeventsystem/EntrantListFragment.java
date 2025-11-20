@@ -11,6 +11,9 @@ import android.widget.ListView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
@@ -124,19 +127,9 @@ public class EntrantListFragment extends Fragment {
      *
      */
     private void setupClickListeners() {
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            /**
-             * Handles back button click to return to the previous fragment.
-             * Uses the fragment manager's back stack for navigation.
-             *
-             * @param v The clicked view (back button)
-             */
-            @Override
-            public void onClick(View v) {
-                if (getParentFragmentManager() != null) {
-                    getParentFragmentManager().popBackStack();
-                }
-            }
+        btnBack.setOnClickListener(v->{
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.popBackStack();
         });
 
         btnFilter.setOnClickListener(new View.OnClickListener() {

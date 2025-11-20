@@ -9,6 +9,9 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
 /**
@@ -74,8 +77,10 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EntrantListFragment fragment = EntrantListFragment.newInstance(eventId, "all");
-                replaceFragment(fragment);
+                Bundle args = new Bundle();
+                args.putString("LIST_TYPE", "waiting");
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_EntrantListFragment, args);
             }
         });
 

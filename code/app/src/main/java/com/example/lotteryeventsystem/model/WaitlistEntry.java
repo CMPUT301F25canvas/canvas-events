@@ -2,6 +2,7 @@ package com.example.lotteryeventsystem.model;
 
 import androidx.annotation.Nullable;
 
+import com.example.lotteryeventsystem.User;
 import com.google.firebase.Timestamp;
 
 /**
@@ -17,6 +18,8 @@ public class WaitlistEntry {
     private Timestamp joinedAt;
     private Timestamp invitedAt;
     private String eventId;
+    private User user;
+    private String userId;
 
     public WaitlistEntry() {
         // Firestore reflection needs this.
@@ -30,6 +33,34 @@ public class WaitlistEntry {
         this.entrantId = entrantId;
         this.entrantName = entrantName;
         this.status = status;
+    }
+
+    /**
+     * Gets the User object containing user details from the users collection.
+     */
+    public User getUser() {
+        return user;
+    }
+
+    /**
+     * Sets the User object with details from the users collection.
+     */
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    /**
+     * Gets the user ID used to lookup user details in the users collection.
+     */
+    public String getUserId() {
+        return userId;
+    }
+
+    /**
+     * Sets the user ID for looking up user details in the users collection.
+     */
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getEventId() {
@@ -155,6 +186,7 @@ public class WaitlistEntry {
     /**
      * Picks email or phone to show as the primary contact.
      */
+
     @Nullable
     public String primaryContact() {
         if (contactEmail != null && !contactEmail.isEmpty()) {

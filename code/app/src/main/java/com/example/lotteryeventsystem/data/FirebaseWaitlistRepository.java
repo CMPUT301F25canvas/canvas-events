@@ -2,6 +2,7 @@ package com.example.lotteryeventsystem.data;
 
 import androidx.annotation.NonNull;
 
+import com.example.lotteryeventsystem.User;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.DocumentReference;
@@ -90,34 +91,77 @@ public class FirebaseWaitlistRepository implements WaitlistRepository {
     }
 
     @Override
-    public void getEntrantsByStatus(String eventId, List<WaitlistStatus> statuses, RepositoryCallback<List<WaitlistEntry>> callback) {
-        // Convert WaitlistStatus enums to string list for Firestore query
+    /**
+     * Enhanced method to get entrants with status filter AND user details from users collection
+     * This performs a two-step data retrieval matching waitlist IDs to user IDs
+     */
+    public void getEntrantsByStatusWithUserDetails(String eventId, List<WaitlistStatus> statuses, RepositoryCallback<List<WaitlistEntry>> callback) {
         List<String> statusStrings = new ArrayList<>();
         for (WaitlistStatus status : statuses) {
             statusStrings.add(status.name());
         }
 
-        // Query the attendees subcollection (not waitlist - based on your structure)
         firestore.collection("events")
                 .document(eventId)
-                .collection("waitlist")  // Use "attendees" instead of "waitlist"
-                .whereIn("status", statusStrings)  // Filter by multiple statuses
+                .collection("waitlist")
+                .whereIn("status", statusStrings)
                 .get()
-                .addOnSuccessListener(querySnapshot -> {
+                .addOnSuccessListener(waitlistQuerySnapshot -> {
                     List<WaitlistEntry> entries = new ArrayList<>();
-                    if (querySnapshot != null) {
-                        for (DocumentSnapshot snapshot : querySnapshot.getDocuments()) {
-                            WaitlistEntry entry = mapEntry(snapshot);
-                            // Ensure eventId is set on the entry
-                            if (entry.getEventId() == null) {
-                                entry.setEventId(eventId);
-                            }
-                            entries.add(entry);
-                        }
+
+                    if (waitlistQuerySnapshot != null && !waitlistQuerySnapshot.isEmpty()) {
+                        processWaitlistEntriesWithUserLookup(waitlistQuerySnapshot.getDocuments(), entries, 0, eventId, callback);
+                    } else {
+                        callback.onComplete(entries, null);
                     }
-                    callback.onComplete(entries, null);
                 })
                 .addOnFailureListener(e -> callback.onComplete(null, e));
+    }
+
+    /**
+     * Recursive helper to process waitlist entries and lookup user details
+     */
+    private void processWaitlistEntriesWithUserLookup(List<DocumentSnapshot> waitlistDocs, List<WaitlistEntry> entries,
+                                                      int index, String eventId, RepositoryCallback<List<WaitlistEntry>> callback) {
+        if (index >= waitlistDocs.size()) {
+            callback.onComplete(entries, null);
+            return;
+        }
+
+        DocumentSnapshot waitlistDoc = waitlistDocs.get(index);
+        WaitlistEntry entry = new WaitlistEntry();
+        entry.setId(waitlistDoc.getId());
+        entry.setEventId(eventId);
+        entry.setUserId(waitlistDoc.getId()); // User ID is the document ID in waitlist
+
+        if (waitlistDoc.contains("status")) {
+            try {
+                entry.setStatus(WaitlistStatus.valueOf(waitlistDoc.getString("status")));
+            } catch (IllegalArgumentException e) {
+                entry.setStatus(WaitlistStatus.INVITED);
+            }
+        }
+
+        // Lookup user details from users collection using the waitlist document ID as user ID
+        String userId = waitlistDoc.getId();
+        firestore.collection("users")
+                .document(userId)
+                .get()
+                .addOnSuccessListener(userDoc -> {
+                    if (userDoc.exists()) {
+                        User user = userDoc.toObject(User.class);
+                        if (user != null) {
+                            user.setId(userDoc.getId());
+                            entry.setUser(user); // Set the user details with name from users collection
+                        }
+                    }
+                    entries.add(entry);
+                    processWaitlistEntriesWithUserLookup(waitlistDocs, entries, index + 1, eventId, callback);
+                })
+                .addOnFailureListener(e -> {
+                    entries.add(entry); // Add entry even if user lookup fails
+                    processWaitlistEntriesWithUserLookup(waitlistDocs, entries, index + 1, eventId, callback);
+                });
     }
 
     @Override
@@ -136,10 +180,6 @@ public class FirebaseWaitlistRepository implements WaitlistRepository {
             entry = new WaitlistEntry();
         }
         entry.setId(snapshot.getId());
-        if (entry.getEntrantId() == null || entry.getEntrantId().isEmpty()) {
-            // Fall back to the document id when no entrant id was stored explicitly.
-            entry.setEntrantId(snapshot.getId());
-        }
         return entry;
     }
 }

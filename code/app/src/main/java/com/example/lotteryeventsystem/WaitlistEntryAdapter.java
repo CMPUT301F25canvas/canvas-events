@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A custom ArrayAdapter for displaying WaitlistEntry objects in a ListView.
@@ -19,26 +20,49 @@ import java.util.ArrayList;
  * @see WaitlistEntry
  */
 public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
+    private HashMap<String, Integer> anonymousIdMap; // Maps entrant ID to anonymous number
+
     /**
      * Constructs a new WaitlistEntryAdapter with the given context and list of waitlist entries.
      *
-     * @param context The current context used to inflate layout files
+     * @param context  The current context used to inflate layout files
      * @param entrants The list of WaitlistEntry objects to represent in the ListView
      */
     public WaitlistEntryAdapter(Context context, ArrayList<WaitlistEntry> entrants) {
         super(context, 0, entrants);
+        calculateConsistentAnonymousIds(entrants);
+    }
+
+    /**
+     * Pre-calculates consistent anonymous IDs across all lists based on unique entrant IDs
+     * This ensures the same anonymous entrant gets the same number across different filtered views
+     *
+     * @param entrants The list of WaitlistEntry objects to process
+     */
+    private void calculateConsistentAnonymousIds(ArrayList<WaitlistEntry> entrants) {
+        anonymousIdMap = new HashMap<>();
+        int anonymousCounter = 1;
+
+        // First pass: assign IDs to anonymous entrants
+        for (WaitlistEntry entrant : entrants) {
+            if (entrant != null && isAnonymous(entrant)) {
+                String entrantId = entrant.getId();
+                if (entrantId != null && !entrantId.isEmpty() && !anonymousIdMap.containsKey(entrantId)) {
+                    anonymousIdMap.put(entrantId, anonymousCounter++);
+                }
+            }
+        }
     }
 
     /**
      * Gets a View that displays the data at the specified position in the data set.
      * This method handles view recycling and data binding for individual list items.
      *
-     * @param position The position of the item within the adapter's data set
+     * @param position    The position of the item within the adapter's data set
      * @param convertView The old view to reuse, if possible. Note: You should check that this
-     *                   view is non-null and of an appropriate type before using.
-     * @param parent The parent that this view will eventually be attached to
+     *                    view is non-null and of an appropriate type before using.
+     * @param parent      The parent that this view will eventually be attached to
      * @return A View corresponding to the data at the specified position
-     *
      */
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -47,33 +71,79 @@ public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.organizer_entrant_list_item, parent, false);
         }
         TextView tvItem = convertView.findViewById(R.id.tvItem);
-        if (entrant != null && entrant.getEntrantName() != null && !entrant.getEntrantName().isEmpty()) {
-            tvItem.setText(entrant.getEntrantName());
-        } else {
-            // Calculate anonymous number based on position in current list
-            int anonymousNumber = calculateAnonymousNumber(position);
-            tvItem.setText("Anonymous" + anonymousNumber);
+        if (entrant != null) {
+            String displayName = getUserDisplayName(entrant);
+            if (displayName != null && !displayName.isEmpty()) {
+                tvItem.setText(displayName);
+            } else {
+                int anonymousNumber = getConsistentAnonymousNumber(entrant);
+                tvItem.setText("Anonymous" + anonymousNumber);
+            }
         }
         return convertView;
     }
 
     /**
-     * Calculates the anonymous number for an entrant at the specified position by counting
-     * how many anonymous entrants (those with null or empty names) appear before and including
-     * the current position in the list. This method provides dynamic anonymous numbering that recalculates each time getView
-     * is called, ensuring the number reflects the entrant's position in the current list order.
+     * Gets the consistent anonymous number for an entrant based on their unique ID
+     * This ensures the same entrant gets the same anonymous number across different filtered lists
      *
-     * @param currentPosition The position in the adapter for which to calculate the anonymous number
-     * @return The sequential anonymous number for the entrant at the specified position, starting from 1 for the first anonymous entrant
+     * @param entrant The WaitlistEntry to get the anonymous number for
+     * @return The consistent anonymous number for this entrant
      */
-    private int calculateAnonymousNumber(int currentPosition) {
-        int anonymousCount = 0;
-        for (int i = 0; i <= currentPosition; i++) {
-            WaitlistEntry entrant = getItem(i);
-            if (entrant != null && (entrant.getEntrantName() == null || entrant.getEntrantName().isEmpty())) {
-                anonymousCount++;
-            }
+    private int getConsistentAnonymousNumber(WaitlistEntry entrant) {
+        if (entrant == null || entrant.getId() == null) {
+            return 1; // fallback
         }
-        return anonymousCount;
+
+        String entrantId = entrant.getId();
+        if (anonymousIdMap != null && anonymousIdMap.containsKey(entrantId)) {
+            return anonymousIdMap.get(entrantId);
+        }
+
+        // If for some reason this entrant wasn't in our map, assign a new number
+        int newNumber = anonymousIdMap.size() + 1;
+        anonymousIdMap.put(entrantId, newNumber);
+        return newNumber;
+    }
+
+    /**
+     * Gets the display name for an entrant.
+     *
+     * @param entrant The WaitlistEntry to get the display name for
+     * @return The display name, or null if no name is available
+     */
+    private String getUserDisplayName(WaitlistEntry entrant) {
+        if (entrant == null) {
+            return null;
+        }
+
+        if (entrant.getUser() != null && entrant.getUser().getName() != null && !entrant.getUser().getName().isEmpty()) {
+            return entrant.getUser().getName();
+        }
+        if (entrant.getEntrantName() != null && !entrant.getEntrantName().isEmpty()) {
+            return entrant.getEntrantName();
+        }
+        return null;
+    }
+
+    /**
+     * Checks if an entrant is anonymous (has no display name)
+     *
+     * @param entrant The WaitlistEntry to check
+     * @return true if the entrant is anonymous, false otherwise
+     */
+    private boolean isAnonymous(WaitlistEntry entrant) {
+        if (entrant == null) {
+            return true;
+        }
+
+        boolean hasUserName = entrant.getUser() != null &&
+                entrant.getUser().getName() != null &&
+                !entrant.getUser().getName().isEmpty();
+
+        boolean hasEntrantName = entrant.getEntrantName() != null &&
+                !entrant.getEntrantName().isEmpty();
+
+        return !hasUserName && !hasEntrantName;
     }
 }

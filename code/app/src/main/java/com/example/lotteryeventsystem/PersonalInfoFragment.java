@@ -71,6 +71,7 @@ public class PersonalInfoFragment extends Fragment {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
         EditText name = view.findViewById(R.id.name);
+        EditText lastName = view.findViewById(R.id.last_name);
         EditText email = view.findViewById(R.id.email);
         EditText phoneNumber = view.findViewById(R.id.phone_number);
 
@@ -82,6 +83,9 @@ public class PersonalInfoFragment extends Fragment {
                             String tmp;
                             if ((tmp = document.getString("name")) != null) {
                                 name.setText(tmp);
+                            }
+                            if ((tmp = document.getString("last_name")) != null) {
+                                lastName.setText(tmp);
                             }
                             if ((tmp = document.getString("email")) != null) {
                                 email.setText(tmp);
@@ -102,6 +106,13 @@ public class PersonalInfoFragment extends Fragment {
             if (!hasFocus) {
                 String text = ((EditText)v).getText().toString();
                 db.collection("users").document(deviceId).update("name", text);
+            }
+        });
+
+        lastName.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                String text = ((EditText)v).getText().toString();
+                db.collection("users").document(deviceId).update("last_name", text);
             }
         });
 

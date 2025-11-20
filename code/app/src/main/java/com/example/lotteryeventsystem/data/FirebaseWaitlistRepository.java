@@ -136,6 +136,10 @@ public class FirebaseWaitlistRepository implements WaitlistRepository {
             entry = new WaitlistEntry();
         }
         entry.setId(snapshot.getId());
+        if (entry.getEntrantId() == null || entry.getEntrantId().isEmpty()) {
+            // Fall back to the document id when no entrant id was stored explicitly.
+            entry.setEntrantId(snapshot.getId());
+        }
         return entry;
     }
 }

@@ -63,7 +63,27 @@
     <fragment
         android:id="@+id/notificationFragment"
         android:name="com.example.lotteryeventsystem.NotificationFragment"
-        android:label="Details" />
+        android:label="@string/menu_notification_label"
+        tools:layout="@layout/fragment_notification">
+        <action
+            android:id="@+id/action_notificationFragment_to_notificationSettingsFragment"
+            app:destination="@id/notificationSettingsFragment" />
+        <action
+            android:id="@+id/action_notificationFragment_to_notificationDetailFragment"
+            app:destination="@id/notificationDetailFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/notificationDetailFragment"
+        android:name="com.example.lotteryeventsystem.NotificationDetailFragment"
+        android:label="@string/notification_detail_title"
+        tools:layout="@layout/fragment_notification_detail" />
+
+    <fragment
+        android:id="@+id/notificationSettingsFragment"
+        android:name="com.example.lotteryeventsystem.NotificationSettingsFragment"
+        android:label="@string/notification_settings"
+        tools:layout="@layout/fragment_notification_settings" />
 
     <fragment
         android:id="@+id/eventDetailFragment"

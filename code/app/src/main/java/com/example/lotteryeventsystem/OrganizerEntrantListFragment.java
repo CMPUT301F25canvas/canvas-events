@@ -5,11 +5,24 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.example.lotteryeventsystem.data.NotificationRepository;
+import com.example.lotteryeventsystem.data.WaitlistRepository;
+import com.example.lotteryeventsystem.di.ServiceLocator;
+import com.example.lotteryeventsystem.model.WaitlistEntry;
+import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A Fragment that displays event details and provides navigation to different entrant lists
@@ -23,10 +36,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
  */
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnCanceled, btnEnrolled, btnCancelEntrant, btnEdit, btnDownloadQR;
+    private Button btnNotifySelected;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate;
+    private TextView notifyHint;
+    private EditText notifyMessageInput;
+    private ProgressBar notifyProgress;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
+    private String eventTitle = "";
+
+    private final WaitlistRepository waitlistRepository = ServiceLocator.provideWaitlistRepository();
+    private final NotificationRepository notificationRepository = ServiceLocator.provideNotificationRepository();
 
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
@@ -71,6 +92,12 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnBack = view.findViewById(R.id.back_button);
         btnEdit = view.findViewById(R.id.editEvent);
         btnDownloadQR = view.findViewById(R.id.downloadQR);
+        btnNotifySelected = view.findViewById(R.id.btnNotifySelected);
+        notifyMessageInput = view.findViewById(R.id.notify_message_input);
+        notifyProgress = view.findViewById(R.id.notify_progress);
+        notifyHint = view.findViewById(R.id.notify_hint);
+
+        btnNotifySelected.setOnClickListener(v -> sendSelectedEntrantNotification());
         loadEventFromFirestore(eventId);
 
         btnCanceled.setOnClickListener(new View.OnClickListener() {
@@ -126,6 +153,92 @@ public class OrganizerEntrantListFragment extends Fragment {
             }
         });
         return view;
+    }
+
+    /**
+     * Sends a broadcast message to every entrant currently marked as INVITED
+     * for this event. This satisfies US 02.07.02 (notify all selected entrants).
+     */
+    private void sendSelectedEntrantNotification() {
+        if (eventId == null || eventId.isEmpty()) {
+            showToastMessage(getString(R.string.notify_missing_event));
+            return;
+        }
+        String message = notifyMessageInput.getText().toString().trim();
+        if (message.isEmpty()) {
+            showToastMessage(getString(R.string.notify_message_required));
+            return;
+        }
+        setNotifyLoading(true);
+        waitlistRepository.getEntrantsByStatus(eventId,
+                Collections.singletonList(WaitlistStatus.INVITED),
+                (entries, error) -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    requireActivity().runOnUiThread(() -> handleSelectedEntrantsLoaded(entries, error, message));
+                });
+    }
+
+    private void handleSelectedEntrantsLoaded(List<WaitlistEntry> entries, Exception error, String message) {
+        if (error != null) {
+            setNotifyLoading(false);
+            showToastMessage(getString(R.string.notify_selected_error));
+            return;
+        }
+        if (entries == null || entries.isEmpty()) {
+            setNotifyLoading(false);
+            showToastMessage(getString(R.string.notify_selected_empty));
+            return;
+        }
+        String title = getString(R.string.notify_selected_title, safeEventName());
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                safeEventName(),
+                title,
+                message,
+                "INVITE",
+                entries,
+                (count, sendError) -> {
+                    if (!isAdded()) {
+                        return;
+                    }
+                    requireActivity().runOnUiThread(() -> {
+                        setNotifyLoading(false);
+                        if (sendError != null || count == null) {
+                            showToastMessage(getString(R.string.notify_selected_error));
+                            return;
+                        }
+                        notifyMessageInput.setText("");
+                        showToastMessage(getString(R.string.notify_selected_success, count));
+                    });
+                });
+    }
+
+    private String safeEventName() {
+        if (currentEvent != null && currentEvent.getName() != null && !currentEvent.getName().isEmpty()) {
+            return currentEvent.getName();
+        }
+        if (eventTitle != null && !eventTitle.isEmpty()) {
+            return eventTitle;
+        }
+        return getString(R.string.event_detail_name_fallback);
+    }
+
+    private void setNotifyLoading(boolean loading) {
+        if (notifyProgress != null) {
+            notifyProgress.setVisibility(loading ? View.VISIBLE : View.GONE);
+        }
+        if (btnNotifySelected != null) {
+            btnNotifySelected.setEnabled(!loading);
+        }
+    }
+
+    private void showToastMessage(String message) {
+        if (getContext() == null) {
+            return;
+        }
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 
     /**
@@ -189,6 +302,9 @@ public class OrganizerEntrantListFragment extends Fragment {
      */
     private void displayEventInfo() {
         if (currentEvent != null) {
+            if (currentEvent.getName() != null) {
+                eventTitle = currentEvent.getName();
+            }
             if (currentEvent.getName() != null) {
                 eventName.setText(currentEvent.getName());
             } else {

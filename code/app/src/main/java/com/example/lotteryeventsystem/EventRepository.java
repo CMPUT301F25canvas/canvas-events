@@ -105,13 +105,17 @@ public class EventRepository {
         // Uploads image to firebase
         StorageReference ref = storage.getReference()
                         .child("event_posters/" + eventID + ".png");
-
         // Gets the URL
         ref.putFile(uri)
-                .addOnSuccessListener(taskSnapshot -> {
-                    ref.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                        callback.onUploaded(downloadUrl.toString());
-                    });
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl()
+                        .addOnSuccessListener(downloadUrl -> callback.onUploaded(downloadUrl.toString()))
+                        .addOnFailureListener(e -> {
+                            Log.e("EventRepo", "Failed to get download URL", e);
+                            callback.onUploaded(null);
+                        }))
+                .addOnFailureListener(e -> {
+                    Log.e("EventRepo", "Failed to upload poster", e);
+                    callback.onUploaded(null);
                 });
     }
 

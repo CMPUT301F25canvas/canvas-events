@@ -4,6 +4,7 @@ import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -368,7 +369,9 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         // Event Poster
         ImageButton eventPosterButton = view.findViewById(R.id.event_poster_upload_button);
+        imageView = view.findViewById(R.id.event_poster_image);
         eventPosterButton.setOnClickListener(v -> {
+            ImageView posterImage = view.findViewById(R.id.event_poster_image);
             pickImageLauncher.launch("image/*");
         });
 
@@ -474,12 +477,19 @@ public class OrganizerEventCreateFragment extends Fragment {
             event.setEventID(eventID);
             event.setOrganizerID(organizerID);
 
-            // Check if an event poster was uploaded
-            if (eventCreationForm.getLocalImageUri() != null) {
-                eventRepository.uploadPosterToFirebase(eventCreationForm.getLocalImageUri(), eventID, imageUrl ->  {
-                    event.setPosterURL(imageUrl); // Sets the image URL to store in firebase
-                });
-            }
+            // Function to actually save the event to Firebase
+            Runnable saveEvent = () -> {
+                eventRepository.addEvent(event);
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.homeFragment); // Or event list screen
+            };
+
+            // Upload poster if available, otherwise just save the event
+            Uri posterUri = eventCreationForm.getLocalImageUri();
+            eventRepository.uploadPosterToFirebase(posterUri, eventID, posterUrl -> {
+                event.setPosterURL(posterUrl); // will be null if no poster
+                saveEvent.run(); // save event after poster handling
+            });
 
             // Generate QR Code Bitmap
             Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
@@ -488,16 +498,12 @@ public class OrganizerEventCreateFragment extends Fragment {
                 event.setQRCodeURL(qrCodeURL);
             });
 
-            // Add event to firebase
-            eventRepository.addEvent(event);
 
             // Update the ListView
             // TODO: figure out why ListView is not updating
 
-            // Move to Event List Screen
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
             // TODO: navigate to the event_list screen instead maybe
         });
     }
+
 }

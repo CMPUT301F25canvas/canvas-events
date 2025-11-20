@@ -40,7 +40,7 @@ public class AdminViewProfiles extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home, container, false);
+        return inflater.inflate(R.layout.admin_list_layout, container, false);
     }
 
     /**

@@ -5,6 +5,7 @@ import androidx.annotation.VisibleForTesting;
 import com.example.lotteryeventsystem.data.EventRepository;
 import com.example.lotteryeventsystem.data.FirebaseEventRepository;
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
+import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.WaitlistRepository;
 import com.example.lotteryeventsystem.service.WaitlistService;
 
@@ -16,6 +17,7 @@ public final class ServiceLocator {
     private static EventRepository eventRepository = new FirebaseEventRepository();
     private static WaitlistRepository waitlistRepository = new FirebaseWaitlistRepository();
     private static WaitlistService waitlistService = new WaitlistService(waitlistRepository);
+    private static NotificationRepository notificationRepository = new NotificationRepository();
 
     private ServiceLocator() {
     }
@@ -30,6 +32,10 @@ public final class ServiceLocator {
 
     public static WaitlistService provideWaitlistService() {
         return waitlistService;
+    }
+
+    public static NotificationRepository provideNotificationRepository() {
+        return notificationRepository;
     }
 
     @VisibleForTesting
@@ -48,5 +54,6 @@ public final class ServiceLocator {
         eventRepository = new FirebaseEventRepository();
         waitlistRepository = new FirebaseWaitlistRepository();
         waitlistService = new WaitlistService(waitlistRepository);
+        notificationRepository = new NotificationRepository();
     }
 }

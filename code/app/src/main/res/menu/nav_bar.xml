@@ -1,9 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/organizerFragment"
+        android:id="@+id/notificationFragment"
         android:icon="@drawable/ic_notification_button"
-        android:title="Notifications" />
+        android:title="@string/menu_notification_label" />
     <item
         android:id="@+id/homeFragment"
         android:icon="@drawable/ic_home_button"

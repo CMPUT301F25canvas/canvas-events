@@ -8,6 +8,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import androidx.fragment.app.Fragment;
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
@@ -32,7 +33,7 @@ import java.util.List;
 public class EntrantListFragment extends Fragment {
     private ListView listView;
     private TextView tvTitle;
-    private ImageButton btnBack;
+    private ImageButton btnBack, btnFilter;
     private Button btnDeleteSelectedEntrant;
     private int entrantPosition = -1;
     private WaitlistEntryAdapter adapter;
@@ -90,18 +91,29 @@ public class EntrantListFragment extends Fragment {
         listView = view.findViewById(R.id.listView);
         tvTitle = view.findViewById(R.id.tvTitle);
         btnBack = view.findViewById(R.id.back_button);
+        btnFilter = view.findViewById(R.id.btnFilter);
         btnDeleteSelectedEntrant = view.findViewById(R.id.btnDeleteSelectedEntrant);
         adapter = new WaitlistEntryAdapter(requireContext(), entrantsList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        updateTitle();
+    }
+
+    private void updateTitle() {
         if ("canceled".equals(listType)) {
             tvTitle.setText("Canceled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
         } else if ("unenrolled".equals(listType)) {
             tvTitle.setText("Unenrolled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.VISIBLE);
-        } else {
+        } else if ("enrolled".equals(listType)) {
             tvTitle.setText("Enrolled Entrants");
+            btnDeleteSelectedEntrant.setVisibility(View.GONE);
+        } else if ("waiting".equals(listType)) {
+            tvTitle.setText("Waitlist");
+            btnDeleteSelectedEntrant.setVisibility(View.GONE);
+        } else {
+            tvTitle.setText("All Chosen Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
         }
     }
@@ -124,6 +136,13 @@ public class EntrantListFragment extends Fragment {
                 if (getParentFragmentManager() != null) {
                     getParentFragmentManager().popBackStack();
                 }
+            }
+        });
+
+        btnFilter.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showFilterMenu(v);
             }
         });
 
@@ -160,6 +179,41 @@ public class EntrantListFragment extends Fragment {
         });
     }
 
+    private void showFilterMenu(View anchor) {
+        PopupMenu popupMenu = new PopupMenu(requireContext(), anchor);
+        popupMenu.getMenu().add("All Chosen Entrants");
+        popupMenu.getMenu().add("Enrolled Entrants");
+        popupMenu.getMenu().add("Canceled Entrants");
+        popupMenu.getMenu().add("Unenrolled Entrants");
+        popupMenu.getMenu().add("Waitlist");
+
+        popupMenu.setOnMenuItemClickListener(item -> {
+            String title = item.getTitle().toString();
+            switch (title) {
+                case "All Chosen Entrants":
+                    listType = "all";
+                    break;
+                case "Enrolled Entrants":
+                    listType = "enrolled";
+                    break;
+                case "Canceled Entrants":
+                    listType = "canceled";
+                    break;
+                case "Unenrolled Entrants":
+                    listType = "unenrolled";
+                    break;
+                case "Waitlist":
+                    listType = "waiting";
+                    break;
+            }
+            updateTitle();
+            loadDataFromFirebase();
+            return true;
+        });
+
+        popupMenu.show();
+    }
+
     /**
      * Loads entrants from Firestore based on the current list type and event ID.
      * Filters entrants by status and updates the ListView adapter with the results.
@@ -171,6 +225,15 @@ public class EntrantListFragment extends Fragment {
         }
         List<WaitlistStatus> statusesToLoad = new ArrayList<>();
         switch (listType) {
+            case "all":
+                statusesToLoad.add(WaitlistStatus.CONFIRMED);
+                statusesToLoad.add(WaitlistStatus.INVITED);
+                statusesToLoad.add(WaitlistStatus.CANCELLED);
+                statusesToLoad.add(WaitlistStatus.DECLINED);
+                break;
+            case "waiting":
+                statusesToLoad.add(WaitlistStatus.WAITING);
+                break;
             case "canceled":
                 statusesToLoad.add(WaitlistStatus.CANCELLED);
                 statusesToLoad.add(WaitlistStatus.DECLINED);
@@ -185,7 +248,7 @@ public class EntrantListFragment extends Fragment {
                 return;
         }
 
-        repository.getEntrantsByStatus(eventId, statusesToLoad, new RepositoryCallback<List<WaitlistEntry>>() {
+        repository.getEntrantsByStatusWithUserDetails(eventId, statusesToLoad, new RepositoryCallback<List<WaitlistEntry>>() {
             /**
              * Callback method that handles the result of the Firestore query.
              * Updates the UI with the loaded entrants or handles any errors.

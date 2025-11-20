@@ -17,7 +17,7 @@ public interface WaitlistRepository {
                              String entrantRecordId,
                              WaitlistStatus status,
                              RepositoryCallback<WaitlistEntry> callback);
-    
-    void getEntrantsByStatus(String eventId, List<WaitlistStatus> statuses, RepositoryCallback<List<WaitlistEntry>> callback);
+
+    void getEntrantsByStatusWithUserDetails(String eventId, List<WaitlistStatus> statuses, RepositoryCallback<List<WaitlistEntry>> callback);
     void incrementDeclineCount(String eventId);
 }

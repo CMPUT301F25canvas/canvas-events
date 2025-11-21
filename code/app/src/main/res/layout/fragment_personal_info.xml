@@ -109,6 +109,9 @@
                 android:text="Optional - we only use this if you want SMS updates."
                 android:textColor="#8A829D"
                 android:textSize="13sp" />
+
+
+
         </LinearLayout>
 
         <com.google.android.material.button.MaterialButton

@@ -231,18 +231,10 @@ public class HomeFragment extends Fragment {
     }
 
     private boolean matchesCategory(EventItem item) {
-        if (filterState.category == null || filterState.category.equals("any")) {
-            return true;
+        if (filterState.category.equals("any")) {
+            return true; // no filtering if "any" is selected
         }
-        if (item.categories == null || item.categories.isEmpty()) {
-            return false;
-        }
-        for (String cat : item.categories) {
-            if (cat != null && cat.equalsIgnoreCase(filterState.category)) {
-                return true;
-            }
-        }
-        return false;
+        return item.category != null && item.category.equals(filterState.category);
     }
 
     private boolean matchesDate(EventItem item) {
@@ -292,7 +284,7 @@ public class HomeFragment extends Fragment {
         String registrationStart = doc.getString("registrationStart");
         String registrationEnd = doc.getString("registrationEnd");
         @SuppressWarnings("unchecked")
-        List<String> categories = (List<String>) doc.get("categories");
+        String category = doc.getString("categories");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
 
@@ -306,7 +298,7 @@ public class HomeFragment extends Fragment {
                 description != null ? description : "",
                 highlight,
                 range,
-                categories,
+                category,
                 latitude,
                 longitude);
     }
@@ -393,7 +385,6 @@ public class HomeFragment extends Fragment {
         TextInputEditText dateFrom = dialogView.findViewById(R.id.date_from_input);
         TextInputEditText dateTo = dialogView.findViewById(R.id.date_to_input);
         android.widget.CheckBox availability = dialogView.findViewById(R.id.availability_check);
-        TextInputEditText distanceInput = dialogView.findViewById(R.id.distance_input);
 
         dialogView.findViewById(R.id.filter_cancel_button).setOnClickListener(v -> dialog.dismiss());
         dialogView.findViewById(R.id.filter_clear_button).setOnClickListener(v -> {
@@ -401,7 +392,6 @@ public class HomeFragment extends Fragment {
             dateFrom.setText("");
             dateTo.setText("");
             availability.setChecked(false);
-            distanceInput.setText("");
             filterState.category = "any";
             filterState.fromDate = null;
             filterState.toDate = null;
@@ -431,20 +421,20 @@ public class HomeFragment extends Fragment {
         dateTo.setOnClickListener(datePickerListener);
         dialogView.findViewById(R.id.filter_apply_button).setOnClickListener(v -> {
             int checked = categoryGroup.getCheckedRadioButtonId();
-            if (checked == R.id.category_art) {
-                filterState.category = "Art";
-            } else if (checked == R.id.category_tech) {
-                filterState.category = "Technology";
-            } else if (checked == R.id.category_wellness) {
-                filterState.category = "Wellness";
+            if (checked == R.id.category_concert) {
+                filterState.category = "concert";
+            } else if (checked == R.id.category_sports) {
+                filterState.category = "sports";
+            } else if (checked == R.id.category_arts) {
+                filterState.category = "arts";
+            }  else if (checked == R.id.category_family) {
+                filterState.category = "family";
             } else {
                 filterState.category = "any";
             }
             filterState.fromDate = parseDate(dateFrom.getText() != null ? dateFrom.getText().toString() : null);
             filterState.toDate = parseDate(dateTo.getText() != null ? dateTo.getText().toString() : null);
             filterState.onlyAvailable = availability.isChecked();
-            String distanceText = distanceInput.getText() != null ? distanceInput.getText().toString().trim() : "";
-            filterState.maxDistanceKm = distanceText.isEmpty() ? null : safeParseDouble(distanceText);
             applyFilter(searchInputValueSafe());
             dialog.dismiss();
         });

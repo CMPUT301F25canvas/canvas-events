@@ -35,7 +35,7 @@ public class OrganizerEventListFragment extends Fragment {
     private EventRepository eventRepository;
 
     private static ArrayList<Event> cachedItems;
-
+    private String androidDeviceId;
 
     @Nullable
     @Override
@@ -43,6 +43,12 @@ public class OrganizerEventListFragment extends Fragment {
                              @androidx.annotation.Nullable ViewGroup container,
                              @androidx.annotation.Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_organizer_event_list, container, false);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadEvents();
     }
 
     /**
@@ -64,26 +70,8 @@ public class OrganizerEventListFragment extends Fragment {
         eventAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, eventsList);
         eventListView.setAdapter(eventAdapter);
 
-        // Getting the device ID
-        String androidDeviceId = Settings.Secure.getString(requireContext().getContentResolver(),
-                Settings.Secure.ANDROID_ID);
-
-        if (cachedItems != null) {
-            eventsList.addAll(cachedItems);
-            eventAdapter.notifyDataSetChanged();
-        } else {
-            // Add organizer events into an Array List
-            eventRepository.getEventsByOrganizer(androidDeviceId)
-                    .addOnSuccessListener(snapshot -> {
-                        for (var doc : snapshot) {
-                            Event event = doc.toObject(Event.class);
-                            eventsList.add(event);
-
-                        }
-                        cachedItems = new ArrayList<Event>(eventsList);
-                        eventAdapter.notifyDataSetChanged();
-                    });
-        }
+        androidDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        reloadEvents();
 
         // Navigates to the event creation form
         createEventButton.setOnClickListener(v -> {
@@ -105,5 +93,21 @@ public class OrganizerEventListFragment extends Fragment {
             NavController navController = Navigation.findNavController(view);
             navController.navigateUp(); // Navigates back to the previous fragment
         });
+    }
+
+    private void reloadEvents() {
+        eventsList.clear();
+
+        eventRepository.getEventsByOrganizer(androidDeviceId)
+                .addOnSuccessListener(snapshot -> {
+                    eventsList.clear();
+                    for (var doc : snapshot) {
+                        eventsList.add(doc.toObject(Event.class));
+                    }
+                    cachedItems = new ArrayList<>(eventsList);
+                    eventAdapter.notifyDataSetChanged();
+                });
+
+
     }
 }

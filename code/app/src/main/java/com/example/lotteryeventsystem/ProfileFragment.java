@@ -77,6 +77,7 @@ public class ProfileFragment extends Fragment {
      */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         TextView PersonalInformation = view.findViewById(R.id.personal_info);
+        TextView EventHistory = view.findViewById(R.id.event_history);
         TextView MyCreatedEvents = view.findViewById(R.id.my_created_events);
         TextView DeleteProfile = view.findViewById(R.id.delete_profile);
         TextView adminLogin = view.findViewById(R.id.admin_login);
@@ -121,6 +122,11 @@ public class ProfileFragment extends Fragment {
         PersonalInformation.setOnClickListener( v -> {
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.profileFragment_to_personalInfoFragment);
+        });
+
+        EventHistory.setOnClickListener( v -> {
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_profileFragment_to_eventHistoryFragment);
         });
 
         MyCreatedEvents.setOnClickListener( v -> {

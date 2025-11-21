@@ -29,6 +29,9 @@
         <action
             android:id="@+id/profileFragment_to_personalInfoFragment"
             app:destination="@id/personalInfoFragment"/>
+        <action
+            android:id="@+id/action_profileFragment_to_eventHistoryFragment"
+            app:destination="@id/eventHistoryFragment" />
     </fragment>
 
     <fragment
@@ -131,6 +134,15 @@
     <action
         android:id="@+id/personalInfoFragment_to_profileFragment"
         app:destination="@id/profileFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/eventHistoryFragment"
+        android:name="com.example.lotteryeventsystem.EventHistoryFragment"
+        tools:layout="@layout/fragment_event_history">
+        <action
+            android:id="@+id/eventHistoryFragment_to_profileFragment"
+            app:destination="@id/profileFragment"/>
     </fragment>
 
 </navigation>

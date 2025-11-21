@@ -354,6 +354,15 @@
             app:layout_constraintTop_toBottomOf="@id/event_poster_text"
             app:layout_constraintStart_toStartOf="parent"/>
 
+        <ImageView
+            android:id="@+id/event_poster_image"
+            android:layout_width="200dp"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintTop_toBottomOf="@id/event_poster_upload_button"
+            app:layout_constraintStart_toStartOf="parent"
+            android:contentDescription="Event Poster"/>
+
         <TextView
             android:id="@+id/location_requirement_text"
             android:layout_width="match_parent"
@@ -364,7 +373,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_poster_upload_button"
+            app:layout_constraintTop_toBottomOf="@id/event_poster_image"
             app:layout_constraintVertical_bias="0.0" />
 
         <CheckBox

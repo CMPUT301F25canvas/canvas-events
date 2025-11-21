@@ -1,5 +1,7 @@
 package com.example.lotteryeventsystem;
 
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
@@ -8,7 +10,9 @@ import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -87,6 +91,54 @@ public class EventRepository {
                 .document(eventID)
                 .collection("waitlist")
                 .get();
+    }
+
+    /**
+     * Uploads an image to firebase and calls a callback function to save that URL to the event
+     * @param uri Image URI to upload to firebase
+     * @param eventID eventID of the event linked to the poster
+     * @param callback Callback function to handle the URL
+     */
+    public void uploadPosterToFirebase(Uri uri, String eventID, OrganizerEventCreateFragment.ImageUploadCallback callback) {
+        if (uri == null) return;
+
+        // Uploads image to firebase
+        StorageReference ref = storage.getReference()
+                        .child("event_posters/" + eventID + ".png");
+        // Gets the URL
+        ref.putFile(uri)
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl()
+                        .addOnSuccessListener(downloadUrl -> callback.onUploaded(downloadUrl.toString()))
+                        .addOnFailureListener(e -> {
+                            Log.e("EventRepo", "Failed to get download URL", e);
+                            callback.onUploaded(null);
+                        }))
+                .addOnFailureListener(e -> {
+                    Log.e("EventRepo", "Failed to upload poster", e);
+                    callback.onUploaded(null);
+                });
+    }
+
+
+
+
+    public void uploadQRCodeToFirebase(Bitmap qrBitmap, String eventID, OrganizerEventCreateFragment.QRCodeUploadCallback callback) {
+        if (qrBitmap == null) return;
+
+        StorageReference ref = storage.getReference()
+                .child("qrcodes/" + eventID + ".png");
+
+
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        qrBitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes);
+        byte[] data = bytes.toByteArray();
+
+        ref.putBytes(data)
+                .addOnSuccessListener(taskSnapshot -> ref.getDownloadUrl()
+                        .addOnSuccessListener(uri -> {
+                            callback.onQRCodeUploaded(uri.toString());
+                        }));
+
     }
 
 }

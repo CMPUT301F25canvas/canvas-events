@@ -1,8 +1,11 @@
 package com.example.lotteryeventsystem;
 
+import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
@@ -13,6 +16,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -99,19 +103,27 @@ public class EventRepository {
      * @param eventID eventID of the event linked to the poster
      * @param callback Callback function to handle the URL
      */
-    public void uploadPosterToFirebase(Uri uri, String eventID, OrganizerEventCreateFragment.ImageUploadCallback callback) {
+    public void uploadPosterToFirebase(Context context, Uri uri, String eventID, OrganizerEventCreateFragment.ImageUploadCallback callback) {
         if (uri == null) return;
 
-        // Uploads image to firebase
         StorageReference ref = storage.getReference()
-                        .child("event_posters/" + eventID + ".png");
+                .child("event_poster/" + eventID + ".jpg"
+        );
 
-        // Gets the URL
         ref.putFile(uri)
                 .addOnSuccessListener(taskSnapshot -> {
-                    ref.getDownloadUrl().addOnSuccessListener(downloadUrl -> {
-                        callback.onUploaded(downloadUrl.toString());
-                    });
+                    ref.getDownloadUrl()
+                            .addOnSuccessListener(downloadUri -> {
+                                String downloadUrl = downloadUri.toString();
+                                callback.onUploaded(downloadUrl);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("EventRepository", "Failed to get download URL", e);
+                            });
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("EventRepository", "Failed to upload poster", e);
+                    Toast.makeText(context, "Failed to upload poster: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
@@ -120,7 +132,7 @@ public class EventRepository {
         if (qrBitmap == null) return;
 
         StorageReference ref = storage.getReference()
-                .child("qrcodes/" + eventID + ".png");
+                .child("qrcodes/" + eventID + ".jpg");
 
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();

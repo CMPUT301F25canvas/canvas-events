@@ -66,7 +66,7 @@ public class EventItem {
         String registrationStart = doc.getString("registrationStart");
         String registrationEnd = doc.getString("registrationEnd");
         @SuppressWarnings("unchecked")
-        List<String> categories = (List<String>) doc.get("categories");
+        String category = doc.getString("category");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
 
@@ -80,7 +80,7 @@ public class EventItem {
                 description != null ? description : "",
                 highlight,
                 range,
-                categories,
+                category,
                 latitude,
                 longitude);
     }

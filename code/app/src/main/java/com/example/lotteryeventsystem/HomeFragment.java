@@ -106,7 +106,7 @@ public class HomeFragment extends Fragment {
                     .get()
                     .addOnSuccessListener(querySnapshot -> {
                         for (QueryDocumentSnapshot doc : querySnapshot) {
-                            EventItem item = mapToEventItem(doc);
+                            EventItem item = mapToEventItem(doc); // can be refactored. Look at EventItem class
                             itemsList.add(item);
                         }
                         cachedItems = new ArrayList<>(itemsList);

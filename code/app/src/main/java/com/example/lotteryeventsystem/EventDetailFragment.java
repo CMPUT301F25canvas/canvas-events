@@ -175,6 +175,7 @@ public class EventDetailFragment extends Fragment {
                             waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
                                 joinLeaveButton.setText("Leave Waiting List");
                                 Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
+                                NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
                                 updateAvailableSpotsMessage(db);
                             });
 

@@ -101,20 +101,6 @@ public class OrganizerEntrantListFragment extends Fragment {
     }
 
     /**
-     * Replaces the current fragment with the specified fragment.
-     *
-     * @param fragment the fragment to display
-     */
-    private void replaceFragment(Fragment fragment) {
-        if (getActivity() != null) {
-            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.nav_host_fragment, fragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
-        }
-    }
-
-    /**
      * Loads event details from Firestore database using the provided event ID.
      *
      * @param eventId the unique identifier of the event to load

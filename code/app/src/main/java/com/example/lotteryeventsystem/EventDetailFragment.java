@@ -92,6 +92,24 @@ public class EventDetailFragment extends Fragment {
                         ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
                         ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
                         ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
+                        String criteria = "";
+                        String tmp;
+                        if ((tmp = doc.getString("minAge")) != null) {
+                            criteria += String.format("Min. Age: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("dietaryRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Dietary Restrictions: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("otherRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Other Restrictions: %s", tmp);
+                        }
+                        ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
                     }
                 });
         if (((MainActivity) requireActivity()).getAdmin()) {

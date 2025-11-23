@@ -23,7 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
  */
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnViewEntrants, btnEdit, btnDownloadQR;
-    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate;
+    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
@@ -65,6 +65,7 @@ public class OrganizerEntrantListFragment extends Fragment {
         eventStartTime = view.findViewById(R.id.event_start_time);
         eventEndTime = view.findViewById(R.id.event_end_time);
         eventDate = view.findViewById(R.id.event_date);
+        eventCriteria = view.findViewById(R.id.event_criteria);
         btnViewEntrants = view.findViewById(R.id.btnViewEntrants);
         btnBack = view.findViewById(R.id.back_button);
         btnEdit = view.findViewById(R.id.editEvent);
@@ -140,6 +141,24 @@ public class OrganizerEntrantListFragment extends Fragment {
                         if (documentSnapshot.contains("endTime")) {
                             currentEvent.setEndTime(documentSnapshot.getString("endTime"));
                         }
+                        String criteria = "";
+                        String tmp;
+                        if ((tmp = documentSnapshot.getString("minAge")) != null) {
+                            criteria += String.format("Min. Age: %s", tmp);
+                        }
+                        if ((tmp = documentSnapshot.getString("dietaryRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Dietary Restrictions: %s", tmp);
+                        }
+                        if ((tmp = documentSnapshot.getString("otherRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Other Restrictions: %s", tmp);
+                        }
+                        eventCriteria.setText(criteria);
                         displayEventInfo();
                     } else {
                         showError("Event not found: " + eventId);

@@ -73,6 +73,11 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        reloadEvents();
+    }
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -80,9 +85,6 @@ public class HomeFragment extends Fragment {
         title.setText("Upcoming Events");
         ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
         ImageButton filterButton = view.findViewById(R.id.filter_button);
-        TextView tabUpcoming = view.findViewById(R.id.tab_upcoming);
-        TextView tabPrevious = view.findViewById(R.id.tab_previous);
-        View tabIndicator = view.findViewById(R.id.tab_indicator);
         TextInputEditText searchInput = view.findViewById(R.id.search_input);
         RecyclerView recyclerView = view.findViewById(R.id.events_recycler);
 
@@ -97,39 +99,33 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
 
-        if (cachedItems != null) {
-            itemsList.addAll(cachedItems);
-            adapter.notifyDataSetChanged();
-        } else {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("events")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            EventItem item = mapToEventItem(doc);
-                            itemsList.add(item);
-                        }
-                        cachedItems = new ArrayList<>(itemsList);
-                        applyFilter("");
-                    });
-        }
+        reloadEvents();
 
         filterButton.setOnClickListener(v -> showFilterDialog());
 
         registerPermissionLauncher();
         registerScanLauncher();
         scanButton.setOnClickListener(v -> showQrDialog());
-        tabPrevious.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Previous events coming soon", Toast.LENGTH_SHORT).show());
-        tabUpcoming.setOnClickListener(v -> {
-            tabIndicator.setTranslationX(0);
-            applyFilter(searchInput.getText() != null ? searchInput.getText().toString() : "");
-        });
 
         searchInput.addTextChangedListener(new SimpleTextWatcher(text ->
                 applyFilter(text != null ? text : "")));
 
 
+    }
+
+    private void reloadEvents() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("events")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    itemsList.clear();
+                    for (QueryDocumentSnapshot doc: queryDocumentSnapshots) {
+                        EventItem item = mapToEventItem(doc);
+                        itemsList.add(item);
+                    }
+                    cachedItems = new ArrayList<>(itemsList);
+                    applyFilter("");
+                });
     }
 
     /**
@@ -235,18 +231,10 @@ public class HomeFragment extends Fragment {
     }
 
     private boolean matchesCategory(EventItem item) {
-        if (filterState.category == null || filterState.category.equals("any")) {
-            return true;
+        if (filterState.category.equals("any")) {
+            return true; // no filtering if "any" is selected
         }
-        if (item.categories == null || item.categories.isEmpty()) {
-            return false;
-        }
-        for (String cat : item.categories) {
-            if (cat != null && cat.equalsIgnoreCase(filterState.category)) {
-                return true;
-            }
-        }
-        return false;
+        return item.category != null && item.category.equals(filterState.category);
     }
 
     private boolean matchesDate(EventItem item) {
@@ -296,7 +284,7 @@ public class HomeFragment extends Fragment {
         String registrationStart = doc.getString("registrationStart");
         String registrationEnd = doc.getString("registrationEnd");
         @SuppressWarnings("unchecked")
-        List<String> categories = (List<String>) doc.get("categories");
+        String category = doc.getString("categories");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
 
@@ -310,7 +298,7 @@ public class HomeFragment extends Fragment {
                 description != null ? description : "",
                 highlight,
                 range,
-                categories,
+                category,
                 latitude,
                 longitude);
     }
@@ -397,7 +385,6 @@ public class HomeFragment extends Fragment {
         TextInputEditText dateFrom = dialogView.findViewById(R.id.date_from_input);
         TextInputEditText dateTo = dialogView.findViewById(R.id.date_to_input);
         android.widget.CheckBox availability = dialogView.findViewById(R.id.availability_check);
-        TextInputEditText distanceInput = dialogView.findViewById(R.id.distance_input);
 
         dialogView.findViewById(R.id.filter_cancel_button).setOnClickListener(v -> dialog.dismiss());
         dialogView.findViewById(R.id.filter_clear_button).setOnClickListener(v -> {
@@ -405,7 +392,6 @@ public class HomeFragment extends Fragment {
             dateFrom.setText("");
             dateTo.setText("");
             availability.setChecked(false);
-            distanceInput.setText("");
             filterState.category = "any";
             filterState.fromDate = null;
             filterState.toDate = null;
@@ -435,20 +421,20 @@ public class HomeFragment extends Fragment {
         dateTo.setOnClickListener(datePickerListener);
         dialogView.findViewById(R.id.filter_apply_button).setOnClickListener(v -> {
             int checked = categoryGroup.getCheckedRadioButtonId();
-            if (checked == R.id.category_art) {
-                filterState.category = "Art";
-            } else if (checked == R.id.category_tech) {
-                filterState.category = "Technology";
-            } else if (checked == R.id.category_wellness) {
-                filterState.category = "Wellness";
+            if (checked == R.id.category_concert) {
+                filterState.category = "concert";
+            } else if (checked == R.id.category_sports) {
+                filterState.category = "sports";
+            } else if (checked == R.id.category_arts) {
+                filterState.category = "arts";
+            }  else if (checked == R.id.category_family) {
+                filterState.category = "family";
             } else {
                 filterState.category = "any";
             }
             filterState.fromDate = parseDate(dateFrom.getText() != null ? dateFrom.getText().toString() : null);
             filterState.toDate = parseDate(dateTo.getText() != null ? dateTo.getText().toString() : null);
             filterState.onlyAvailable = availability.isChecked();
-            String distanceText = distanceInput.getText() != null ? distanceInput.getText().toString().trim() : "";
-            filterState.maxDistanceKm = distanceText.isEmpty() ? null : safeParseDouble(distanceText);
             applyFilter(searchInputValueSafe());
             dialog.dismiss();
         });

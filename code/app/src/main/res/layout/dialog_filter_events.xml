@@ -42,20 +42,25 @@
                 android:checked="true"
                 android:text="Any category" />
             <RadioButton
-                android:id="@+id/category_art"
+                android:id="@+id/category_concert"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Art" />
+                android:text="Concert" />
             <RadioButton
-                android:id="@+id/category_tech"
+                android:id="@+id/category_sports"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Technology" />
+                android:text="Sports" />
             <RadioButton
-                android:id="@+id/category_wellness"
+                android:id="@+id/category_arts"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Wellness" />
+                android:text="Arts" />
+            <RadioButton
+                android:id="@+id/category_family"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Family" />
         </RadioGroup>
 
         <TextView
@@ -112,30 +117,6 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:text="Available" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Distance (km)"
-            android:textColor="#332A45"
-            android:textSize="15sp"
-            android:textStyle="bold" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/distance_layout"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Max distance in km">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/distance_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="numberDecimal"
-                android:maxLines="1" />
-        </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

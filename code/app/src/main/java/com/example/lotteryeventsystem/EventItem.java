@@ -1,5 +1,13 @@
 package com.example.lotteryeventsystem;
 
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.List;
+import java.util.Locale;
+
 public class EventItem {
 
     public String id;
@@ -7,7 +15,7 @@ public class EventItem {
     public String description;
     public String dateHighlight;
     public String dateRange;
-    public java.util.List<String> categories;
+    public String category;
     public Double latitude;
     public Double longitude;
 
@@ -33,7 +41,7 @@ public class EventItem {
                      String description,
                      String dateHighlight,
                      String dateRange,
-                     java.util.List<String> categories,
+                     String category,
                      Double latitude,
                      Double longitude) {
         this.id = id;
@@ -41,7 +49,7 @@ public class EventItem {
         this.description = description;
         this.dateHighlight = dateHighlight;
         this.dateRange = dateRange;
-        this.categories = categories;
+        this.category = category;
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -49,5 +57,53 @@ public class EventItem {
     @Override
     public String toString() {
         return name;
+    }
+
+    public static EventItem queryDocumentSnapshotToEventItem(QueryDocumentSnapshot doc) {
+        String name = doc.getString("name");
+        String description = doc.getString("description");
+        String date = doc.getString("date");
+        String registrationStart = doc.getString("registrationStart");
+        String registrationEnd = doc.getString("registrationEnd");
+        @SuppressWarnings("unchecked")
+        String category = doc.getString("category");
+        Double latitude = doc.getDouble("latitude");
+        Double longitude = doc.getDouble("longitude");
+
+        String highlight = registrationStart != null && !registrationStart.isEmpty()
+                ? registrationStart
+                : date;
+        String range = buildRange(registrationStart, registrationEnd, date);
+
+        return new EventItem(doc.getId(),
+                name != null ? name : "Untitled Event",
+                description != null ? description : "",
+                highlight,
+                range,
+                category,
+                latitude,
+                longitude);
+    }
+
+    private static String buildRange(String start, String end, String fallbackDate) {
+        if (start != null && end != null && !start.isEmpty() && !end.isEmpty()) {
+            return formatRange(start) + " - " + formatRange(end);
+        }
+        if (fallbackDate != null && !fallbackDate.isEmpty()) {
+            return formatRange(fallbackDate);
+        }
+        return "TBD";
+    }
+
+    private static String formatRange(String raw) {
+        String[] patterns = {"yyyy-MM-dd", "MMM dd, yyyy", "MMM dd yyyy"};
+        for (String pattern : patterns) {
+            try {
+                LocalDate date = LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+                return date.format(DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        return raw;
     }
 }

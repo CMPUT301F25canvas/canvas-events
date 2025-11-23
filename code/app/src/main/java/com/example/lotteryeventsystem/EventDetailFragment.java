@@ -49,6 +49,7 @@ public class EventDetailFragment extends Fragment {
     private String eventId;
     private Button joinLeaveButton;
     private String deviceId;
+    private TextView message;
 
     public static final String ARG_EVENT_ID = "event_id";
 
@@ -64,6 +65,8 @@ public class EventDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
         ImageButton backButton = view.findViewById(R.id.back_button);
+        message = view.findViewById(R.id.message);
+
         backButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(view);
             navController.navigateUp(); // Navigates back to the previous fragment
@@ -75,6 +78,7 @@ public class EventDetailFragment extends Fragment {
         }
 
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+        updateAvailableSpotsMessage(db);
 
         eventId = getArguments().getString("event_id");
         deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -88,6 +92,24 @@ public class EventDetailFragment extends Fragment {
                         ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
                         ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
                         ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
+                        String criteria = "";
+                        String tmp;
+                        if ((tmp = doc.getString("minAge")) != null) {
+                            criteria += String.format("Min. Age: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("dietaryRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Dietary Restrictions: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("otherRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Other Restrictions: %s", tmp);
+                        }
+                        ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
                     }
                 });
         if (((MainActivity) requireActivity()).getAdmin()) {
@@ -133,101 +155,111 @@ public class EventDetailFragment extends Fragment {
         });
 
         joinLeaveButton.setOnClickListener(v -> {
-            if (joinLeaveButton.getText().toString().equals("Join Waiting List")) {
-                Map<String, Object> eventData = new HashMap<>();
-                eventData.put("status", "WAITING");
-                waitlistRef.set(eventData).addOnSuccessListener(aVoid -> joinLeaveButton.setText("Leave Waiting List"));
-                userRef.update("enrolled_events", FieldValue.arrayUnion(eventId));
+            DocumentReference eventRef = db.collection("events").document(eventId);
 
-                Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
+            eventRef.get().addOnSuccessListener(documentSnapshot -> {
+                if (!documentSnapshot.exists()) return;
 
-            } else {
-                waitlistRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
-                userRef.update("enrolled_events", FieldValue.arrayRemove(eventId));
-                Toast.makeText(getContext(), "You were removed to the waiting list!", Toast.LENGTH_SHORT).show();
+                Object limitObj = documentSnapshot.get("entrantLimit");
+                long entrantLimit;
 
-            }
-        });
-
-    }
-
-    /*private void loadEvent() {
-        if (eventId == null || eventId.isEmpty()) {
-            showMessage(getString(R.string.event_detail_missing_id));
-            return;
-        }
-        showLoading(true);
-        ServiceLocator.provideEventRepository()
-                .getEventById(eventId, (event, error) -> {
-                    if (!isAdded()) {
-                        return;
+                if (limitObj == null) {
+                    entrantLimit = Long.MAX_VALUE; // no limit
+                } else if (limitObj instanceof Number) {
+                    entrantLimit = ((Number) limitObj).longValue();
+                } else {
+                    // assume it's a string containing a number
+                    try {
+                        entrantLimit = Long.parseLong(limitObj.toString());
+                    } catch (NumberFormatException e) {
+                        entrantLimit = Long.MAX_VALUE; // fallback
                     }
-                    requireActivity().runOnUiThread(() -> {
-                        showLoading(false);
-                        if (error != null) {
-                            showMessage(getString(R.string.event_detail_error));
-                            return;
+                }
+
+                // Count how many users are currently in the waitlist
+                Long finalEntrantLimit = entrantLimit;
+                eventRef.collection("waitlist").get().addOnSuccessListener(waitlistSnapshot -> {
+                    int currentEnrollment = waitlistSnapshot.size();
+
+
+                    if (joinLeaveButton.getText().toString().equals("Join Waiting List")) {
+                        if (currentEnrollment >= finalEntrantLimit) {
+                            // Event full
+                            message.setText("EVENT FULL");
+                        } else {
+                            // Add to waitlist
+                            Map<String, Object> eventData = new HashMap<>();
+                            eventData.put("status", "WAITING");
+                            waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
+                                joinLeaveButton.setText("Leave Waiting List");
+                                Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
+                                NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
+                                updateAvailableSpotsMessage(db);
+                            });
+
+                            // Update user's enrolled_events array
+                            userRef.update("enrolled_events", FieldValue.arrayUnion(eventId));
                         }
-                        if (event == null) {
-                            showMessage(getString(R.string.event_detail_not_found));
-                            return;
-                        }
-                        bindEvent(event);
-                    });
+                    } else {
+                        // Leave the waitlist
+                        waitlistRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
+                        userRef.update("enrolled_events", FieldValue.arrayRemove(eventId));
+                        Toast.makeText(getContext(), "You were removed from the waiting list!", Toast.LENGTH_SHORT).show();
+                        updateAvailableSpotsMessage(db);
+                    }
                 });
+            });
+        });
     }
-
-    private void bindEvent(Event event) {
-        contentView.setVisibility(View.VISIBLE);
-        messageView.setVisibility(View.GONE);
-        titleView.setText(orFallback(event.getTitle(), getString(R.string.event_detail_name_fallback)));
-        descriptionView.setText(orFallback(event.getDescription(), getString(R.string.event_detail_description_fallback)));
-        locationView.setText(orFallback(event.getLocation(), getString(R.string.event_detail_location_fallback)));
-        registrationWindowView.setText(buildRegistrationWindow(event));
-        String capacityText = event.friendlyCapacity();
-        if (capacityText == null) {
-            capacityView.setVisibility(View.GONE);
-        } else {
-            capacityView.setVisibility(View.VISIBLE);
-            capacityView.setText(getString(R.string.event_detail_capacity_format, capacityText));
-        }
-    }
-
-    private void showLoading(boolean loading) {
-        progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
-        contentView.setVisibility(loading ? View.GONE : contentView.getVisibility());
-    }
-
-    private void showMessage(String message) {
-        contentView.setVisibility(View.GONE);
-        progressView.setVisibility(View.GONE);
-        messageView.setVisibility(View.VISIBLE);
-        messageView.setText(message);
-    }
-
-    private String buildRegistrationWindow(Event event) {
-        DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-        String open = event.getRegistrationOpen() != null
-                ? formatter.format(event.getRegistrationOpen().toDate())
-                : getString(R.string.event_detail_unknown_time);
-        String close = event.getRegistrationClose() != null
-                ? formatter.format(event.getRegistrationClose().toDate())
-                : getString(R.string.event_detail_unknown_time);
-        return getString(R.string.event_detail_registration_window_format, open, close);
-    }
-
-    private String orFallback(@Nullable String value, String fallback) {
-        if (TextUtils.isEmpty(value)) {
-            return fallback;
-        }
-        return value;
-    }*/
 
     private void setupDeleteEventButton(FirebaseFirestore db) {
         joinLeaveButton.setText("Delete Event");
         joinLeaveButton.setOnClickListener(v -> {
             FireBaseDeleteFuncs.deleteEvent(db, eventId, requireContext());
 
+        });
+    }
+
+    private void updateAvailableSpotsMessage(FirebaseFirestore db) {
+        DocumentReference eventRef = db.collection("events").document(eventId);
+
+        eventRef.get().addOnSuccessListener(documentSnapshot -> {
+            if (!documentSnapshot.exists()) return;
+
+            Object limitObj = documentSnapshot.get("entrantLimit");
+            long entrantLimit;
+
+            if (limitObj == null) {
+                entrantLimit = Long.MAX_VALUE; // no limit
+            } else if (limitObj instanceof Number) {
+                entrantLimit = ((Number) limitObj).longValue();
+            } else {
+                try {
+                    entrantLimit = Long.parseLong(limitObj.toString());
+                } catch (NumberFormatException e) {
+                    entrantLimit = Long.MAX_VALUE; // fallback
+                }
+            }
+
+            long finalEntrantLimit = entrantLimit;
+            eventRef.collection("waitlist").get().addOnSuccessListener(waitlistSnapshot -> {
+                int currentEnrollment = waitlistSnapshot.size();
+                long availableSpots = finalEntrantLimit - currentEnrollment;
+
+                if (availableSpots > 0 && finalEntrantLimit != Long.MAX_VALUE) {
+                    message.setText("Available spots: " + availableSpots);
+                    joinLeaveButton.setEnabled(true);
+                    joinLeaveButton.setAlpha(1.0f);
+                } else if (finalEntrantLimit == Long.MAX_VALUE) {
+                    message.setText("Unlimited spots available");
+                    joinLeaveButton.setEnabled(true);
+                    joinLeaveButton.setAlpha(1.0f);
+                } else {
+                    message.setText("The event is full...");
+                    joinLeaveButton.setEnabled(false);
+                    joinLeaveButton.setAlpha(0.5f);
+                }
+            });
         });
     }
 }

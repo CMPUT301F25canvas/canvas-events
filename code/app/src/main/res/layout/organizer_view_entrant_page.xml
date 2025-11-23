@@ -96,6 +96,15 @@
             app:layout_constraintStart_toEndOf="@id/event_start_time"
             app:layout_constraintTop_toBottomOf="@id/event_date" />
 
+        <TextView
+            android:id="@+id/event_criteria"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Event Criteria"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_end_time" />
+
         <Button
             android:id="@+id/btnViewEntrants"
             android:layout_width="wrap_content"
@@ -107,7 +116,20 @@
             android:textColor="@color/black"
             android:textSize="25sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_end_time" />
+            app:layout_constraintTop_toBottomOf="@+id/event_criteria" />
+
+        <Button
+            android:id="@+id/btnViewMap"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="108dp"
+            android:layout_marginTop="76dp"
+            android:backgroundTint="@color/purple"
+            android:text="Entrant Map"
+            android:textColor="@color/black"
+            android:textSize="25sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnViewEntrants" />
 
         <Button
             android:id="@+id/editEvent"
@@ -120,7 +142,7 @@
             android:textColor="@color/black"
             android:textSize="25sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnViewEntrants" />
+            app:layout_constraintTop_toBottomOf="@+id/btnViewMap" />
 
         <Button
             android:id="@+id/downloadQR"

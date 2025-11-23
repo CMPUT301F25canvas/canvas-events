@@ -3,7 +3,10 @@ package com.example.lotteryeventsystem;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.text.Editable;
@@ -36,6 +39,7 @@ import com.google.android.material.timepicker.TimeFormat;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.InputStream;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -50,13 +54,11 @@ import java.util.function.Consumer;
  * Stores logic for the event creation form and creates a new Event if input is correct
  */
 public class OrganizerEventCreateFragment extends Fragment {
-
-//    private OrganizerEventCreateViewModel viewModel;
     private EventCreationForm eventCreationForm;
     private EventRepository eventRepository;
     private ActivityResultLauncher<String> pickImageLauncher;
-    private ImageView imageView; // Stores the image being saved?
-    String posterURL; // temporary will change
+    private ImageButton eventPoster; // Stores the image being saved?
+
 
 
     // Callback Interface for when an image is uploaded
@@ -77,7 +79,8 @@ public class OrganizerEventCreateFragment extends Fragment {
                 new ActivityResultContracts.GetContent(),
                 uri -> {
                     if (uri != null) {
-                        imageView.setImageURI(uri); // preview
+//                        Bitmap scaledBitmap = decodeSampledBitmapFromUri(uri, 1024, 1024);
+                        eventPoster.setImageURI(uri); // preview
                         eventCreationForm.setLocalImageUri(uri); // saves the selected image locally first
                     }
                 }
@@ -98,7 +101,6 @@ public class OrganizerEventCreateFragment extends Fragment {
         eventRepository = new EventRepository();
         eventCreationForm = new EventCreationForm();
         Event event = new Event();
-//        viewModel = new ViewModelProvider(this).get(OrganizerEventCreateViewModel.class);
 
         // Connecting all of the elements
         // Back Button
@@ -117,6 +119,18 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout eventDescriptionLayout = view.findViewById(R.id.event_description_input_layout);
         TextInputEditText eventDescriptionInput = view.findViewById(R.id.event_description_input);
         setupTextWatcher(eventDescriptionInput, event::setDescription);
+
+        // Min. Age
+        TextInputEditText minAgeInput = view.findViewById(R.id.min_age_input);
+        setupTextWatcher(minAgeInput, event::setMinAge);
+
+        // Dietary Restrictions
+        TextInputEditText dietaryRestrictionsInput = view.findViewById(R.id.dietary_restrictions_input_text);
+        setupTextWatcher(dietaryRestrictionsInput, event::setDietaryRestrictions);
+
+        // Other Restrictions
+        TextInputEditText otherRestrictionsInput = view.findViewById(R.id.other_restrictions_input);
+        setupTextWatcher(otherRestrictionsInput, event::setOtherRestrictions);
 
         // Event Date
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -363,12 +377,9 @@ public class OrganizerEventCreateFragment extends Fragment {
             }
         });
 
-        // Event Categories
-        // TODO: ADD EVENT CATEGORIES
-
         // Event Poster
-        ImageButton eventPosterButton = view.findViewById(R.id.event_poster_upload_button);
-        eventPosterButton.setOnClickListener(v -> {
+        eventPoster = view.findViewById(R.id.event_poster_upload_button);
+        eventPoster.setOnClickListener(v -> {
             pickImageLauncher.launch("image/*");
         });
 
@@ -476,28 +487,91 @@ public class OrganizerEventCreateFragment extends Fragment {
 
             // Check if an event poster was uploaded
             if (eventCreationForm.getLocalImageUri() != null) {
-                eventRepository.uploadPosterToFirebase(eventCreationForm.getLocalImageUri(), eventID, imageUrl ->  {
+                eventRepository.uploadPosterToFirebase(requireContext(), eventCreationForm.getLocalImageUri(), eventID, imageUrl ->  {
                     event.setPosterURL(imageUrl); // Sets the image URL to store in firebase
+
+                    // Generate QR Code Bitmap
+                    Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
+                    // Upload QR Code to Firebase
+                    eventRepository.uploadQRCodeToFirebase(qrBitmap, eventID, qrCodeURL -> {
+                        event.setQRCodeURL(qrCodeURL);
+
+                        // Add event to firebase
+                        eventRepository.addEvent(event);
+
+                        // Move to Event List Screen
+                        NavController navController = Navigation.findNavController(requireView());
+                        navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+                    });
+                });
+            // Else create an event without uploading the event poster
+            } else {
+                // Generate QR Code Bitmap
+                Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
+                // Upload QR Code to Firebase
+                eventRepository.uploadQRCodeToFirebase(qrBitmap, eventID, qrCodeURL -> {
+                    event.setQRCodeURL(qrCodeURL);
+
+                    // Add event to firebase
+                    eventRepository.addEvent(event);
+
+                    // Move to Event List Screen
+                    NavController navController = Navigation.findNavController(requireView());
+                    navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
                 });
             }
-
-            // Generate QR Code Bitmap
-            Bitmap qrBitmap = QRCodeGenerator.generateQRCode(eventID);
-            // Upload QR Code to Firebase
-            eventRepository.uploadQRCodeToFirebase(qrBitmap, eventID, qrCodeURL -> {
-                event.setQRCodeURL(qrCodeURL);
-            });
-
-            // Add event to firebase
-            eventRepository.addEvent(event);
-
-            // Update the ListView
-            // TODO: figure out why ListView is not updating
-
-            // Move to Event List Screen
-            NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
-            // TODO: navigate to the event_list screen instead maybe
         });
     }
+
+    private void choosePicture() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+    }
+
+
+
+    private Bitmap decodeSampledBitmapFromUri(Uri uri, int reqWidth, int reqHeight) {
+        try {
+            // First decode bounds only
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+
+            InputStream stream1 = requireContext().getContentResolver().openInputStream(uri);
+            BitmapFactory.decodeStream(stream1, null, options);
+            stream1.close();
+
+            // Calculate scaling factor
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+            options.inJustDecodeBounds = false;
+
+            // Decode the bitmap with the scaling factor
+            InputStream stream2 = requireContext().getContentResolver().openInputStream(uri);
+            Bitmap bitmap = BitmapFactory.decodeStream(stream2, null, options);
+            stream2.close();
+
+            return bitmap;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        int height = options.outHeight;
+        int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+            int halfHeight = height / 2;
+            int halfWidth = width / 2;
+
+            while ((halfHeight / inSampleSize) >= reqHeight
+                    && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+        return inSampleSize;
+    }
+
 }

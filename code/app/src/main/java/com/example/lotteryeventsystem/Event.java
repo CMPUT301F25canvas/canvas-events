@@ -9,6 +9,9 @@ public class Event {
     private String organizerID;
     private String name;
     private String description;
+    private String minAge;
+    private String dietaryRestrictions;
+    private String otherRestrictions;
     private String date;
     private String startTime;
     private String endTime;
@@ -59,6 +62,9 @@ public class Event {
     public String getDescription() {
         return description;
     }
+    public String getMinAge() { return minAge; }
+    public String getDietaryRestrictions() { return dietaryRestrictions; }
+    public String getOtherRestrictions() { return otherRestrictions; }
 
     public String getDate() {
         return date;
@@ -119,6 +125,12 @@ public class Event {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public void setMinAge(String minAge) { this.minAge = minAge; }
+
+    public void setDietaryRestrictions(String dietaryRestrictions) { this.dietaryRestrictions = dietaryRestrictions; }
+
+    public void setOtherRestrictions(String otherRestrictions) { this.otherRestrictions = otherRestrictions; }
 
     public void setDate(String date) {
         this.date = date;

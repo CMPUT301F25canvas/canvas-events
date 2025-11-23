@@ -120,6 +120,18 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputEditText eventDescriptionInput = view.findViewById(R.id.event_description_input);
         setupTextWatcher(eventDescriptionInput, event::setDescription);
 
+        // Min. Age
+        TextInputEditText minAgeInput = view.findViewById(R.id.min_age_input);
+        setupTextWatcher(minAgeInput, event::setMinAge);
+
+        // Dietary Restrictions
+        TextInputEditText dietaryRestrictionsInput = view.findViewById(R.id.dietary_restrictions_input_text);
+        setupTextWatcher(dietaryRestrictionsInput, event::setDietaryRestrictions);
+
+        // Other Restrictions
+        TextInputEditText otherRestrictionsInput = view.findViewById(R.id.other_restrictions_input);
+        setupTextWatcher(otherRestrictionsInput, event::setOtherRestrictions);
+
         // Event Date
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         TextInputLayout eventDateLayout = view.findViewById(R.id.event_date_input_layout);

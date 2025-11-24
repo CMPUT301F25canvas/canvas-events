@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs")
+    // Google Maps SDK
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -28,6 +30,9 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+    buildFeatures{
+        buildConfig = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -68,5 +73,11 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     // Open Street Maps
-    implementation("org.osmdroid:osmdroid-android:6.1.16")
+    implementation("com.google.android.gms:play-services-maps:19.0.0")
+}
+
+// Google Maps SDK API Key
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }

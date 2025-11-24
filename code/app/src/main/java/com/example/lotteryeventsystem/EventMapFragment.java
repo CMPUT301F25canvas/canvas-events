@@ -9,9 +9,15 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+
 import org.jetbrains.annotations.NotNull;
 
-public class EventMapFragment extends Fragment {
+public class EventMapFragment extends Fragment implements OnMapReadyCallback {
+
+    SupportMapFragment mapFragment;
 
     @Nullable
     @Override
@@ -26,6 +32,7 @@ public class EventMapFragment extends Fragment {
 
         // Load location of the event
 
+
         // Load locations of entrants (stored in firebase)
 
 
@@ -33,5 +40,8 @@ public class EventMapFragment extends Fragment {
     }
 
 
-
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        
+    }
 }

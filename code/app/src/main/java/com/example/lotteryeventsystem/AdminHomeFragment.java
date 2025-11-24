@@ -59,7 +59,9 @@ public class AdminHomeFragment extends Fragment {
                     navController.navigate(R.id.action_adminHomeFragment_to_adminProfilesFragment);
         });
 
-        imagesBtn.setOnClickListener(v ->
-                adminTitle.setText("Images button clicked"));
+        imagesBtn.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_adminHomeFragment_to_adminPosterFragment);
+        });
     }
 }

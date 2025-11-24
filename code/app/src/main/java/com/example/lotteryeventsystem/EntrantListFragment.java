@@ -1,6 +1,11 @@
 package com.example.lotteryeventsystem;
 
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,7 +14,11 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.PopupMenu;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
@@ -18,6 +27,10 @@ import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
+
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +40,7 @@ import java.util.List;
  * and provides functionality to manage them, including canceling unenrolled entrants.
  *
  * @author Emily Lan
- * @version 1.0
+ * @version 1.1
  * @see OrganizerEntrantListFragment
  * @see WaitlistEntry
  * @see WaitlistStatus
@@ -37,7 +50,7 @@ public class EntrantListFragment extends Fragment {
     private ListView listView;
     private TextView tvTitle;
     private ImageButton btnBack, btnFilter;
-    private Button btnDeleteSelectedEntrant;
+    private Button btnDeleteSelectedEntrant, btnExportCSV;
     private int entrantPosition = -1;
     private WaitlistEntryAdapter adapter;
     private final FirebaseWaitlistRepository repository = new FirebaseWaitlistRepository();
@@ -96,6 +109,7 @@ public class EntrantListFragment extends Fragment {
         btnBack = view.findViewById(R.id.back_button);
         btnFilter = view.findViewById(R.id.btnFilter);
         btnDeleteSelectedEntrant = view.findViewById(R.id.btnDeleteSelectedEntrant);
+        btnExportCSV = view.findViewById(R.id.btnExportCSV);
         adapter = new WaitlistEntryAdapter(requireContext(), entrantsList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -106,18 +120,23 @@ public class EntrantListFragment extends Fragment {
         if ("canceled".equals(listType)) {
             tvTitle.setText("Canceled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
+            btnExportCSV.setVisibility(View.GONE);
         } else if ("unenrolled".equals(listType)) {
             tvTitle.setText("Unenrolled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.VISIBLE);
+            btnExportCSV.setVisibility(View.GONE);
         } else if ("enrolled".equals(listType)) {
             tvTitle.setText("Enrolled Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
+            btnExportCSV.setVisibility(View.VISIBLE);
         } else if ("waiting".equals(listType)) {
             tvTitle.setText("Waitlist");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
+            btnExportCSV.setVisibility(View.GONE);
         } else {
             tvTitle.setText("All Chosen Entrants");
             btnDeleteSelectedEntrant.setVisibility(View.GONE);
+            btnExportCSV.setVisibility(View.GONE);
         }
     }
 
@@ -136,6 +155,13 @@ public class EntrantListFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 showFilterMenu(v);
+            }
+        });
+
+        btnExportCSV.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                exportEnrolledEntrantsToCSV();
             }
         });
 
@@ -170,6 +196,114 @@ public class EntrantListFragment extends Fragment {
                 }
             }
         });
+    }
+
+    /**
+     * Exports enrolled entrants to CSV and shows it in a dialog
+     */
+    private void exportEnrolledEntrantsToCSV() {
+        if (entrantsList.isEmpty()) {
+            Toast.makeText(getContext(), "No enrolled entrants to export", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        try {
+            // Create CSV content - names separated by commas on one line
+            StringBuilder csvContent = new StringBuilder();
+
+            for (int i = 0; i < entrantsList.size(); i++) {
+                WaitlistEntry entrant = entrantsList.get(i);
+
+                // Use the same logic as WaitlistEntryAdapter to get display name
+                String displayName = adapter.getUserDisplayName(entrant);
+                if (displayName == null || displayName.isEmpty()) {
+                    // If no name, use anonymous numbering like the adapter does
+                    int anonymousNumber = adapter.getConsistentAnonymousNumber(entrant);
+                    displayName = "Anonymous" + anonymousNumber;
+                }
+
+                // Escape commas and quotes in the name for proper CSV format
+                String escapedName = displayName.replace("\"", "\"\"");
+                if (escapedName.contains(",") || escapedName.contains("\"")) {
+                    escapedName = "\"" + escapedName + "\"";
+                }
+
+                // Add the name to CSV
+                csvContent.append(escapedName);
+
+                // Add comma separator if it's not the last entry
+                if (i < entrantsList.size() - 1) {
+                    csvContent.append(",");
+                }
+            }
+
+            // Show the CSV content in a dialog
+            showCSVContentInDialog(csvContent.toString());
+
+        } catch (Exception e) {
+            Toast.makeText(getContext(), "Error exporting CSV", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Saves CSV content to a file (optional - for users who still want files)
+     */
+    private void saveCSVFile(String fileName, String csvContent) {
+        try {
+            // Use the public Download folder
+            File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File csvFile = new File(downloadsDir, fileName);
+
+            // Create parent directories if they don't exist
+            if (!downloadsDir.exists()) {
+                downloadsDir.mkdirs();
+            }
+
+            // Write CSV content to file
+            FileWriter writer = new FileWriter(csvFile);
+            writer.write(csvContent);
+            writer.flush();
+            writer.close();
+
+            // Show success message
+            Toast.makeText(getContext(), "CSV saved to Downloads folder", Toast.LENGTH_SHORT).show();
+
+        } catch (IOException e) {
+            Toast.makeText(getContext(), "Error saving CSV file", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Shows CSV content in a dialog within the app
+     */
+    private void showCSVContentInDialog(String csvContent) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        builder.setTitle("Enrolled Entrants CSV (" + entrantsList.size() + " entrants)");
+
+        // Create a scrollable text view
+        ScrollView scrollView = new ScrollView(requireContext());
+        TextView textView = new TextView(requireContext());
+
+        // Format the text for better readability
+        textView.setText(csvContent);
+        textView.setPadding(50, 30, 50, 30);
+        textView.setTextIsSelectable(true); // Allow text selection
+        textView.setTextSize(14); // Slightly smaller to fit more text
+        textView.setTypeface(Typeface.MONOSPACE); // Use monospace font for CSV
+
+        scrollView.addView(textView);
+        builder.setView(scrollView);
+
+        builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
+
+        builder.setNeutralButton("Save as CSV", (dialog, which) -> {
+            // Save the file for users who want it
+            String timestamp = String.valueOf(System.currentTimeMillis());
+            String fileName = "enrolled_entrants_" + timestamp + ".csv";
+            saveCSVFile(fileName, csvContent);
+        });
+
+        builder.show();
     }
 
     private void showFilterMenu(View anchor) {

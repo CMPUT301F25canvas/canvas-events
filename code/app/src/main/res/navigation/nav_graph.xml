@@ -116,6 +116,14 @@
         <action
             android:id="@+id/action_organizerEventCreateFragment_to_organizerEventListFragment"
             app:destination="@id/organizerEventListFragment" />
+        <argument
+            android:name="EVENT_ID"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="MODE"
+            app:argType="string"
+            android:defaultValue="create" />
     </fragment>
 
     <fragment
@@ -128,6 +136,9 @@
         <action
             android:id="@+id/action_organizerEntrantListFragment_to_EntrantListFragment"
             app:destination="@id/EntrantListFragment" />
+        <action
+            android:id="@+id/action_organizerEntrantListFragment_to_organizerEventCreateFragment"
+            app:destination="@id/organizerEventCreateFragment" />
     </fragment>
 
     <fragment

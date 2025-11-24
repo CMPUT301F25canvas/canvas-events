@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginTop="10dp"
+
     android:background="#FFFFFF"
     tools:context=".OrganizerEntrantListFragment">
 
@@ -34,6 +34,16 @@
             android:contentDescription="Back Button" />
 
     </FrameLayout>
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_fragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/event_detail_fragment"
@@ -100,6 +110,8 @@
             android:id="@+id/event_criteria"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_marginTop="10dp"
             android:text="Event Criteria"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -109,55 +121,83 @@
             android:id="@+id/btnViewEntrants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="108dp"
-            android:layout_marginTop="76dp"
+            android:layout_marginTop="20dp"
             android:backgroundTint="@color/purple"
             android:text="See Entrants"
             android:textColor="@color/black"
             android:textSize="25sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/event_criteria" />
+            app:layout_constraintTop_toBottomOf="@+id/poster" />
 
         <Button
             android:id="@+id/btnViewMap"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="108dp"
-            android:layout_marginTop="76dp"
+            android:layout_marginTop="20dp"
             android:backgroundTint="@color/purple"
             android:text="Entrant Map"
             android:textColor="@color/black"
             android:textSize="25sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnViewEntrants" />
+            app:layout_constraintTop_toBottomOf="@+id/btnSample" />
+
+        <Button
+            android:id="@+id/btnSample"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:backgroundTint="@color/purple"
+            android:text="Sample Entrants"
+            android:textColor="@color/black"
+            android:textSize="25sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/editEvent" />
 
         <Button
             android:id="@+id/editEvent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="124dp"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="20dp"
             android:backgroundTint="@color/purple"
             android:text="Edit Event"
             android:textColor="@color/black"
             android:textSize="25sp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnViewMap" />
+            app:layout_constraintTop_toBottomOf="@+id/btnViewEntrants" />
 
         <Button
             android:id="@+id/downloadQR"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="72dp"
-            android:layout_marginTop="28dp"
+            android:layout_marginTop="20dp"
             android:backgroundTint="@color/purple"
             android:text="Download QR Code"
             android:textColor="@color/black"
-            android:textSize="25sp"
-            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/editEvent" />
+            android:textSize="25sp"
+            app:layout_constraintTop_toBottomOf="@+id/btnViewMap" />
+
+        <ImageView
+            android:id="@+id/poster"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:maxWidth="300dp"
+            android:maxHeight="300dp"
+            android:background="@drawable/qrcodeplaceholder"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_criteria" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

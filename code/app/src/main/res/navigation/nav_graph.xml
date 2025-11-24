@@ -116,6 +116,14 @@
         <action
             android:id="@+id/action_organizerEventCreateFragment_to_organizerEventListFragment"
             app:destination="@id/organizerEventListFragment" />
+        <argument
+            android:name="EVENT_ID"
+            app:argType="string"
+            android:defaultValue="" />
+        <argument
+            android:name="MODE"
+            app:argType="string"
+            android:defaultValue="create" />
     </fragment>
 
     <fragment
@@ -125,6 +133,22 @@
         <argument
             android:name="EVENT_ID"
             app:argType="string" />
+        <action
+            android:id="@+id/action_organizerEntrantListFragment_to_EntrantListFragment"
+            app:destination="@id/EntrantListFragment" />
+        <action
+            android:id="@+id/action_organizerEntrantListFragment_to_organizerEventCreateFragment"
+            app:destination="@id/organizerEventCreateFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/EntrantListFragment"
+        android:name="com.example.lotteryeventsystem.EntrantListFragment"
+        android:label="Entrant Lists" >
+    <argument
+        android:name="LIST_TYPE"
+        app:argType="string"
+        android:defaultValue="waiting" />
     </fragment>
 
     <fragment

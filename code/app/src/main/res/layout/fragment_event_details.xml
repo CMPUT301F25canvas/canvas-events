@@ -92,16 +92,19 @@
         android:layout_marginTop="8dp" />
 
 
-    <!-- QR Code -->
-    <ImageView
-        android:id="@+id/event_qr_code"
-        android:layout_width="250dp"
-        android:layout_height="250dp"
-        android:layout_marginTop="150dp"
-        android:src="@drawable/qrcodeplaceholder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
+    <!-- poster -->
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/event_poster"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
+        android:scaleType="centerCrop"
+        android:padding="4dp"
+        app:shapeAppearanceOverlay="@style/RoundedPoster"
+        app:strokeColor="#1F152E"
+        app:strokeWidth="3dp"
+        android:layout_marginTop="120dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/header_title" />
 
 
@@ -118,7 +121,7 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_qr_code" />
+        app:layout_constraintTop_toBottomOf="@+id/event_poster" />
 
     <TextView
         android:id="@+id/message"

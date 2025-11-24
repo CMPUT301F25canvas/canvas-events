@@ -94,22 +94,9 @@ public class EventDetailFragment extends Fragment {
                         ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
                         ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
 
-                        // 🔥 NEW: Load poster image
-                        String posterUrl = doc.getString("posterURL");
-                        ImageView posterImage = view.findViewById(R.id.event_poster);
-
-                        if (!TextUtils.isEmpty(posterUrl)) {
-                            Glide.with(requireContext())
-                                    .load(posterUrl)
-                                    .placeholder(R.drawable.qrcodeplaceholder)
-                                    .error(R.drawable.qrcodeplaceholder)
-                                    .into(posterImage);
-                        }
-                        String criteria = "";
                         String tmp;
-                        if ((tmp = doc.getString("minAge")) != null) {
-                            criteria += String.format("Min. Age: %s", tmp);
-                        }
+                        String criteria = "";
+
                         if ((tmp = doc.getString("dietaryRestrictions")) != null) {
                             if (!criteria.isBlank()) {
                                 criteria += " | ";
@@ -123,6 +110,17 @@ public class EventDetailFragment extends Fragment {
                             criteria += String.format("Other Restrictions: %s", tmp);
                         }
                         ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
+
+                        String posterUrl = doc.getString("posterURL");
+                        ImageView posterImage = view.findViewById(R.id.event_poster);
+
+                        if (!TextUtils.isEmpty(posterUrl)) {
+                            Glide.with(requireContext())
+                                    .load(posterUrl)
+                                    .placeholder(R.drawable.qrcodeplaceholder)
+                                    .error(R.drawable.qrcodeplaceholder)
+                                    .into(posterImage);
+                        }
                     }
                 });
         if (((MainActivity) requireActivity()).getAdmin()) {
@@ -206,7 +204,6 @@ public class EventDetailFragment extends Fragment {
                             waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
                                 joinLeaveButton.setText("Leave Waiting List");
                                 Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
-                                NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
                                 updateAvailableSpotsMessage(db);
                             });
 

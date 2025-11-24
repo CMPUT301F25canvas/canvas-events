@@ -105,6 +105,24 @@ public class EventDetailFragment extends Fragment {
                                     .error(R.drawable.qrcodeplaceholder)
                                     .into(posterImage);
                         }
+                        String criteria = "";
+                        String tmp;
+                        if ((tmp = doc.getString("minAge")) != null) {
+                            criteria += String.format("Min. Age: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("dietaryRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Dietary Restrictions: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("otherRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Other Restrictions: %s", tmp);
+                        }
+                        ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
                     }
                 });
         if (((MainActivity) requireActivity()).getAdmin()) {
@@ -188,6 +206,7 @@ public class EventDetailFragment extends Fragment {
                             waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
                                 joinLeaveButton.setText("Leave Waiting List");
                                 Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
+                                NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
                                 updateAvailableSpotsMessage(db);
                             });
 

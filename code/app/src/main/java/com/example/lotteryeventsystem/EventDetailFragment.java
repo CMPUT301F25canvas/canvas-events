@@ -94,7 +94,23 @@ public class EventDetailFragment extends Fragment {
                         ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
                         ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
 
-                        // 🔥 NEW: Load poster image
+                        String tmp;
+                        String criteria = "";
+
+                        if ((tmp = doc.getString("dietaryRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Dietary Restrictions: %s", tmp);
+                        }
+                        if ((tmp = doc.getString("otherRestrictions")) != null) {
+                            if (!criteria.isBlank()) {
+                                criteria += " | ";
+                            }
+                            criteria += String.format("Other Restrictions: %s", tmp);
+                        }
+                        ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
+
                         String posterUrl = doc.getString("posterURL");
                         ImageView posterImage = view.findViewById(R.id.event_poster);
 
@@ -104,19 +120,6 @@ public class EventDetailFragment extends Fragment {
                                     .placeholder(R.drawable.qrcodeplaceholder)
                                     .error(R.drawable.qrcodeplaceholder)
                                     .into(posterImage);
-                            if ((tmp = doc.getString("dietaryRestrictions")) != null) {
-                                if (!criteria.isBlank()) {
-                                    criteria += " | ";
-                                }
-                                criteria += String.format("Dietary Restrictions: %s", tmp);
-                            }
-                            if ((tmp = doc.getString("otherRestrictions")) != null) {
-                                if (!criteria.isBlank()) {
-                                    criteria += " | ";
-                                }
-                                criteria += String.format("Other Restrictions: %s", tmp);
-                            }
-                            ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
                         }
                     }
                 });

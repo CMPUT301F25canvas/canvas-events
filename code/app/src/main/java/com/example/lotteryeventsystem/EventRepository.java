@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -145,6 +146,16 @@ public class EventRepository {
                             callback.onQRCodeUploaded(uri.toString());
                         }));
 
+    }
+
+    /**
+     * Get event by ID from Firestore
+     * @author Emily Lan
+     */
+    public Task<DocumentSnapshot> getEventById(String eventId) {
+        return db.collection("events")
+                .document(eventId)
+                .get();
     }
 
 }

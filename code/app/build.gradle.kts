@@ -52,6 +52,7 @@ dependencies {
     implementation("com.google.zxing:core:3.5.3")
     implementation(libs.firebase.firestore)
     implementation(libs.ext.junit)
+    implementation("com.squareup.picasso:picasso:2.8")
     implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.11.0")

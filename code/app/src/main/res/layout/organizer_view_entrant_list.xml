@@ -56,4 +56,15 @@
         android:backgroundTint="@color/purple"
         android:textSize="25sp" />
 
+    <Button
+        android:id="@+id/btnExportCSV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="Export CSV"
+        android:textColor="@color/black"
+        android:backgroundTint="@color/purple"
+        android:visibility="gone" />
+
 </LinearLayout>

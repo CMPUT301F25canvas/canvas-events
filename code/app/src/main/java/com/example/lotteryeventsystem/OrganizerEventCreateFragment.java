@@ -36,6 +36,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.android.material.timepicker.TimeFormat;
+import com.squareup.picasso.Picasso;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -58,8 +59,9 @@ public class OrganizerEventCreateFragment extends Fragment {
     private EventRepository eventRepository;
     private ActivityResultLauncher<String> pickImageLauncher;
     private ImageButton eventPoster; // Stores the image being saved?
-
-
+    private String mode = "create";
+    private String existingEventId;
+    private Event existingEvent;
 
     // Callback Interface for when an image is uploaded
     public interface ImageUploadCallback {
@@ -98,6 +100,10 @@ public class OrganizerEventCreateFragment extends Fragment {
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (getArguments() != null) {
+            mode = getArguments().getString("MODE", "create");
+            existingEventId = getArguments().getString("EVENT_ID");
+        }
         eventRepository = new EventRepository();
         eventCreationForm = new EventCreationForm();
         Event event = new Event();
@@ -420,6 +426,13 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         // Create Event Button
         Button createEventButton = view.findViewById(R.id.create_event_button);
+        if ("edit".equals(mode)) {
+            createEventButton.setText("Update Event");
+            // Load existing event data
+            loadExistingEventData();
+        } else {
+            createEventButton.setText("Create Event");
+        }
         createEventButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -439,9 +452,11 @@ public class OrganizerEventCreateFragment extends Fragment {
                         Toast.makeText(getContext(), "Registration Period is not valid", Toast.LENGTH_LONG).show();
                         return;
                     }
-
-                    // Create Event if everything is valid
-                    createEvent(event);
+                    if ("edit".equals(mode)) {
+                        updateEvent(event);
+                    } else {
+                        createEvent(event);
+                    }
                 } else {
                     Toast.makeText(getContext(), "Fill in the Required Fields", Toast.LENGTH_LONG).show();
                 }
@@ -469,6 +484,172 @@ public class OrganizerEventCreateFragment extends Fragment {
 
     // TODO: refactor to put datepicker logic method here
     // TODO: refactor to put timepicker logic method here
+
+    /**
+     * Load existing event data for prefilling (edit event)
+     * @author Emily Lan
+     */
+    private void loadExistingEventData() {
+        if (existingEventId == null || existingEventId.isEmpty()) {
+            return;
+        }
+
+        eventRepository.getEventById(existingEventId).addOnSuccessListener(documentSnapshot -> {
+            if (documentSnapshot.exists()) {
+                existingEvent = documentSnapshot.toObject(Event.class);
+                if (existingEvent != null) {
+                    // Make sure the event ID is set
+                    existingEvent.setEventID(existingEventId);
+                    // Pre-fill all form fields with existing data
+                    preFillFormFields(existingEvent);
+                }
+            }
+        }).addOnFailureListener(e -> {
+            Toast.makeText(getContext(), "Error loading event data", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    /**
+     * Pre-fill the form fields with existing event data
+     * @author Emily Lan
+     */
+    private void preFillFormFields(Event event) {
+        // Event Name
+        TextInputEditText eventNameInput = getView().findViewById(R.id.event_name_input);
+        if (event.getName() != null) {
+            eventNameInput.setText(event.getName());
+        }
+
+        // Event Description
+        TextInputEditText eventDescriptionInput = getView().findViewById(R.id.event_description_input);
+        if (event.getDescription() != null) {
+            eventDescriptionInput.setText(event.getDescription());
+        }
+
+        // Event Date
+        TextInputEditText eventDateInput = getView().findViewById(R.id.event_date_input_text);
+        if (event.getDate() != null) {
+            eventDateInput.setText(event.getDate());
+        }
+
+        // Start Time
+        TextInputEditText startTimeInput = getView().findViewById(R.id.start_time_input_text);
+        if (event.getStartTime() != null) {
+            startTimeInput.setText(event.getStartTime());
+        }
+
+        // End Time
+        TextInputEditText endTimeInput = getView().findViewById(R.id.end_time_input_text);
+        if (event.getEndTime() != null) {
+            endTimeInput.setText(event.getEndTime());
+        }
+
+        // Registration Start
+        TextInputEditText registrationStartInput = getView().findViewById(R.id.registration_start_input_text);
+        if (event.getRegistrationStart() != null) {
+            registrationStartInput.setText(event.getRegistrationStart());
+        }
+
+        // Registration End
+        TextInputEditText registrationEndInput = getView().findViewById(R.id.registration_end_input_text);
+        if (event.getRegistrationEnd() != null) {
+            registrationEndInput.setText(event.getRegistrationEnd());
+        }
+
+        // Sample Size
+        TextInputEditText sampleSizeInput = getView().findViewById(R.id.sample_size_input_text);
+        if (event.getSampleSize() != null) {
+            sampleSizeInput.setText(String.valueOf(event.getSampleSize()));
+        }
+
+        // Load Event Poster Image from URL
+        if (event.getPosterURL() != null && !event.getPosterURL().isEmpty()) {
+            loadImageFromUrl(event.getPosterURL(), eventPoster);
+        }
+
+        // Entrant Limit
+        TextInputEditText entrantLimitInput = getView().findViewById(R.id.entrant_limit_input_text);
+        CheckBox entrantLimitCheckBox = getView().findViewById(R.id.entrant_limit_checkbox);
+        if (event.getEntrantLimit() != null) {
+            entrantLimitInput.setText(String.valueOf(event.getEntrantLimit()));
+            entrantLimitCheckBox.setChecked(true);
+            entrantLimitInput.setVisibility(View.VISIBLE);
+        } else {
+            entrantLimitCheckBox.setChecked(false);
+            entrantLimitInput.setVisibility(View.INVISIBLE);
+        }
+
+        // Geolocation Requirement
+        CheckBox geolocationCheckBox = getView().findViewById(R.id.geolocation_requirement_checkbox);
+        geolocationCheckBox.setChecked(event.getGeolocationRequirement());
+
+        TextInputEditText minAgeInput = getView().findViewById(R.id.min_age_input);
+        if (event.getMinAge() != null && minAgeInput != null) {
+            minAgeInput.setText(event.getMinAge());
+        }
+
+        TextInputEditText dietaryRestrictionsInput = getView().findViewById(R.id.dietary_restrictions_input_text);
+        if (event.getDietaryRestrictions() != null && dietaryRestrictionsInput != null) {
+            dietaryRestrictionsInput.setText(event.getDietaryRestrictions());
+        }
+
+        TextInputEditText otherRestrictionsInput = getView().findViewById(R.id.other_restrictions_input);
+        if (event.getOtherRestrictions() != null && otherRestrictionsInput != null) {
+            otherRestrictionsInput.setText(event.getOtherRestrictions());
+        }
+    }
+
+    /**
+     * Update existing event in Firestore
+     * @author Emily Lan
+     */
+    private void updateEvent(Event updatedEvent) {
+        // Set the existing event ID
+        updatedEvent.setEventID(existingEventId);
+
+        // Keep the original organizer ID, QR code, and other preserved fields
+        if (existingEvent != null) {
+            updatedEvent.setOrganizerID(existingEvent.getOrganizerID());
+            updatedEvent.setQRCodeURL(existingEvent.getQRCodeURL());
+            // Preserve any other fields that shouldn't change during edit
+            updatedEvent.setMinAge(existingEvent.getMinAge());
+            updatedEvent.setDietaryRestrictions(existingEvent.getDietaryRestrictions());
+            updatedEvent.setOtherRestrictions(existingEvent.getOtherRestrictions());
+            updatedEvent.setCategories(existingEvent.getCategories());
+        }
+        // Handle poster update if changed
+        if (eventCreationForm.getLocalImageUri() != null) {
+            eventRepository.uploadPosterToFirebase(requireContext(), eventCreationForm.getLocalImageUri(), existingEventId, new OrganizerEventCreateFragment.ImageUploadCallback() {
+                @Override
+                public void onUploaded(String imageUrl) {
+                    updatedEvent.setPosterURL(imageUrl);
+                    // Update event after image upload
+                    eventRepository.addEvent(updatedEvent); // Use addEvent since it uses set() which overwrites
+                    navigateAfterUpdate();
+                }
+            });
+        } else {
+            // Keep existing poster URL
+            if (existingEvent != null) {
+                updatedEvent.setPosterURL(existingEvent.getPosterURL());
+            }
+            eventRepository.addEvent(updatedEvent); // Use addEvent since it uses set() which overwrites
+            navigateAfterUpdate();
+        }
+    }
+
+    private void navigateAfterUpdate() {
+        Toast.makeText(getContext(), "Event updated successfully", Toast.LENGTH_SHORT).show();
+        // Navigate back to the event details page
+        NavController navController = Navigation.findNavController(requireView());
+        navController.popBackStack();
+    }
+
+    private void loadImageFromUrl(String imageUrl, ImageButton imageButton) {
+        Picasso.get()
+                .load(imageUrl)
+                .into(imageButton);
+    }
 
     /**
      * Method for creating the Event, filling in the parameters and adding it to the Firestore database

@@ -1,15 +1,35 @@
 package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
+
+import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
+import com.example.lotteryeventsystem.data.NotificationRepository;
+import com.example.lotteryeventsystem.data.RepositoryCallback;
+import com.example.lotteryeventsystem.model.WaitlistEntry;
+import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.squareup.picasso.Picasso;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A Fragment that displays event details and provides navigation to different entrant lists
@@ -17,17 +37,18 @@ import com.google.firebase.firestore.FirebaseFirestore;
  * to view enrolled, canceled, and unenrolled entrants for a specific event.
  *
  * @author Emily Lan
- * @version 1.0
+ * @version 1.1
  * @see EntrantListFragment
  * @see Event
  */
 public class OrganizerEntrantListFragment extends Fragment {
-    private Button btnViewEntrants, btnEdit, btnDownloadQR;
+    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
-
+    private ImageView posterImageView;
+    private FirebaseWaitlistRepository waitlistRepository;
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
      *
@@ -60,6 +81,7 @@ public class OrganizerEntrantListFragment extends Fragment {
         if (args != null) {
             eventId = args.getString("EVENT_ID");
         }
+        waitlistRepository = new FirebaseWaitlistRepository();
         eventName = view.findViewById(R.id.event_name);
         eventDescription = view.findViewById(R.id.event_description);
         eventStartTime = view.findViewById(R.id.event_start_time);
@@ -70,13 +92,18 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnBack = view.findViewById(R.id.back_button);
         btnEdit = view.findViewById(R.id.editEvent);
         btnDownloadQR = view.findViewById(R.id.downloadQR);
+        posterImageView = view.findViewById(R.id.poster);
+        btnSample = view.findViewById(R.id.btnSample);
         loadEventFromFirestore(eventId);
 
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EntrantListFragment fragment = EntrantListFragment.newInstance(eventId, "all");
-                replaceFragment(fragment);
+                Bundle args = new Bundle();
+                args.putString("EVENT_ID", eventId);
+                args.putString("LIST_TYPE", "waiting");
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_EntrantListFragment, args);
             }
         });
 
@@ -93,20 +120,127 @@ public class OrganizerEntrantListFragment extends Fragment {
                 }
             }
         });
+        btnSample.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentEvent != null && currentEvent.getSampleSize() != null) {
+                    selectRandomSample();
+                } else {
+                    Toast.makeText(getContext(), "No sample size defined for this event", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to OrganizerEventCreateFragment in edit mode
+                Bundle args = new Bundle();
+                args.putString("EVENT_ID", eventId);
+                args.putString("MODE", "edit");
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_organizerEventCreateFragment, args);
+            }
+        });
         return view;
     }
 
+    private void selectRandomSample() {
+        int sampleSize = currentEvent.getSampleSize();
+
+        // Get all waiting entrants
+        waitlistRepository.getWaitingEntrants(eventId, new RepositoryCallback<List<WaitlistEntry>>() {
+            @Override
+            public void onComplete(List<WaitlistEntry> result, Exception error) {
+                if (error != null) {
+                    Toast.makeText(getContext(), "Error loading entrants: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (result == null || result.isEmpty()) {
+                    Toast.makeText(getContext(), "No waiting entrants found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                List<WaitlistEntry> selectedEntrants;
+                List<WaitlistEntry> notSelectedEntrants;
+                if (result.size() < sampleSize) {
+                    selectedEntrants = new ArrayList<>(result); // Select all
+                    notSelectedEntrants = new ArrayList<>();
+                    Toast.makeText(getContext(),
+                            "Selected " + selectedEntrants.size() + " entrants and notified all applicants",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    // Select random sample
+                    selectedEntrants = getRandomSample(result, sampleSize);
+                    notSelectedEntrants = getNotSelectedEntrants(result, selectedEntrants);
+                    Toast.makeText(getContext(),
+                            "Selected " + selectedEntrants.size() + " entrants and notified all applicants",
+                            Toast.LENGTH_SHORT).show();
+                }
+                    // Update selected entrants status to INVITED
+                    updateEntrantsStatus(selectedEntrants, WaitlistStatus.INVITED);
+                    // Send notifications
+                    sendSelectedNotifications(selectedEntrants);
+                    sendNotSelectedNotifications(notSelectedEntrants);
+            }
+        });
+    }
+
     /**
-     * Replaces the current fragment with the specified fragment.
-     *
-     * @param fragment the fragment to display
+     * Get random sample from the list
      */
-    private void replaceFragment(Fragment fragment) {
-        if (getActivity() != null) {
-            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-            transaction.replace(R.id.nav_host_fragment, fragment);
-            transaction.addToBackStack(null);
-            transaction.commit();
+    private List<WaitlistEntry> getRandomSample(List<WaitlistEntry> allEntrants, int sampleSize) {
+        List<WaitlistEntry> shuffled = new ArrayList<>(allEntrants);
+        Collections.shuffle(shuffled);
+        return shuffled.subList(0, sampleSize);
+    }
+
+    /**
+     * Get entrants who were not selected
+     */
+    private List<WaitlistEntry> getNotSelectedEntrants(List<WaitlistEntry> allEntrants, List<WaitlistEntry> selected) {
+        List<WaitlistEntry> notSelected = new ArrayList<>(allEntrants);
+        notSelected.removeAll(selected);
+        return notSelected;
+    }
+
+    /**
+     * Update status for a list of entrants
+     */
+    private void updateEntrantsStatus(List<WaitlistEntry> entrants, WaitlistStatus status) {
+        for (WaitlistEntry entrant : entrants) {
+            waitlistRepository.updateEntrantStatus(eventId, entrant.getId(), status,
+                    new RepositoryCallback<WaitlistEntry>() {
+                        @Override
+                        public void onComplete(WaitlistEntry result, Exception error) {
+                            if (error != null) {
+                                Log.e("SampleSelection", "Error updating entrant " + entrant.getId() + ": " + error.getMessage());
+                            }
+                        }
+                    });
+        }
+    }
+
+    /**
+     * Send notifications to selected entrants
+     */
+    private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
+        for (WaitlistEntry entrant : selectedEntrants) {
+            String userId = entrant.getId(); // Make sure this gets the actual user ID
+            if (userId != null && !userId.isEmpty()) {
+                NotificationsManager.sendSelected(requireContext(), eventId, userId);
+            }
+        }
+    }
+
+    /**
+     * Send notifications to not selected entrants
+     */
+    private void sendNotSelectedNotifications(List<WaitlistEntry> notSelectedEntrants) {
+        for (WaitlistEntry entrant : notSelectedEntrants) {
+            String userId = entrant.getId(); // Make sure this gets the actual user ID
+            if (userId != null && !userId.isEmpty()) {
+                NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
+            }
         }
     }
 
@@ -141,6 +275,12 @@ public class OrganizerEntrantListFragment extends Fragment {
                         if (documentSnapshot.contains("endTime")) {
                             currentEvent.setEndTime(documentSnapshot.getString("endTime"));
                         }
+                        if (documentSnapshot.contains("posterURL")) {
+                            currentEvent.setPosterURL(documentSnapshot.getString("posterURL"));
+                        }
+                        if (documentSnapshot.contains("sampleSize")) {
+                            currentEvent.setSampleSize(documentSnapshot.getLong("sampleSize").intValue());
+                        }
                         String criteria = "";
                         String tmp;
                         if ((tmp = documentSnapshot.getString("minAge")) != null) {
@@ -160,6 +300,7 @@ public class OrganizerEntrantListFragment extends Fragment {
                         }
                         eventCriteria.setText(criteria);
                         displayEventInfo();
+                        checkEditButtonVisibility();
                     } else {
                         showError("Event not found: " + eventId);
                     }
@@ -167,6 +308,31 @@ public class OrganizerEntrantListFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     showError("Error loading event: " + e.getMessage());
                 });
+    }
+
+    private void checkEditButtonVisibility() {
+        if (currentEvent == null || currentEvent.getRegistrationEnd() == null) {
+            btnEdit.setVisibility(View.VISIBLE); // Show by default if no date
+            return;
+        }
+
+        String registrationEnd = currentEvent.getRegistrationEnd();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        try {
+            LocalDate registrationEndDate = LocalDate.parse(registrationEnd, formatter);
+            LocalDate currentDate = LocalDate.now();
+
+            // Hide edit button if registration end date has passed
+            if (currentDate.isAfter(registrationEndDate)) {
+                btnEdit.setVisibility(View.GONE);
+            } else {
+                btnEdit.setVisibility(View.VISIBLE);
+            }
+        } catch (DateTimeParseException e) {
+            // If date parsing fails, show the button by default
+            btnEdit.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
@@ -200,7 +366,25 @@ public class OrganizerEntrantListFragment extends Fragment {
             } else {
                 eventDate.setText("Date: Not specified");
             }
+            loadPosterImage();
         }
+    }
+
+    private void loadPosterImage() {
+        if (currentEvent != null && currentEvent.getPosterURL() != null && !currentEvent.getPosterURL().isEmpty()) {
+            loadImageWithPicasso(currentEvent.getPosterURL());
+        } else {
+            // Set the default placeholder when no poster exists
+            posterImageView.setImageResource(R.drawable.qrcodeplaceholder);
+        }
+    }
+
+    private void loadImageWithPicasso(String imageUrl) {
+        Picasso.get()
+                .load(imageUrl)
+                .placeholder(R.drawable.qrcodeplaceholder) // Show placeholder while loading
+                .error(R.drawable.qrcodeplaceholder) // Show placeholder if loading fails
+                .into(posterImageView);
     }
 
     /**

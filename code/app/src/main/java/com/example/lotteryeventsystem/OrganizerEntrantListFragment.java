@@ -42,7 +42,7 @@ import java.util.List;
  * @see Event
  */
 public class OrganizerEntrantListFragment extends Fragment {
-    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample;
+    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample, btnViewMap;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
@@ -94,6 +94,8 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnDownloadQR = view.findViewById(R.id.downloadQR);
         posterImageView = view.findViewById(R.id.poster);
         btnSample = view.findViewById(R.id.btnSample);
+        btnViewMap = view.findViewById(R.id.btnViewMap);
+
         loadEventFromFirestore(eventId);
 
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
@@ -139,6 +141,16 @@ public class OrganizerEntrantListFragment extends Fragment {
                 args.putString("MODE", "edit");
                 NavController navController = Navigation.findNavController(requireView());
                 navController.navigate(R.id.action_organizerEntrantListFragment_to_organizerEventCreateFragment, args);
+            }
+        });
+        btnViewMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to EventMapFragment
+                Bundle args = new Bundle();
+                args.putString("EVENT_ID", eventId);
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_eventMapFragment, args);
             }
         });
         return view;

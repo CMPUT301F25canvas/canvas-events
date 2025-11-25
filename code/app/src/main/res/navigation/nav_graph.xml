@@ -139,6 +139,9 @@
         <action
             android:id="@+id/action_organizerEntrantListFragment_to_organizerEventCreateFragment"
             app:destination="@id/organizerEventCreateFragment" />
+        <action
+            android:id="@+id/action_organizerEntrantListFragment_to_eventMapFragment"
+            app:destination="@id/eventMapFragment" />
     </fragment>
 
     <fragment
@@ -167,6 +170,15 @@
         <action
             android:id="@+id/eventHistoryFragment_to_profileFragment"
             app:destination="@id/profileFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/eventMapFragment"
+        android:name="com.example.lotteryeventsystem.EventMapFragment"
+        tools:layout="@layout/fragment_event_map">
+        <argument
+            android:name="EVENT_ID"
+            app:argType="string" />
     </fragment>
 
 </navigation>

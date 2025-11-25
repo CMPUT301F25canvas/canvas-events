@@ -3,11 +3,14 @@ package com.example.lotteryeventsystem;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -15,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -26,6 +31,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +40,10 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
     MapView mapView;
     GoogleMap map;
     String eventID;
+
+    ImageButton backButton;
+    EventRepository eventRepository;
+
     private FusedLocationProviderClient fusedLocationClient;
 
     @Nullable
@@ -42,6 +53,8 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
                              @Nullable Bundle savedInstanceState) {
 
         View v = inflater.inflate(R.layout.fragment_event_map, container, false);
+
+        eventRepository = new EventRepository();
 
         // Requests for location permissions
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
@@ -64,6 +77,9 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
 
         // Get location of Organizer
         defaultMapLocation();
+
+        // Add markers to the map
+        addEntrantMarkers(eventID);
     }
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
@@ -77,8 +93,10 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
 
         mapView = view.findViewById(R.id.mapView);
 
-        // Load locations of entrants (stored in firebase)
 
+        // Back Button
+        backButton = view.findViewById(R.id.back_button);
+        setBackButton(view);
     }
 
     /**
@@ -126,6 +144,25 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
 
+    private void addEntrantMarkers(String eventID) {
+        // Get the waiting list for the event
+        Task<QuerySnapshot> waitingList = eventRepository.getEntrants(eventID);
+        waitingList.addOnSuccessListener(queryDocumentSnapshots -> {
+            for (int i = 0; i < queryDocumentSnapshots.size(); i++) {
+                String userID = queryDocumentSnapshots.getDocuments().get(i).getId();
+                double latitude = queryDocumentSnapshots.getDocuments().get(i).getDouble("latitude");
+                double longitude = queryDocumentSnapshots.getDocuments().get(i).getDouble("longitude");
+
+                // Add marker to map
+                map.addMarker(new MarkerOptions()
+                        .position(new LatLng(latitude, longitude))
+                        .title(userID));
+            }
+        });
+
+
+    }
+
 
     // Map lifecycle methods
     @Override
@@ -145,4 +182,15 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         super.onDestroy();
         mapView.onDestroy();
     }
+
+    // Setting up buttons
+    public void setBackButton(View v) {
+        backButton.setOnClickListener(view -> {
+            NavController navController = Navigation.findNavController(v);
+            navController.navigateUp();
+        });
+    }
+
+
+
 }

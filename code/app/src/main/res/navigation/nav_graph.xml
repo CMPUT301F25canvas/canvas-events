@@ -47,6 +47,9 @@
         <action
             android:id="@+id/action_adminHomeFragment_to_adminProfilesFragment"
             app:destination="@id/adminProfilesFragment"/>
+        <action
+            android:id="@+id/action_adminHomeFragment_to_adminPosterFragment"
+            app:destination="@id/adminPosterFragment" />
     </fragment>
 
     <fragment
@@ -62,6 +65,11 @@
         android:id="@+id/adminProfilesFragment"
         android:name="com.example.lotteryeventsystem.AdminViewProfiles"
         android:label="Profiles" />
+
+    <fragment
+        android:id="@+id/adminPosterFragment"
+        android:name="com.example.lotteryeventsystem.AdminPosterFragment"
+        tools:layout="@layout/fragment_admin_view_images" />
 
     <fragment
         android:id="@+id/notificationFragment"

@@ -1,5 +1,6 @@
 package com.example.lotteryeventsystem;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -19,6 +20,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -55,6 +59,29 @@ public class EventDetailFragment extends Fragment {
 
     public static final String ARG_EVENT_ID = "event_id";
 
+    private final ActivityResultLauncher<String[]> locationPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+
+                boolean fine = Boolean.TRUE.equals(result.get(android.Manifest.permission.ACCESS_FINE_LOCATION));
+                boolean coarse = Boolean.TRUE.equals(result.get(android.Manifest.permission.ACCESS_COARSE_LOCATION));
+
+                if (fine || coarse) {
+                    loadEventRequirementsAndSetup(); // permission granted → reload UI
+                } else {
+                    message.setText("This event requires your location permission to join.");
+                    joinLeaveButton.setText("Requires Location");
+                    joinLeaveButton.setEnabled(true);
+                    joinLeaveButton.setAlpha(1f);
+                }
+            });
+
+    private boolean hasLocationPermission() {
+        return requireContext().checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) ==
+                PackageManager.PERMISSION_GRANTED ||
+                requireContext().checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) ==
+                        PackageManager.PERMISSION_GRANTED;
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -78,56 +105,86 @@ public class EventDetailFragment extends Fragment {
             eventId = getArguments().getString(ARG_EVENT_ID); // Grab the event ID passed in
         }
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        updateAvailableSpotsMessage(db);
-
-        eventId = getArguments().getString("event_id");
         deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
         joinLeaveButton = view.findViewById(R.id.join_leave_button);
+
+        loadEventRequirementsAndSetup();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+
+    }
+
+    private void loadEventRequirementsAndSetup() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        eventId = getArguments().getString("event_id");
+
         db.collection("events").document(eventId)
                 .get()
                 .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
-                        ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
-                        ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
-                        ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
-                        ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
+                    if (!doc.exists()) return;
 
-                        String tmp;
-                        String criteria = "";
+                    View view = getView();
+                    if (view == null) return;
 
-                        if ((tmp = doc.getString("dietaryRestrictions")) != null) {
-                            if (!criteria.isBlank()) {
-                                criteria += " | ";
-                            }
-                            criteria += String.format("Dietary Restrictions: %s", tmp);
-                        }
-                        if ((tmp = doc.getString("otherRestrictions")) != null) {
-                            if (!criteria.isBlank()) {
-                                criteria += " | ";
-                            }
-                            criteria += String.format("Other Restrictions: %s", tmp);
-                        }
-                        ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
+                    ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
+                    ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
+                    ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
+                    ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
+                    ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
 
-                        String posterUrl = doc.getString("posterURL");
-                        ImageView posterImage = view.findViewById(R.id.event_poster);
+                    // Criteria text
+                    String criteria = "";
+                    String tmp;
 
-                        if (!TextUtils.isEmpty(posterUrl)) {
-                            Glide.with(requireContext())
-                                    .load(posterUrl)
-                                    .placeholder(R.drawable.qrcodeplaceholder)
-                                    .error(R.drawable.qrcodeplaceholder)
-                                    .into(posterImage);
-                        }
+                    if ((tmp = doc.getString("dietaryRestrictions")) != null) {
+                        criteria += "Dietary Restrictions: " + tmp;
                     }
+                    if ((tmp = doc.getString("otherRestrictions")) != null) {
+                        if (!criteria.isBlank()) criteria += " | ";
+                        criteria += "Other Restrictions: " + tmp;
+                    }
+                    ((TextView) view.findViewById(R.id.event_criteria)).setText(criteria);
+
+                    // Poster image
+                    String posterUrl = doc.getString("posterURL");
+                    ImageView posterImage = view.findViewById(R.id.event_poster);
+                    if (!TextUtils.isEmpty(posterUrl)) {
+                        Glide.with(requireContext())
+                                .load(posterUrl)
+                                .placeholder(R.drawable.qrcodeplaceholder)
+                                .error(R.drawable.qrcodeplaceholder)
+                                .into(posterImage);
+                    }
+
+                    boolean requiresGeolocation =
+                            Boolean.TRUE.equals(doc.getBoolean("geolocationRequirement"));
+
+                    if (requiresGeolocation && !hasLocationPermission()) {
+
+                        joinLeaveButton.setText("Requires Location");
+                        joinLeaveButton.setEnabled(true);
+                        joinLeaveButton.setAlpha(1f);
+
+                        message.setText("This event requires location access before joining. \nClick the button to allow location services ");
+
+                        joinLeaveButton.setOnClickListener(v -> {
+                            locationPermissionLauncher.launch(new String[]{
+                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                            });
+                        });
+                        return;
+                    }
+
+                    if (((MainActivity) requireActivity()).getAdmin()) {
+                        setupDeleteEventButton(db);
+                    } else {
+                        setupJoinLeaveButton(db);
+                    }
+
+                    updateAvailableSpotsMessage(db);
                 });
-        if (((MainActivity) requireActivity()).getAdmin()) {
-            setupDeleteEventButton(db);
-        } else {
-            setupJoinLeaveButton(db);
-        }
     }
 
     /**

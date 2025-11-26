@@ -68,6 +68,8 @@
     <string name="notification_open">Open invitation</string>
     <string name="notification_view_details">View details</string>
     <string name="notification_title_fallback">Organizer update</string>
+    <string name="notification_invited_body">You were selected for %1$s.</string>
+    <string name="notification_not_selected_body">You were not selected for %1$s this round.</string>
     <string name="notification_status_unread">New</string>
     <string name="notification_status_pending">Pending</string>
     <string name="notification_status_accepted">Accepted</string>

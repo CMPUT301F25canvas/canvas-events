@@ -24,7 +24,9 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
+import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
+import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 
@@ -54,6 +56,7 @@ public class EntrantListFragment extends Fragment {
     private int entrantPosition = -1;
     private WaitlistEntryAdapter adapter;
     private final FirebaseWaitlistRepository repository = new FirebaseWaitlistRepository();
+    private final NotificationRepository notificationRepository = new NotificationRepository();
     private ArrayList<WaitlistEntry> entrantsList = new ArrayList<>();
     private String eventId;
     private String listType;
@@ -417,8 +420,31 @@ public class EntrantListFragment extends Fragment {
                             entrantsList.remove(entrantPosition);
                             entrantPosition = -1;
                             adapter.notifyDataSetChanged();
+                            sendCancellationNotification(entrant);
                         }
                     }
+                });
+    }
+
+    private void sendCancellationNotification(WaitlistEntry entrant) {
+        if (entrant == null) {
+            return;
+        }
+        List<WaitlistEntry> recipients = new ArrayList<>();
+        recipients.add(entrant);
+        String title = getString(R.string.notification_title_fallback);
+        String body = "Your invite was cancelled by the organizer.";
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                null,
+                title,
+                body,
+                "CANCELLED",
+                "ORGANIZER",
+                NotificationStatus.INFO,
+                recipients,
+                (count, error) -> {
+                    // Log-only; no UI change needed.
                 });
     }
 }

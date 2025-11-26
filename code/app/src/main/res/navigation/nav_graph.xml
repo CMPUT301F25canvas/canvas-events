@@ -64,6 +64,15 @@
         android:label="Profiles" />
 
     <fragment
+        android:id="@+id/adminNotificationsFragment"
+        android:name="com.example.lotteryeventsystem.AdminNotificationsView"
+        android:label="AdminNotifications">
+        <action
+            android:id="@+id/action_adminNotificationFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment"/>
+    </fragment>
+
+    <fragment
         android:id="@+id/notificationFragment"
         android:name="com.example.lotteryeventsystem.NotificationFragment"
         android:label="@string/menu_notification_label"
@@ -74,6 +83,9 @@
         <action
             android:id="@+id/action_notificationFragment_to_notificationDetailFragment"
             app:destination="@id/notificationDetailFragment" />
+        <action
+            android:id="@+id/action_notificationFragment_to_adminNotificationFragment"
+            app:destination="@id/adminNotificationsFragment"/>
     </fragment>
 
     <fragment

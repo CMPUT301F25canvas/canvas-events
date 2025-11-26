@@ -3,6 +3,7 @@ package com.example.lotteryeventsystem;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +15,11 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Lightweight in-app notification preferences.
@@ -48,13 +54,32 @@ public class NotificationSettingsFragment extends Fragment {
 
         backButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
 
-        allowPush.setOnCheckedChangeListener((buttonView, isChecked) -> save(prefs, KEY_ALLOW_PUSH, isChecked));
-        organizerMessages.setOnCheckedChangeListener((buttonView, isChecked) -> save(prefs, KEY_ORGANIZER, isChecked));
-        adminMessages.setOnCheckedChangeListener((buttonView, isChecked) -> save(prefs, KEY_ADMIN, isChecked));
-        marketing.setOnCheckedChangeListener((buttonView, isChecked) -> save(prefs, KEY_MARKETING, isChecked));
+        allowPush.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_ALLOW_PUSH, isChecked));
+        organizerMessages.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_ORGANIZER, isChecked));
+        adminMessages.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_ADMIN, isChecked));
+        marketing.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_MARKETING, isChecked));
     }
 
-    private void save(SharedPreferences prefs, String key, boolean value) {
+    private void saveAndSync(SharedPreferences prefs, String key, boolean value) {
         prefs.edit().putBoolean(key, value).apply();
+        syncToFirestore(prefs);
+    }
+
+    private void syncToFirestore(SharedPreferences prefs) {
+        String deviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        if (deviceId == null || deviceId.isEmpty()) {
+            return;
+        }
+        Map<String, Object> payload = new HashMap<>();
+        payload.put(KEY_ALLOW_PUSH, prefs.getBoolean(KEY_ALLOW_PUSH, true));
+        payload.put(KEY_ORGANIZER, prefs.getBoolean(KEY_ORGANIZER, true));
+        payload.put(KEY_ADMIN, prefs.getBoolean(KEY_ADMIN, true));
+        payload.put(KEY_MARKETING, prefs.getBoolean(KEY_MARKETING, false));
+        FirebaseFirestore.getInstance()
+                .collection("users")
+                .document(deviceId)
+                .collection("preferences")
+                .document("notifications")
+                .set(payload, SetOptions.merge());
     }
 }

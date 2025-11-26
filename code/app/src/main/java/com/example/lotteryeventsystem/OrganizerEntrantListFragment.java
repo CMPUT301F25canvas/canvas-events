@@ -19,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
 import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
+import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -42,13 +43,14 @@ import java.util.List;
  * @see Event
  */
 public class OrganizerEntrantListFragment extends Fragment {
-    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample;
+    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample, btnViewMap;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
     private ImageView posterImageView;
     private FirebaseWaitlistRepository waitlistRepository;
+    private NotificationRepository notificationRepository;
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
      *
@@ -82,6 +84,7 @@ public class OrganizerEntrantListFragment extends Fragment {
             eventId = args.getString("EVENT_ID");
         }
         waitlistRepository = new FirebaseWaitlistRepository();
+        notificationRepository = new NotificationRepository();
         eventName = view.findViewById(R.id.event_name);
         eventDescription = view.findViewById(R.id.event_description);
         eventStartTime = view.findViewById(R.id.event_start_time);
@@ -94,6 +97,8 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnDownloadQR = view.findViewById(R.id.downloadQR);
         posterImageView = view.findViewById(R.id.poster);
         btnSample = view.findViewById(R.id.btnSample);
+        btnViewMap = view.findViewById(R.id.btnViewMap);
+
         loadEventFromFirestore(eventId);
 
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
@@ -139,6 +144,16 @@ public class OrganizerEntrantListFragment extends Fragment {
                 args.putString("MODE", "edit");
                 NavController navController = Navigation.findNavController(requireView());
                 navController.navigate(R.id.action_organizerEntrantListFragment_to_organizerEventCreateFragment, args);
+            }
+        });
+        btnViewMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to EventMapFragment
+                Bundle args = new Bundle();
+                args.putString("EVENT_ID", eventId);
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_eventMapFragment, args);
             }
         });
         return view;
@@ -224,24 +239,52 @@ public class OrganizerEntrantListFragment extends Fragment {
      * Send notifications to selected entrants
      */
     private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
-        for (WaitlistEntry entrant : selectedEntrants) {
-            String userId = entrant.getId(); // Make sure this gets the actual user ID
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendSelected(requireContext(), eventId, userId);
-            }
+        if (selectedEntrants == null || selectedEntrants.isEmpty()) {
+            return;
         }
+        String eventTitle = currentEvent != null ? currentEvent.getName() : null;
+        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
+        String body = getString(R.string.notification_invited_body, title);
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                eventTitle,
+                title,
+                body,
+                "INVITE",
+                "ORGANIZER",
+                NotificationStatus.PENDING,
+                selectedEntrants,
+                (count, error) -> {
+                    if (error != null) {
+                        Log.e("SampleSelection", "Error sending invite notifications: " + error.getMessage());
+                    }
+                });
     }
 
     /**
      * Send notifications to not selected entrants
      */
     private void sendNotSelectedNotifications(List<WaitlistEntry> notSelectedEntrants) {
-        for (WaitlistEntry entrant : notSelectedEntrants) {
-            String userId = entrant.getId(); // Make sure this gets the actual user ID
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
-            }
+        if (notSelectedEntrants == null || notSelectedEntrants.isEmpty()) {
+            return;
         }
+        String eventTitle = currentEvent != null ? currentEvent.getName() : null;
+        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
+        String body = getString(R.string.notification_not_selected_body, title);
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                eventTitle,
+                title,
+                body,
+                "RESULT",
+                "ORGANIZER",
+                NotificationStatus.INFO,
+                notSelectedEntrants,
+                (count, error) -> {
+                    if (error != null) {
+                        Log.e("SampleSelection", "Error sending not-selected notifications: " + error.getMessage());
+                    }
+                });
     }
 
     /**

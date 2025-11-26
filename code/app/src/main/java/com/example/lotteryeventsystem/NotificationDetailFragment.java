@@ -43,6 +43,7 @@ public class NotificationDetailFragment extends Fragment {
     private String waitlistEntryId;
     private String eventName;
     private String body;
+    private String messageType;
     private NotificationStatus currentStatus = NotificationStatus.UNREAD;
 
     @Nullable
@@ -72,6 +73,7 @@ public class NotificationDetailFragment extends Fragment {
             waitlistEntryId = getArguments().getString("waitlistEntryId");
             eventName = getArguments().getString("eventName");
             body = getArguments().getString("body");
+            messageType = getArguments().getString("type");
             String statusValue = getArguments().getString("status");
             if (!TextUtils.isEmpty(statusValue)) {
                 try {
@@ -83,6 +85,7 @@ public class NotificationDetailFragment extends Fragment {
         }
 
         bindContent();
+        updateActionVisibility();
         acceptButton.setOnClickListener(v -> handleAction(NotificationStatus.ACCEPTED, WaitlistStatus.CONFIRMED));
         declineButton.setOnClickListener(v -> handleAction(NotificationStatus.DECLINED, WaitlistStatus.DECLINED));
     }
@@ -102,6 +105,9 @@ public class NotificationDetailFragment extends Fragment {
     }
 
     private void handleAction(NotificationStatus notificationStatus, @Nullable WaitlistStatus waitlistStatus) {
+        if (!isActionable()) {
+            return;
+        }
         setLoading(true);
         if (waitlistStatus != null && eventId != null && waitlistEntryId != null) {
             waitlistRepository.updateEntrantStatus(eventId, waitlistEntryId, waitlistStatus,
@@ -167,6 +173,17 @@ public class NotificationDetailFragment extends Fragment {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         acceptButton.setEnabled(!loading);
         declineButton.setEnabled(!loading);
+    }
+
+    private void updateActionVisibility() {
+        int visibility = isActionable() ? View.VISIBLE : View.GONE;
+        acceptButton.setVisibility(visibility);
+        declineButton.setVisibility(visibility);
+    }
+
+    private boolean isActionable() {
+        return (messageType != null && messageType.equalsIgnoreCase("INVITE"))
+                || currentStatus == NotificationStatus.PENDING;
     }
 
     private void showToast(String message) {

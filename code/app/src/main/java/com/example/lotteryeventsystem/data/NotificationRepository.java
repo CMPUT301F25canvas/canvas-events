@@ -48,6 +48,7 @@ public class NotificationRepository {
      * @param title          title to show in the feed
      * @param message        long-form body
      * @param type           a short string like INVITE or BROADCAST
+     * @param source         who sent it (ORGANIZER/ADMIN/MARKETING); defaults to ORGANIZER if null
      * @param entrants       recipients
      * @param callback       completion callback with how many notifications were written
      */
@@ -56,12 +57,16 @@ public class NotificationRepository {
                                             String title,
                                             String message,
                                             String type,
+                                            @Nullable String source,
+                                            NotificationStatus status,
                                             List<WaitlistEntry> entrants,
                                             RepositoryCallback<Integer> callback) {
         if (entrants == null || entrants.isEmpty()) {
             callback.onComplete(0, null);
             return;
         }
+        NotificationStatus safeStatus = status != null ? status : NotificationStatus.UNREAD;
+        String safeSource = source != null ? source : "ORGANIZER";
         WriteBatch batch = firestore.batch();
         int added = 0;
         for (WaitlistEntry entry : entrants) {
@@ -81,8 +86,9 @@ public class NotificationRepository {
             payload.put("title", title);
             payload.put("body", message);
             payload.put("type", type);
+            payload.put("source", safeSource);
             payload.put("waitlistEntryId", entry.getId());
-            payload.put("status", NotificationStatus.PENDING.name());
+            payload.put("status", safeStatus.name());
             payload.put("createdAt", FieldValue.serverTimestamp());
             batch.set(doc, payload);
             added++;
@@ -124,6 +130,31 @@ public class NotificationRepository {
     }
 
     /**
+     * Admin view of all notifications.
+     */
+    public ListenerRegistration listenToAllNotifications(NotificationFeedListener listener) {
+        return firestore.collection("notifications")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(200)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        listener.onChanged(null, error);
+                        return;
+                    }
+                    List<NotificationMessage> messages = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentSnapshot snapshot : snapshots.getDocuments()) {
+                            NotificationMessage message = mapMessage(snapshot);
+                            if (message != null) {
+                                messages.add(message);
+                            }
+                        }
+                    }
+                    listener.onChanged(messages, null);
+                });
+    }
+
+    /**
      * Mark a notification as handled/read.
      */
     public void updateNotificationStatus(String notificationId,
@@ -146,6 +177,8 @@ public class NotificationRepository {
         message.setStatus(parseStatus(snapshot.getString("status")));
         message.setCreatedAt(snapshot.getTimestamp("createdAt"));
         message.setRespondBy(snapshot.getTimestamp("respondBy"));
+        message.setType(snapshot.getString("type"));
+        message.setSource(snapshot.getString("source"));
         return message;
     }
 

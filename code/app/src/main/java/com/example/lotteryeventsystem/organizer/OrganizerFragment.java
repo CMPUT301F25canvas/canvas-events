@@ -2,6 +2,7 @@ package com.example.lotteryeventsystem.organizer;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +19,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.lotteryeventsystem.R;
 import com.example.lotteryeventsystem.di.ServiceLocator;
+import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.Event;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
+import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.service.WaitlistService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -40,8 +44,10 @@ public class OrganizerFragment extends Fragment implements OrganizerInvitedAdapt
     private OrganizerInvitedAdapter adapter;
 
     private String currentEventId;
+    private String currentEventTitle;
 
     private final WaitlistService waitlistService = ServiceLocator.provideWaitlistService();
+    private final NotificationRepository notificationRepository = ServiceLocator.provideNotificationRepository();
 
     public OrganizerFragment() {
     }
@@ -117,10 +123,11 @@ public class OrganizerFragment extends Fragment implements OrganizerInvitedAdapt
     }
 
     private void showEvent(Event event) {
-        eventTitleView.setVisibility(View.VISIBLE);
-        eventTitleView.setText(TextUtils.isEmpty(event.getTitle())
+        currentEventTitle = TextUtils.isEmpty(event.getTitle())
                 ? getString(R.string.event_detail_name_fallback)
-                : event.getTitle());
+                : event.getTitle();
+        eventTitleView.setVisibility(View.VISIBLE);
+        eventTitleView.setText(currentEventTitle);
         drawButton.setVisibility(View.VISIBLE);
         drawButton.setEnabled(true);
         waitingCountView.setVisibility(View.VISIBLE);
@@ -195,6 +202,7 @@ public class OrganizerFragment extends Fragment implements OrganizerInvitedAdapt
                                 ? replacement.getEntrantName()
                                 : getString(R.string.event_detail_name_fallback);
                         showToastMessage(getString(R.string.organizer_draw_success, name));
+                        sendInviteNotification(replacement);
                     }
                     refreshWaitlist();
                 });
@@ -230,6 +238,7 @@ public class OrganizerFragment extends Fragment implements OrganizerInvitedAdapt
                                     ? entry.getEntrantName()
                                     : getString(R.string.event_detail_name_fallback);
                             showToastMessage(getString(R.string.organizer_decline_success, name));
+                            sendInviteNotification(replacement);
                             refreshWaitlist();
                         });
                     }
@@ -240,6 +249,31 @@ public class OrganizerFragment extends Fragment implements OrganizerInvitedAdapt
                             return;
                         }
                         requireActivity().runOnUiThread(() -> showToast(R.string.organizer_action_error));
+                    }
+                });
+    }
+
+    private void sendInviteNotification(@Nullable WaitlistEntry entry) {
+        if (entry == null || currentEventId == null) {
+            return;
+        }
+        List<WaitlistEntry> recipients = new ArrayList<>();
+        recipients.add(entry);
+        String title = !TextUtils.isEmpty(currentEventTitle)
+                ? currentEventTitle
+                : getString(R.string.notification_title_fallback);
+        notificationRepository.sendNotificationsToEntrants(
+                currentEventId,
+                currentEventTitle,
+                title,
+                getString(R.string.notification_invited_body, title),
+                "INVITE",
+                "ORGANIZER",
+                NotificationStatus.PENDING,
+                recipients,
+                (count, error) -> {
+                    if (error != null) {
+                        Log.e("OrganizerFragment", "Failed to send invite notification", error);
                     }
                 });
     }

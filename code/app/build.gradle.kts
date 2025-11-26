@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs")
+    // Google Maps SDK
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -29,6 +31,9 @@ android {
             )
         }
     }
+    buildFeatures{
+        buildConfig = true
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -52,8 +57,9 @@ dependencies {
     implementation("com.google.zxing:core:3.5.3")
     implementation(libs.firebase.firestore)
     implementation(libs.ext.junit)
-    implementation("com.squareup.picasso:picasso:2.8")
     implementation(libs.firebase.storage)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
@@ -68,7 +74,14 @@ dependencies {
     // Glide
     implementation("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
-    // Open Street Maps
-    implementation("org.osmdroid:osmdroid-android:6.1.16")
+    // Google Maps SDK
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+    // Picasso
+    implementation("com.squareup.picasso:picasso:2.8")
+}
 
+// Google Maps SDK API Key
+secrets {
+    propertiesFileName = "secrets.properties"
+    defaultPropertiesFileName = "local.defaults.properties"
 }

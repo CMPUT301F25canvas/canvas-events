@@ -52,7 +52,7 @@ public class EntrantListFragment extends Fragment {
     private ListView listView;
     private TextView tvTitle;
     private ImageButton btnBack, btnFilter;
-    private Button btnDeleteSelectedEntrant, btnExportCSV;
+    private Button btnDeleteSelectedEntrant, btnExportCSV, btnNotifyAll;
     private int entrantPosition = -1;
     private WaitlistEntryAdapter adapter;
     private final FirebaseWaitlistRepository repository = new FirebaseWaitlistRepository();
@@ -113,6 +113,7 @@ public class EntrantListFragment extends Fragment {
         btnFilter = view.findViewById(R.id.btnFilter);
         btnDeleteSelectedEntrant = view.findViewById(R.id.btnDeleteSelectedEntrant);
         btnExportCSV = view.findViewById(R.id.btnExportCSV);
+        btnNotifyAll = view.findViewById(R.id.btnNotifyAll);
         adapter = new WaitlistEntryAdapter(requireContext(), entrantsList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -167,6 +168,12 @@ public class EntrantListFragment extends Fragment {
                 exportEnrolledEntrantsToCSV();
             }
         });
+
+        if (btnNotifyAll != null) {
+            btnNotifyAll.setOnClickListener(v -> promptAndSendNotifications());
+        }
+
+        btnNotifyAll.setOnClickListener(v -> promptAndSendNotifications());
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             /**
@@ -392,6 +399,9 @@ public class EntrantListFragment extends Fragment {
                     entrantsList.clear();
                     entrantsList.addAll(result);
                     adapter.notifyDataSetChanged();
+                    if (btnNotifyAll != null) {
+                        btnNotifyAll.setEnabled(!entrantsList.isEmpty());
+                    }
                 }
             }
         });
@@ -424,6 +434,48 @@ public class EntrantListFragment extends Fragment {
                         }
                     }
                 });
+    }
+
+    private void promptAndSendNotifications() {
+        if (entrantsList.isEmpty()) {
+            Toast.makeText(getContext(), "No entrants to notify.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle("Message to send");
+        final android.widget.EditText input = new android.widget.EditText(getContext());
+        input.setHint("Enter a short update for these entrants");
+        builder.setView(input);
+        builder.setPositiveButton("Send", (dialog, which) -> {
+            String message = input.getText().toString().trim();
+            if (message.isEmpty()) {
+                Toast.makeText(getContext(), "Message cannot be empty", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            sendBulkNotification(message);
+        });
+        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
+        builder.show();
+    }
+
+    private void sendBulkNotification(String body) {
+        String title = getString(R.string.notification_broadcast_title);
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                null,
+                title,
+                body,
+                "BROADCAST",
+                "ORGANIZER",
+                NotificationStatus.INFO,
+                new ArrayList<>(entrantsList),
+                (count, error) -> requireActivity().runOnUiThread(() -> {
+                    if (error != null) {
+                        Toast.makeText(getContext(), "Failed to send: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getContext(), "Sent to " + count + " entrants", Toast.LENGTH_SHORT).show();
+                    }
+                }));
     }
 
     private void sendCancellationNotification(WaitlistEntry entrant) {

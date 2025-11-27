@@ -24,14 +24,16 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Displays a list of events created by a user.
  * User is identified by their device number
  */
 public class OrganizerEventListFragment extends Fragment {
-    private ArrayAdapter<Event> eventAdapter;
-    private ArrayList<Event> eventsList;
+    private HomeEventAdapter eventAdapter;
+    private ArrayList<EventItem> eventsList;
     private EventRepository eventRepository;
 
     private static ArrayList<Event> cachedItems;
@@ -66,9 +68,20 @@ public class OrganizerEventListFragment extends Fragment {
         Button createEventButton = view.findViewById(R.id.create_event_button);
         ImageButton backButton = view.findViewById(R.id.back_button);
 
-        eventsList = new ArrayList<Event>();
-        eventAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, eventsList);
-        eventListView.setAdapter(eventAdapter);
+        //eventsList = new ArrayList<Event>();
+        //eventAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, eventsList);
+        //eventListView.setAdapter(eventAdapter);
+
+        eventsList = new ArrayList<>();
+        eventAdapter = new HomeEventAdapter(item -> {
+            Bundle args = new Bundle();
+            args.putString(EventDetailFragment.ARG_EVENT_ID, item.id);
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_organizerEventListFragment_to_eventDetailFragment, args);
+        });
+        RecyclerView recyclerView = view.findViewById(R.id.events_recycler);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(eventAdapter);
 
         androidDeviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         reloadEvents();
@@ -81,9 +94,9 @@ public class OrganizerEventListFragment extends Fragment {
 
         // List View On Click Listener - Passes eventId to the organizerEventListFragment
         eventListView.setOnItemClickListener((parent, itemView, position, id) -> {
-            Event event = eventsList.get(position);
+            EventItem event = eventsList.get(position);
             Bundle args = new Bundle();
-            args.putString("EVENT_ID", event.getEventID());
+            args.putString("EVENT_ID", event.id);
 
             NavController navController = Navigation.findNavController(requireView());
             navController.navigate(R.id.action_organizerEventListFragment_to_organizerEntrantListFragment, args);
@@ -102,10 +115,12 @@ public class OrganizerEventListFragment extends Fragment {
                 .addOnSuccessListener(snapshot -> {
                     eventsList.clear();
                     for (var doc : snapshot) {
-                        eventsList.add(doc.toObject(Event.class));
+                        EventItem item = EventItem.queryDocumentSnapshotToEventItem(doc);
+                        eventsList.add(item);
                     }
-                    cachedItems = new ArrayList<>(eventsList);
+                    eventAdapter.submitList(eventsList);
                     eventAdapter.notifyDataSetChanged();
+
                 });
 
 

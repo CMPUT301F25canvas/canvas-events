@@ -472,32 +472,41 @@
             app:layout_constraintTop_toBottomOf="@id/sample_size_input_layout"
             app:layout_constraintVertical_bias="0.0" />
 
-<!--        <CheckBox-->
-<!--            android:id="@+id/geolocation_requirement_checkbox"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Set Geolocation Requirement"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/location_requirement_text"-->
-<!--            app:layout_constraintVertical_bias="0.0" />-->
+        <CheckBox
+            android:id="@+id/concert_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Concert"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_categories_text"
+            app:layout_constraintVertical_bias="0.0" />
 
-<!--        <CheckBox-->
-<!--            android:id="@+id/geolocation_requirement_checkbox"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Set Geolocation Requirement"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/location_requirement_text"-->
-<!--            app:layout_constraintVertical_bias="0.0" />-->
+        <CheckBox
+            android:id="@+id/sports_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sports"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/concert_category_checkbox"
+            app:layout_constraintVertical_bias="0.0" />
 
-<!--        <CheckBox-->
-<!--            android:id="@+id/geolocation_requirement_checkbox"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:text="Set Geolocation Requirement"-->
-<!--            app:layout_constraintStart_toStartOf="parent"-->
-<!--            app:layout_constraintTop_toBottomOf="@id/location_requirement_text"-->
-<!--            app:layout_constraintVertical_bias="0.0" />-->
+        <CheckBox
+            android:id="@+id/arts_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Arts"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sports_category_checkbox"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <CheckBox
+            android:id="@+id/family_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Family"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/arts_category_checkbox"
+            app:layout_constraintVertical_bias="0.0" />
 
 
         <TextView
@@ -510,7 +519,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_categories_text"
+            app:layout_constraintTop_toBottomOf="@id/family_category_checkbox"
             app:layout_constraintVertical_bias="0.0" />
 
         <ImageButton

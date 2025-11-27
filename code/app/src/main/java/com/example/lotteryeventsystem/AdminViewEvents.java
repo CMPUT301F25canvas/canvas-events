@@ -64,17 +64,18 @@ public class AdminViewEvents extends Fragment {
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, itemsList);
         listView.setAdapter(adapter);
 
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("events")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            String name = doc.getString("name");
-                            if (name != null) itemsList.add(new EventItem(doc.getId(), name));
-                        }
-                        cachedItems = new ArrayList<>(itemsList);
-                        adapter.notifyDataSetChanged();
-                    });
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("events")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    itemsList.clear();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        EventItem item = EventItem.queryDocumentSnapshotToEventItem(doc); // Use the conversion method
+                        itemsList.add(item);
+                    }
+                    cachedItems = new ArrayList<>(itemsList);
+                    adapter.notifyDataSetChanged();
+                });
 
         searchView.setOnClickListener( v -> {
             Toast.makeText(getContext(), "Events search returned", Toast.LENGTH_SHORT).show();

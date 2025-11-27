@@ -42,12 +42,14 @@ import java.util.List;
  * @see Event
  */
 public class OrganizerEntrantListFragment extends Fragment {
-    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample;
+    private Button btnViewEntrants, btnSample;
+    private ImageView btnViewMap, btnDownloadQR;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
     private ImageView posterImageView;
+    private ImageButton btnEdit;
     private FirebaseWaitlistRepository waitlistRepository;
     private Boolean isEventSampled = false;
     /**
@@ -96,6 +98,7 @@ public class OrganizerEntrantListFragment extends Fragment {
         posterImageView = view.findViewById(R.id.poster);
         btnSample = view.findViewById(R.id.btnSample);
         loadEventFromFirestore(eventId);
+        btnViewMap = view.findViewById(R.id.btnViewMap);
 
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -138,12 +141,31 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (currentEvent != null && currentEvent.getDate() != null) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                        LocalDate eventDate = LocalDate.parse(currentEvent.getDate(), formatter);
+                        LocalDate currentDate = LocalDate.now();
+                        if (currentDate.isAfter(eventDate)) {
+                            Toast.makeText(getContext(), "Event date has passed", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    }
                 // Navigate to OrganizerEventCreateFragment in edit mode
                 Bundle args = new Bundle();
                 args.putString("EVENT_ID", eventId);
                 args.putString("MODE", "edit");
                 NavController navController = Navigation.findNavController(requireView());
                 navController.navigate(R.id.action_organizerEntrantListFragment_to_organizerEventCreateFragment, args);
+            }
+        });
+        btnViewMap.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Navigate to EventMapFragment
+                Bundle args = new Bundle();
+                args.putString("EVENT_ID", eventId);
+                NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_eventMapFragment, args);
             }
         });
         return view;
@@ -246,7 +268,7 @@ public class OrganizerEntrantListFragment extends Fragment {
     /**
      * Send notifications to selected entrants
      */
-    private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
+    public void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
         for (WaitlistEntry entrant : selectedEntrants) {
             String userId = entrant.getId(); // Make sure this gets the actual user ID
             if (userId != null && !userId.isEmpty()) {
@@ -260,7 +282,7 @@ public class OrganizerEntrantListFragment extends Fragment {
      */
     private void sendNotSelectedNotifications(List<WaitlistEntry> notSelectedEntrants) {
         for (WaitlistEntry entrant : notSelectedEntrants) {
-            String userId = entrant.getId(); // Make sure this gets the actual user ID
+            String userId = entrant.getId();
             if (userId != null && !userId.isEmpty()) {
                 NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
             }
@@ -331,7 +353,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                         }
                         eventCriteria.setText(criteria);
                         displayEventInfo();
-                        checkEditButtonVisibility();
                     } else {
                         showError("Event not found: " + eventId);
                     }
@@ -339,31 +360,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     showError("Error loading event: " + e.getMessage());
                 });
-    }
-
-    private void checkEditButtonVisibility() {
-        if (currentEvent == null || currentEvent.getRegistrationEnd() == null) {
-            btnEdit.setVisibility(View.VISIBLE); // Show by default if no date
-            return;
-        }
-
-        String registrationEnd = currentEvent.getRegistrationEnd();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        try {
-            LocalDate registrationEndDate = LocalDate.parse(registrationEnd, formatter);
-            LocalDate currentDate = LocalDate.now();
-
-            // Hide edit button if registration end date has passed
-            if (currentDate.isAfter(registrationEndDate)) {
-                btnEdit.setVisibility(View.GONE);
-            } else {
-                btnEdit.setVisibility(View.VISIBLE);
-            }
-        } catch (DateTimeParseException e) {
-            // If date parsing fails, show the button by default
-            btnEdit.setVisibility(View.VISIBLE);
-        }
     }
 
     /**

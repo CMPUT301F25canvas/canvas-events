@@ -13,9 +13,11 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ServerTimestamp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,17 @@ public class NotificationsManager {
                 .collection(eventId)
                 .document(userId)
                 .set(createNotifDetails());
+        db.collection("notifications")
+                .document(docName)
+                .update("event_collection", FieldValue.arrayUnion(eventId))
+                .addOnFailureListener(e -> {
+                    // If document doesn't exist, create it
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("event_collection", new ArrayList<String>() {{
+                        add(eventId);
+                    }});
+                    db.collection("notifications").document(docName).set(data);
+                });
     }
 
     /**

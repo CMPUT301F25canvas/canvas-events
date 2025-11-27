@@ -23,6 +23,7 @@ public class Event {
     private boolean geolocationRequirement;
     private Integer entrantLimit; // Optional
     private String QRCodeURL;
+    private Boolean sampled;
 
 
     // For firestore
@@ -175,4 +176,8 @@ public class Event {
     public void setQRCodeURL(String QRCodeURL) {
         this.QRCodeURL = QRCodeURL;
     }
+
+    public Boolean getSampled() { return sampled; }
+
+    public void setSampled(Boolean sampled) { this.sampled = sampled; }
 }

@@ -43,14 +43,16 @@ import java.util.List;
  * @see Event
  */
 public class OrganizerEntrantListFragment extends Fragment {
-    private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample, btnViewMap;
+    private Button btnViewEntrants, btnSample;
+    private ImageView btnViewMap, btnDownloadQR;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
     private ImageView posterImageView;
+    private ImageButton btnEdit;
     private FirebaseWaitlistRepository waitlistRepository;
-    private NotificationRepository notificationRepository;
+    private Boolean isEventSampled = false;
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
      *
@@ -100,6 +102,7 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnViewMap = view.findViewById(R.id.btnViewMap);
 
         loadEventFromFirestore(eventId);
+        btnViewMap = view.findViewById(R.id.btnViewMap);
 
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -128,6 +131,10 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnSample.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (isEventSampled) {
+                    Toast.makeText(getContext(), "Entrants have already been sampled.", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if (currentEvent != null && currentEvent.getSampleSize() != null) {
                     selectRandomSample();
                 } else {
@@ -138,6 +145,15 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (currentEvent != null && currentEvent.getDate() != null) {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+                        LocalDate eventDate = LocalDate.parse(currentEvent.getDate(), formatter);
+                        LocalDate currentDate = LocalDate.now();
+                        if (currentDate.isAfter(eventDate)) {
+                            Toast.makeText(getContext(), "Event date has passed", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                    }
                 // Navigate to OrganizerEventCreateFragment in edit mode
                 Bundle args = new Bundle();
                 args.putString("EVENT_ID", eventId);
@@ -196,8 +212,26 @@ public class OrganizerEntrantListFragment extends Fragment {
                     // Send notifications
                     sendSelectedNotifications(selectedEntrants);
                     sendNotSelectedNotifications(notSelectedEntrants);
+                    markEventAsSampled();
             }
         });
+    }
+
+    private void markEventAsSampled() {
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .update("sampled", true)
+                .addOnSuccessListener(aVoid -> {
+                    // Update local state
+                    isEventSampled = true;
+                    if (currentEvent != null) {
+                        currentEvent.setSampled(true);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error updating event status", Toast.LENGTH_SHORT).show();
+                });
     }
 
     /**
@@ -238,9 +272,12 @@ public class OrganizerEntrantListFragment extends Fragment {
     /**
      * Send notifications to selected entrants
      */
-    private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
-        if (selectedEntrants == null || selectedEntrants.isEmpty()) {
-            return;
+    public void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
+        for (WaitlistEntry entrant : selectedEntrants) {
+            String userId = entrant.getId(); // Make sure this gets the actual user ID
+            if (userId != null && !userId.isEmpty()) {
+                NotificationsManager.sendSelected(requireContext(), eventId, userId);
+            }
         }
         String eventTitle = currentEvent != null ? currentEvent.getName() : null;
         String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
@@ -265,8 +302,11 @@ public class OrganizerEntrantListFragment extends Fragment {
      * Send notifications to not selected entrants
      */
     private void sendNotSelectedNotifications(List<WaitlistEntry> notSelectedEntrants) {
-        if (notSelectedEntrants == null || notSelectedEntrants.isEmpty()) {
-            return;
+        for (WaitlistEntry entrant : notSelectedEntrants) {
+            String userId = entrant.getId();
+            if (userId != null && !userId.isEmpty()) {
+                NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
+            }
         }
         String eventTitle = currentEvent != null ? currentEvent.getName() : null;
         String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
@@ -324,6 +364,14 @@ public class OrganizerEntrantListFragment extends Fragment {
                         if (documentSnapshot.contains("sampleSize")) {
                             currentEvent.setSampleSize(documentSnapshot.getLong("sampleSize").intValue());
                         }
+                        if (documentSnapshot.contains("sampled")) {
+                            currentEvent.setSampled(documentSnapshot.getBoolean("sampled"));
+                            isEventSampled = Boolean.TRUE.equals(currentEvent.getSampled());
+                        } else {
+                            // If field doesn't exist, assume false
+                            currentEvent.setSampled(false);
+                            isEventSampled = false;
+                        }
                         String criteria = "";
                         String tmp;
                         if ((tmp = documentSnapshot.getString("minAge")) != null) {
@@ -343,7 +391,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                         }
                         eventCriteria.setText(criteria);
                         displayEventInfo();
-                        checkEditButtonVisibility();
                     } else {
                         showError("Event not found: " + eventId);
                     }
@@ -351,31 +398,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     showError("Error loading event: " + e.getMessage());
                 });
-    }
-
-    private void checkEditButtonVisibility() {
-        if (currentEvent == null || currentEvent.getRegistrationEnd() == null) {
-            btnEdit.setVisibility(View.VISIBLE); // Show by default if no date
-            return;
-        }
-
-        String registrationEnd = currentEvent.getRegistrationEnd();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        try {
-            LocalDate registrationEndDate = LocalDate.parse(registrationEnd, formatter);
-            LocalDate currentDate = LocalDate.now();
-
-            // Hide edit button if registration end date has passed
-            if (currentDate.isAfter(registrationEndDate)) {
-                btnEdit.setVisibility(View.GONE);
-            } else {
-                btnEdit.setVisibility(View.VISIBLE);
-            }
-        } catch (DateTimeParseException e) {
-            // If date parsing fails, show the button by default
-            btnEdit.setVisibility(View.VISIBLE);
-        }
     }
 
     /**

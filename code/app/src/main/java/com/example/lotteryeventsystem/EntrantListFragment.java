@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,7 +65,7 @@ public class EntrantListFragment extends Fragment {
     /**
      * Method to create a new instance of EntrantListFragment with required parameters.
      *
-     * @param eventId The Firestore document ID of the event
+     * @param eventId  The Firestore document ID of the event
      * @param listType The type of list to display: "canceled", "enrolled", or "unenrolled"
      * @return A new instance of EntrantListFragment with the provided arguments
      */
@@ -82,8 +83,8 @@ public class EntrantListFragment extends Fragment {
      * This method inflates the fragment's layout, retrieves arguments, and initializes
      * the UI components and data loading.
      *
-     * @param inflater The LayoutInflater object that can be used to inflate views
-     * @param container The parent view that the fragment's UI should be attached to
+     * @param inflater           The LayoutInflater object that can be used to inflate views
+     * @param container          The parent view that the fragment's UI should be attached to
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
      * @return The View for the fragment's UI, or null
      */
@@ -150,7 +151,7 @@ public class EntrantListFragment extends Fragment {
      *
      */
     private void setupClickListeners() {
-        btnBack.setOnClickListener(v->{
+        btnBack.setOnClickListener(v -> {
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();
         });
@@ -426,77 +427,81 @@ public class EntrantListFragment extends Fragment {
                     @Override
                     public void onComplete(WaitlistEntry updatedEntry, Exception error) {
                         if (error == null) {
+                            String userId = entrant.getId(); //
+                            if (userId != null && !userId.isEmpty()) {
+                                NotificationsManager.sendInviteCancelled(requireContext(), eventId, userId);
+                            }
                             // Success - remove from current list and refresh
                             entrantsList.remove(entrantPosition);
                             entrantPosition = -1;
                             adapter.notifyDataSetChanged();
-                            sendCancellationNotification(entrant);
+                            // Sample one person, print toast message
+                            sampleSingleEntrantAfterDeletion();
                         }
                     }
                 });
     }
 
-    private void promptAndSendNotifications() {
-        if (entrantsList.isEmpty()) {
-            Toast.makeText(getContext(), "No entrants to notify.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-        builder.setTitle("Message to send");
-        final android.widget.EditText input = new android.widget.EditText(getContext());
-        input.setHint("Enter a short update for these entrants");
-        builder.setView(input);
-        builder.setPositiveButton("Send", (dialog, which) -> {
-            String message = input.getText().toString().trim();
-            if (message.isEmpty()) {
-                Toast.makeText(getContext(), "Message cannot be empty", Toast.LENGTH_SHORT).show();
-                return;
+    private void sampleSingleEntrantAfterDeletion() {
+        // Get all waiting entrants
+        repository.getWaitingEntrants(eventId, new RepositoryCallback<List<WaitlistEntry>>() {
+            @Override
+            public void onComplete(List<WaitlistEntry> result, Exception error) {
+                if (error != null) {
+                    Toast.makeText(getContext(), "Error loading entrants: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if (result == null || result.isEmpty()) {
+                    Toast.makeText(getContext(), "No waiting entrants found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Sample exactly 1 entrant
+                List<WaitlistEntry> selectedEntrant = getRandomSample(result, 1);
+
+                if (!selectedEntrant.isEmpty()) {
+                    // Update status to INVITED
+                    updateEntrantsStatus(selectedEntrant, WaitlistStatus.INVITED);
+
+                    // Send notification to the selected entrant
+                    sendSelectedNotifications(selectedEntrant);
+
+                    Toast.makeText(getContext(),
+                            "Sampled new entrant",
+                            Toast.LENGTH_LONG).show();
+
+                    // Refresh the list
+                    loadDataFromFirebase();
+                }
             }
-            sendBulkNotification(message);
         });
-        builder.setNegativeButton("Cancel", (dialog, which) -> dialog.dismiss());
-        builder.show();
     }
 
-    private void sendBulkNotification(String body) {
-        String title = getString(R.string.notification_broadcast_title);
-        notificationRepository.sendNotificationsToEntrants(
-                eventId,
-                null,
-                title,
-                body,
-                "BROADCAST",
-                "ORGANIZER",
-                NotificationStatus.INFO,
-                new ArrayList<>(entrantsList),
-                (count, error) -> requireActivity().runOnUiThread(() -> {
-                    if (error != null) {
-                        Toast.makeText(getContext(), "Failed to send: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Sent to " + count + " entrants", Toast.LENGTH_SHORT).show();
-                    }
-                }));
+    private List<WaitlistEntry> getRandomSample(List<WaitlistEntry> allEntrants, int sampleSize) {
+        List<WaitlistEntry> shuffled = new ArrayList<>(allEntrants);
+        Collections.shuffle(shuffled);
+        return shuffled.subList(0, sampleSize);
     }
 
-    private void sendCancellationNotification(WaitlistEntry entrant) {
-        if (entrant == null) {
-            return;
+    private void updateEntrantsStatus(List<WaitlistEntry> entrants, WaitlistStatus status) {
+        for (WaitlistEntry entrant : entrants) {
+            repository.updateEntrantStatus(eventId, entrant.getId(), status,
+                    new RepositoryCallback<WaitlistEntry>() {
+                        @Override
+                        public void onComplete(WaitlistEntry result, Exception error) {
+                            // Handle errors if needed
+                        }
+                    });
         }
-        List<WaitlistEntry> recipients = new ArrayList<>();
-        recipients.add(entrant);
-        String title = getString(R.string.notification_title_fallback);
-        String body = "Your invite was cancelled by the organizer.";
-        notificationRepository.sendNotificationsToEntrants(
-                eventId,
-                null,
-                title,
-                body,
-                "CANCELLED",
-                "ORGANIZER",
-                NotificationStatus.INFO,
-                recipients,
-                (count, error) -> {
-                    // Log-only; no UI change needed.
-                });
+    }
+
+    private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
+        for (WaitlistEntry entrant : selectedEntrants) {
+            String userId = entrant.getId();
+            if (userId != null && !userId.isEmpty()) {
+                NotificationsManager.sendSelected(requireContext(), eventId, userId);
+            }
+        }
     }
 }

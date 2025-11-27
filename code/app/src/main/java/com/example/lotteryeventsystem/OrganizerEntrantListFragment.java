@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnViewEntrants, btnEdit, btnDownloadQR, btnSample, btnViewMap;
-    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
+    private TextView eventName, eventDescription, eventStartTime, eventEndTime, startDate, endDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;
     private String eventId;
@@ -86,7 +86,8 @@ public class OrganizerEntrantListFragment extends Fragment {
         eventDescription = view.findViewById(R.id.event_description);
         eventStartTime = view.findViewById(R.id.event_start_time);
         eventEndTime = view.findViewById(R.id.event_end_time);
-        eventDate = view.findViewById(R.id.event_date);
+        startDate = view.findViewById(R.id.start_date);
+        endDate = view.findViewById(R.id.end_date);
         eventCriteria = view.findViewById(R.id.event_criteria);
         btnViewEntrants = view.findViewById(R.id.btnViewEntrants);
         btnBack = view.findViewById(R.id.back_button);
@@ -278,8 +279,11 @@ public class OrganizerEntrantListFragment extends Fragment {
                         if (documentSnapshot.contains("description")) {
                             currentEvent.setDescription(documentSnapshot.getString("description"));
                         }
-                        if (documentSnapshot.contains("date")) {
-                            currentEvent.setDate(documentSnapshot.getString("date"));
+                        if (documentSnapshot.contains("startDate")) {
+                            currentEvent.setStartDate(documentSnapshot.getString("startDate"));
+                        }
+                        if (documentSnapshot.contains("endDate")) {
+                            currentEvent.setEndDate(documentSnapshot.getString("endDate"));
                         }
                         if (documentSnapshot.contains("startTime")) {
                             currentEvent.setStartTime(documentSnapshot.getString("startTime"));
@@ -373,10 +377,15 @@ public class OrganizerEntrantListFragment extends Fragment {
             } else {
                 eventEndTime.setText("End: Not specified");
             }
-            if (currentEvent.getDate() != null) {
-                eventDate.setText("Date: " + currentEvent.getDate());
+            if (currentEvent.getStartDate() != null) {
+                startDate.setText("Start Date: " + currentEvent.getStartDate());
             } else {
-                eventDate.setText("Date: Not specified");
+                startDate.setText("Start Date: Not specified");
+            }
+            if (currentEvent.getEndDate() != null) {
+                endDate.setText("End Date: " + currentEvent.getEndDate());
+            } else {
+                endDate.setText("End Date: Not specified");
             }
             loadPosterImage();
         }

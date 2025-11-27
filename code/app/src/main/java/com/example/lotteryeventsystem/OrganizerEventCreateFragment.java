@@ -3,6 +3,8 @@ package com.example.lotteryeventsystem;
 import static android.view.View.INVISIBLE;
 import static android.view.View.VISIBLE;
 
+import static com.example.lotteryeventsystem.BuildConfig.MAPS_API_KEY;
+
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,6 +33,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.Place;
+import com.google.android.libraries.places.widget.Autocomplete;
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
@@ -47,6 +53,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
 
@@ -75,6 +83,11 @@ public class OrganizerEventCreateFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initialize the places API
+        if (!Places.isInitialized()) {
+            Places.initialize(requireContext(), MAPS_API_KEY);
+        }
 
         // Opens gallery for uploading an image
         pickImageLauncher = registerForActivityResult(
@@ -126,33 +139,52 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputEditText eventDescriptionInput = view.findViewById(R.id.event_description_input);
         setupTextWatcher(eventDescriptionInput, event::setDescription);
 
-        // Min. Age
-        TextInputEditText minAgeInput = view.findViewById(R.id.min_age_input);
-        setupTextWatcher(minAgeInput, event::setMinAge);
+        // Event Location
+        TextInputLayout eventLocationLayout = view.findViewById(R.id.event_location_input_layout);
+        TextInputEditText eventLocationInput = view.findViewById(R.id.event_location_input);
+        eventLocationInput.setOnClickListener(v -> {
+            List<Place.Field> fields = Arrays.asList(
+                    Place.Field.ID,
+                    Place.Field.NAME,
+                    Place.Field.ADDRESS,
+                    Place.Field.LAT_LNG
+            );
+            Intent intent = new Autocomplete.IntentBuilder(
+                    AutocompleteActivityMode.OVERLAY, fields)
+                    .build(requireContext());
 
-        // Dietary Restrictions
-        TextInputEditText dietaryRestrictionsInput = view.findViewById(R.id.dietary_restrictions_input_text);
-        setupTextWatcher(dietaryRestrictionsInput, event::setDietaryRestrictions);
+            startActivityForResult(intent, 1001);
+        });
+        setupTextWatcher(eventLocationInput, event::setLocation);
 
-        // Other Restrictions
-        TextInputEditText otherRestrictionsInput = view.findViewById(R.id.other_restrictions_input);
-        setupTextWatcher(otherRestrictionsInput, event::setOtherRestrictions);
+//
+//        // Min. Age
+//        TextInputEditText minAgeInput = view.findViewById(R.id.min_age_input);
+//        setupTextWatcher(minAgeInput, event::setMinAge);
+//
+//        // Dietary Restrictions
+//        TextInputEditText dietaryRestrictionsInput = view.findViewById(R.id.dietary_restrictions_input_text);
+//        setupTextWatcher(dietaryRestrictionsInput, event::setDietaryRestrictions);
+//
+//        // Other Restrictions
+//        TextInputEditText otherRestrictionsInput = view.findViewById(R.id.other_restrictions_input);
+//        setupTextWatcher(otherRestrictionsInput, event::setOtherRestrictions);
 
-        // Event Date
+        // Event Start Date
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        TextInputLayout eventDateLayout = view.findViewById(R.id.event_date_input_layout);
-        TextInputEditText eventDateInput = view.findViewById(R.id.event_date_input_text);
-        eventDateInput.addTextChangedListener(new TextWatcher() {
+        TextInputLayout startDateLayout = view.findViewById(R.id.start_date_input_layout);
+        TextInputEditText startDateInput = view.findViewById(R.id.start_date_input_text);
+        startDateInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {
                 String date = s.toString();
-                event.setDate(date);
+                event.setStartDate(date);
                 if (!date.isEmpty()) {
                     try {
                         LocalDate.parse(date, dateFormatter);
-                        eventDateLayout.setError(null);
+                        startDateLayout.setError(null);
                     } catch (DateTimeParseException e) {
-                        eventDateLayout.setError("Invalid Format - use YYYY-MM-DD");
+                        startDateLayout.setError("Invalid Format - use YYYY-MM-DD");
                     }
                 }
             }
@@ -166,11 +198,11 @@ public class OrganizerEventCreateFragment extends Fragment {
             }
         });
 
-        ImageButton eventCalendarButton = view.findViewById(R.id.calendar_button);
-        eventCalendarButton.setOnClickListener(v -> {
+        ImageButton startDateCalendarButton = view.findViewById(R.id.start_calendar_button);
+        startDateCalendarButton.setOnClickListener(v -> {
             MaterialDatePicker<Long> datePicker =
                     MaterialDatePicker.Builder.datePicker()
-                            .setTitleText("Select Event Date")
+                            .setTitleText("Select Start Date")
                             .build();
 
             datePicker.show(getParentFragmentManager(), "DATE_PICKER");
@@ -178,9 +210,54 @@ public class OrganizerEventCreateFragment extends Fragment {
             datePicker.addOnPositiveButtonClickListener(selection -> {
                 ZoneId utcZone = ZoneId.of("UTC");
                 Instant instant = Instant.ofEpochMilli(selection);
-                LocalDate eventDate = instant.atZone(utcZone).toLocalDate();
-                String formattedDate = eventDate.format(dateFormatter);
-                eventDateInput.setText(formattedDate);
+                LocalDate startDate = instant.atZone(utcZone).toLocalDate();
+                String formattedDate = startDate.format(dateFormatter);
+                startDateInput.setText(formattedDate);
+            });
+        });
+
+        // Event End Date
+        TextInputLayout endDateLayout = view.findViewById(R.id.end_date_input_layout);
+        TextInputEditText endDateInput = view.findViewById(R.id.end_date_input_text);
+        endDateInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void afterTextChanged(Editable s) {
+                String date = s.toString();
+                event.setEndDate(date);
+                if (!date.isEmpty()) {
+                    try {
+                        LocalDate.parse(date, dateFormatter);
+                        endDateLayout.setError(null);
+                    } catch (DateTimeParseException e) {
+                        endDateLayout.setError("Invalid Format - use YYYY-MM-DD");
+                    }
+                }
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+        });
+
+        ImageButton endDateCalendarButton = view.findViewById(R.id.end_calendar_button);
+        endDateCalendarButton.setOnClickListener(v -> {
+            MaterialDatePicker<Long> datePicker =
+                    MaterialDatePicker.Builder.datePicker()
+                            .setTitleText("Select End Date")
+                            .build();
+
+            datePicker.show(getParentFragmentManager(), "DATE_PICKER");
+
+            datePicker.addOnPositiveButtonClickListener(selection -> {
+                ZoneId utcZone = ZoneId.of("UTC");
+                Instant instant = Instant.ofEpochMilli(selection);
+                LocalDate endDate = instant.atZone(utcZone).toLocalDate();
+                String formattedDate = endDate.format(dateFormatter);
+                endDateInput.setText(formattedDate);
             });
         });
 
@@ -440,15 +517,19 @@ public class OrganizerEventCreateFragment extends Fragment {
                 // Checks if the event is filled in correctly before creating it
                 if (eventCreationForm.isEventValid(event)) {
 
-                    if (!eventCreationForm.eventDateValid(event.getDate(), dateFormatter)) {
+                    if (!eventCreationForm.eventDateValid(event.getStartDate(), dateFormatter)) {
                         Toast.makeText(getContext(), "Event date has already passed", Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    if (!eventCreationForm.startEndDateValid(event.getStartDate(), event.getEndDate(), dateFormatter)) {
+                        Toast.makeText(getContext(), "Check start and end date", Toast.LENGTH_LONG).show();
                         return;
                     }
                     if (!eventCreationForm.eventTimeValid(event.getStartTime(), event.getEndTime(), timeFormatter)) {
                         Toast.makeText(getContext(), "Check start and end time", Toast.LENGTH_LONG).show();
                         return;
                     }
-                    if (!eventCreationForm.registrationPeriodValid(event.getDate(), event.getRegistrationStart(), event.getRegistrationEnd(), dateFormatter)) {
+                    if (!eventCreationForm.registrationPeriodValid(event.getEndDate(), event.getRegistrationStart(), event.getRegistrationEnd(), dateFormatter)) {
                         Toast.makeText(getContext(), "Registration Period is not valid", Toast.LENGTH_LONG).show();
                         return;
                     }
@@ -481,9 +562,6 @@ public class OrganizerEventCreateFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
         });
     }
-
-    // TODO: refactor to put datepicker logic method here
-    // TODO: refactor to put timepicker logic method here
 
     /**
      * Load existing event data for prefilling (edit event)
@@ -526,10 +604,16 @@ public class OrganizerEventCreateFragment extends Fragment {
             eventDescriptionInput.setText(event.getDescription());
         }
 
-        // Event Date
-        TextInputEditText eventDateInput = getView().findViewById(R.id.event_date_input_text);
-        if (event.getDate() != null) {
-            eventDateInput.setText(event.getDate());
+        // Start Date
+        TextInputEditText startDateInput = getView().findViewById(R.id.start_date_input_text);
+        if (event.getStartDate() != null) {
+            startDateInput.setText(event.getStartDate());
+        }
+
+        // End Date
+        TextInputEditText endDateInput = getView().findViewById(R.id.end_date_input_text);
+        if (event.getEndDate() != null) {
+            endDateInput.setText(event.getEndDate());
         }
 
         // Start Time
@@ -583,20 +667,20 @@ public class OrganizerEventCreateFragment extends Fragment {
         CheckBox geolocationCheckBox = getView().findViewById(R.id.geolocation_requirement_checkbox);
         geolocationCheckBox.setChecked(event.getGeolocationRequirement());
 
-        TextInputEditText minAgeInput = getView().findViewById(R.id.min_age_input);
-        if (event.getMinAge() != null && minAgeInput != null) {
-            minAgeInput.setText(event.getMinAge());
-        }
-
-        TextInputEditText dietaryRestrictionsInput = getView().findViewById(R.id.dietary_restrictions_input_text);
-        if (event.getDietaryRestrictions() != null && dietaryRestrictionsInput != null) {
-            dietaryRestrictionsInput.setText(event.getDietaryRestrictions());
-        }
-
-        TextInputEditText otherRestrictionsInput = getView().findViewById(R.id.other_restrictions_input);
-        if (event.getOtherRestrictions() != null && otherRestrictionsInput != null) {
-            otherRestrictionsInput.setText(event.getOtherRestrictions());
-        }
+//        TextInputEditText minAgeInput = getView().findViewById(R.id.min_age_input);
+//        if (event.getMinAge() != null && minAgeInput != null) {
+//            minAgeInput.setText(event.getMinAge());
+//        }
+//
+//        TextInputEditText dietaryRestrictionsInput = getView().findViewById(R.id.dietary_restrictions_input_text);
+//        if (event.getDietaryRestrictions() != null && dietaryRestrictionsInput != null) {
+//            dietaryRestrictionsInput.setText(event.getDietaryRestrictions());
+//        }
+//
+//        TextInputEditText otherRestrictionsInput = getView().findViewById(R.id.other_restrictions_input);
+//        if (event.getOtherRestrictions() != null && otherRestrictionsInput != null) {
+//            otherRestrictionsInput.setText(event.getOtherRestrictions());
+//        }
     }
 
     /**
@@ -753,6 +837,31 @@ public class OrganizerEventCreateFragment extends Fragment {
             }
         }
         return inSampleSize;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1001) {
+            if (resultCode == getActivity().RESULT_OK && data != null) {
+
+                Place place = Autocomplete.getPlaceFromIntent(data);
+
+                // Update the text field
+                TextInputEditText eventLocationInput =
+                        getView().findViewById(R.id.event_location_input);
+                eventLocationInput.setText(place.getAddress());
+
+//                // Also update your event object
+//                eventCreationForm.setLocation(place.getAddress());
+
+                Log.d("LOCATION", "Selected: " + place.getAddress());
+
+            } else if (resultCode == getActivity().RESULT_CANCELED) {
+                Log.d("LOCATION", "User canceled autocomplete");
+            }
+        }
     }
 
 }

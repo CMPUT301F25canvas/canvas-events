@@ -14,7 +14,7 @@
         android:id="@+id/header_fragment"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        app:layout_constraintBottom_toTopOf="@+id/event_detail_fragment"
+        app:layout_constraintBottom_toTopOf="@id/scrollView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
@@ -72,20 +72,31 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="Event Description"
-            app:layout_constraintBottom_toTopOf="@id/event_date"
+            app:layout_constraintBottom_toTopOf="@id/start_date"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_name" />
 
         <TextView
-            android:id="@+id/event_date"
+            android:id="@+id/start_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="MM/DD/YYYY"
+            app:layout_constraintBottom_toTopOf="@id/event_start_time"
+            app:layout_constraintEnd_toStartOf="@id/end_date"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_description" />
+
+        <TextView
+            android:id="@+id/end_date"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             android:text="MM/DD/YYYY"
             app:layout_constraintBottom_toTopOf="@id/event_start_time"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/start_date"
             app:layout_constraintTop_toBottomOf="@id/event_description" />
 
         <TextView
@@ -95,7 +106,7 @@
             android:text="HH:MM"
             app:layout_constraintEnd_toStartOf="@id/event_end_time"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_date" />
+            app:layout_constraintTop_toBottomOf="@id/start_date" />
 
         <TextView
             android:id="@+id/event_end_time"
@@ -104,7 +115,7 @@
             android:text="HH:MM"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/event_start_time"
-            app:layout_constraintTop_toBottomOf="@id/event_date" />
+            app:layout_constraintTop_toBottomOf="@id/start_date" />
 
         <TextView
             android:id="@+id/event_criteria"

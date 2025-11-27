@@ -27,7 +27,9 @@ public class EventCreationForm {
     public boolean isEventValid(Event event) {
         return event.getName() != null && !event.getName().isEmpty() &&
                 event.getDescription() != null && !event.getDescription().isEmpty() &&
-                event.getDate() != null && !event.getDate().isEmpty() &&
+                event.getStartDate() != null && !event.getStartDate().isEmpty() &&
+                event.getEndDate() != null && !event.getEndDate().isEmpty() &&
+                event.getLocation() != null && !event.getLocation().isEmpty() &&
                 event.getStartTime()!= null && !event.getStartTime().isEmpty() &&
                 event.getEndTime() != null && !event.getEndTime().isEmpty() &&
                 event.getRegistrationStart() != null && !event.getRegistrationStart().isEmpty() &&
@@ -44,6 +46,12 @@ public class EventCreationForm {
         LocalDate eventDate = LocalDate.parse(date, formatter);
         LocalDate currentDate = LocalDate.now();
         return eventDate.isAfter(currentDate);
+    }
+
+    public boolean startEndDateValid(String startDate, String endDate, DateTimeFormatter formatter) {
+        LocalDate start = LocalDate.parse(startDate, formatter);
+        LocalDate end = LocalDate.parse(endDate, formatter);
+        return end.isAfter(start);
     }
 
     /**

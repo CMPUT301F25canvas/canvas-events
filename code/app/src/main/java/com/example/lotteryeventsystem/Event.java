@@ -12,7 +12,8 @@ public class Event {
     private String minAge;
     private String dietaryRestrictions;
     private String otherRestrictions;
-    private String date;
+    private String startDate;
+    private String endDate;
     private String startTime;
     private String endTime;
     private String registrationStart;
@@ -23,6 +24,7 @@ public class Event {
     private boolean geolocationRequirement;
     private Integer entrantLimit; // Optional
     private String QRCodeURL;
+    private String location;
 
 
     // For firestore
@@ -30,12 +32,13 @@ public class Event {
     }
 
     public Event(String eventID, String organizerID, String name, String description,
-                 String date, String startTime, String endTime) {
+                 String startDate, String endDate, String startTime, String endTime) {
         this.eventID = eventID;
         this.organizerID = organizerID;
         this.name = name;
         this.description = description;
-        this.date = date;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.startTime = startTime;
         this.endTime = endTime;
         this.entrantLimit = null; // Set null if no limit
@@ -66,8 +69,11 @@ public class Event {
     public String getDietaryRestrictions() { return dietaryRestrictions; }
     public String getOtherRestrictions() { return otherRestrictions; }
 
-    public String getDate() {
-        return date;
+    public String getStartDate() {
+        return startDate;
+    }
+    public String getEndDate() {
+        return endDate;
     }
 
     public String getStartTime() {
@@ -108,6 +114,9 @@ public class Event {
     public String getQRCodeURL() {
         return QRCodeURL;
     }
+    public String getLocation() {
+        return location;
+    }
 
     // Setters
     public void setEventID(String eventID) {
@@ -132,8 +141,11 @@ public class Event {
 
     public void setOtherRestrictions(String otherRestrictions) { this.otherRestrictions = otherRestrictions; }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public void setStartTime(String startTime) {
@@ -174,5 +186,8 @@ public class Event {
 
     public void setQRCodeURL(String QRCodeURL) {
         this.QRCodeURL = QRCodeURL;
+    }
+    public void setLocation(String location) {
+        this.location = location;
     }
 }

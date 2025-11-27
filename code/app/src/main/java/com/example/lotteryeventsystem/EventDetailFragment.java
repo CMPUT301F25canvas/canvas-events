@@ -29,8 +29,12 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
+import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.di.ServiceLocator;
 import com.example.lotteryeventsystem.model.Event;
+import com.example.lotteryeventsystem.model.NotificationStatus;
+import com.example.lotteryeventsystem.model.WaitlistEntry;
+import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
@@ -53,11 +57,13 @@ public class EventDetailFragment extends Fragment {
     public EventDetailFragment() {};
 
     private String eventId;
+    private String eventName;
     private Button joinLeaveButton;
     private String deviceId;
     private TextView message;
 
     public static final String ARG_EVENT_ID = "event_id";
+    private final NotificationRepository notificationRepository = ServiceLocator.provideNotificationRepository();
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
@@ -127,7 +133,8 @@ public class EventDetailFragment extends Fragment {
                     View view = getView();
                     if (view == null) return;
 
-                    ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
+                    eventName = doc.getString("name");
+                    ((TextView) view.findViewById(R.id.header_title)).setText(eventName);
                     ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
                     ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
                     ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
@@ -265,6 +272,8 @@ public class EventDetailFragment extends Fragment {
                                 joinLeaveButton.setText("Leave Waiting List");
                                 Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
                                 updateAvailableSpotsMessage(db);
+                                sendJoinedWaitlistNotification(eventName);
+                                NotificationsManager.sendJoinedWaitlist(requireContext(), eventId, deviceId);
                             });
 
                             // Update user's enrolled_events array
@@ -332,6 +341,34 @@ public class EventDetailFragment extends Fragment {
             });
         });
     }
+
+    private void sendJoinedWaitlistNotification(@Nullable String eventName) {
+        List<WaitlistEntry> recipients = new ArrayList<>();
+        WaitlistEntry entry = new WaitlistEntry();
+        entry.setId(deviceId);
+        entry.setEntrantId(deviceId);
+        entry.setEntrantName(null);
+        entry.setStatus(WaitlistStatus.WAITING);
+        entry.setEventId(eventId);
+        recipients.add(entry);
+
+        String safeEventName = eventName != null ? eventName : getString(R.string.notification_title_fallback);
+        String body = getString(R.string.notification_waitlist_joined_body, safeEventName);
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                eventName,
+                getString(R.string.notification_waitlist_joined_title),
+                body,
+                "WAITLIST",
+                "ORGANIZER",
+                NotificationStatus.WAITING,
+                recipients,
+                (count, error) -> {
+                    if (error != null) {
+                        Log.e("EventDetailFragment", "Failed to send waitlist notification: " + error.getMessage());
+                    } else {
+                        Log.d("EventDetailFragment", "Sent waitlist notification to " + count + " recipients.");
+                    }
+                });
+    }
 }
-
-

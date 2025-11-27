@@ -9,5 +9,7 @@ public enum NotificationStatus {
     ACCEPTED,
     DECLINED,
     REGISTERED,
-    INFO
+    INFO,
+    WAITING,
+    NOT_SELECTED
 }

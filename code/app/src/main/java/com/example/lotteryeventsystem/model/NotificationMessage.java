@@ -16,6 +16,7 @@ public class NotificationMessage {
     private String waitlistEntryId;
     private String type;
     private String source;
+    private String templateId;
     private NotificationStatus status = NotificationStatus.UNREAD;
     private Timestamp createdAt;
     private Timestamp respondBy;
@@ -126,6 +127,14 @@ public class NotificationMessage {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public String getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(String templateId) {
+        this.templateId = templateId;
     }
 
     /**

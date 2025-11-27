@@ -9,6 +9,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.provider.Settings;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.WaitlistRepository;
 import com.example.lotteryeventsystem.di.ServiceLocator;
+import com.example.lotteryeventsystem.model.NotificationMessage;
 import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.android.material.button.MaterialButton;
@@ -44,9 +46,12 @@ public class NotificationDetailFragment extends Fragment {
     private String eventId;
     private String waitlistEntryId;
     private String eventName;
+    private String templateId;
+    private String title;
     private String body;
     private String messageType;
     private NotificationStatus currentStatus = NotificationStatus.UNREAD;
+    private String deviceId;
 
     @Nullable
     @Override
@@ -76,6 +81,8 @@ public class NotificationDetailFragment extends Fragment {
             eventId = getArguments().getString("eventId");
             waitlistEntryId = getArguments().getString("waitlistEntryId");
             eventName = getArguments().getString("eventName");
+            templateId = getArguments().getString("templateId");
+            title = getArguments().getString("title");
             body = getArguments().getString("body");
             messageType = getArguments().getString("type");
             String statusValue = getArguments().getString("status");
@@ -114,6 +121,9 @@ public class NotificationDetailFragment extends Fragment {
         if (!isActionable()) {
             return;
         }
+        if (deviceId == null) {
+            deviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+        }
         setLoading(true);
         if (waitlistStatus != null && eventId != null && waitlistEntryId != null) {
             waitlistRepository.updateEntrantStatus(eventId, waitlistEntryId, waitlistStatus,
@@ -135,7 +145,8 @@ public class NotificationDetailFragment extends Fragment {
             return;
         }
         if (notificationId != null) {
-            notificationRepository.updateNotificationStatus(notificationId, notificationStatus,
+            NotificationMessage message = buildCurrentMessage();
+            notificationRepository.updateNotificationStatus(message, notificationStatus,
                     (ignored, updateError) -> {
                         if (!isAdded()) {
                             return;
@@ -146,6 +157,7 @@ public class NotificationDetailFragment extends Fragment {
                                 showToast(getString(R.string.notification_action_error));
                                 return;
                             }
+                            sendLocalBanner(notificationStatus);
                             currentStatus = notificationStatus;
                             statusView.setText(getStatusText(notificationStatus));
                             updateActionVisibility();
@@ -157,6 +169,21 @@ public class NotificationDetailFragment extends Fragment {
         }
     }
 
+    private NotificationMessage buildCurrentMessage() {
+        NotificationMessage message = new NotificationMessage();
+        message.setId(notificationId);
+        message.setEventId(eventId);
+        message.setEventName(eventName);
+        message.setWaitlistEntryId(waitlistEntryId);
+        message.setBody(body);
+        message.setTitle(title);
+        message.setType(messageType);
+        message.setTemplateId(templateId);
+        message.setRecipientId(deviceId);
+        message.setStatus(currentStatus);
+        return message;
+    }
+
     private String getStatusText(NotificationStatus status) {
         switch (status) {
             case ACCEPTED:
@@ -165,6 +192,10 @@ public class NotificationDetailFragment extends Fragment {
                 return getString(R.string.notification_status_declined);
             case REGISTERED:
                 return getString(R.string.notification_status_registered);
+            case WAITING:
+                return getString(R.string.notification_status_waiting);
+            case NOT_SELECTED:
+                return getString(R.string.notification_status_not_selected);
             case PENDING:
             case UNREAD:
                 return getString(R.string.notification_status_pending);
@@ -215,6 +246,17 @@ public class NotificationDetailFragment extends Fragment {
     private void showToast(String message) {
         if (getContext() != null) {
             Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void sendLocalBanner(NotificationStatus notificationStatus) {
+        if (getContext() == null || eventId == null || eventId.isEmpty() || deviceId == null) {
+            return;
+        }
+        if (notificationStatus == NotificationStatus.ACCEPTED || notificationStatus == NotificationStatus.REGISTERED) {
+            NotificationsManager.sendInviteAccepted(requireContext(), eventId, deviceId);
+        } else if (notificationStatus == NotificationStatus.DECLINED) {
+            NotificationsManager.sendInviteRejected(requireContext(), eventId, deviceId);
         }
     }
 }

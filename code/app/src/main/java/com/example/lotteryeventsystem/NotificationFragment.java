@@ -133,6 +133,7 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         args.putString("status", message.getStatus() != null ? message.getStatus().name() : null);
         args.putString("waitlistEntryId", message.getWaitlistEntryId());
         args.putString("type", message.getType());
+        args.putString("templateId", message.getTemplateId());
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_notificationFragment_to_notificationDetailFragment, args);
     }

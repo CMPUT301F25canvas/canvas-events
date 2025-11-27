@@ -122,6 +122,10 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                     return res.getString(R.string.notification_status_declined);
                 case REGISTERED:
                     return res.getString(R.string.notification_status_registered);
+                case WAITING:
+                    return res.getString(R.string.notification_status_waiting);
+                case NOT_SELECTED:
+                    return res.getString(R.string.notification_status_not_selected);
                 case INFO:
                     return res.getString(R.string.notification_status_info);
                 case UNREAD:
@@ -152,6 +156,14 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 case DECLINED:
                     bgRes = R.drawable.bg_status_declined;
                     textColor = 0xFF8A1B2F;
+                    break;
+                case WAITING:
+                    bgRes = R.drawable.bg_status_waiting;
+                    textColor = 0xFF176C4A;
+                    break;
+                case NOT_SELECTED:
+                    bgRes = R.drawable.bg_status_not_selected;
+                    textColor = 0xFF9A4A0A;
                     break;
                 case INFO:
                 case UNREAD:

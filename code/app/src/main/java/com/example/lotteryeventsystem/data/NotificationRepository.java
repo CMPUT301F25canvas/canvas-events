@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handles all notification reads/writes against Firestore.
@@ -61,6 +62,33 @@ public class NotificationRepository {
                                             NotificationStatus status,
                                             List<WaitlistEntry> entrants,
                                             RepositoryCallback<Integer> callback) {
+        String templateId = templateIdFor(type, status);
+        fetchTemplate(templateId, (templateTitle, templateBody) -> sendUsingTemplate(templateId,
+                templateTitle,
+                templateBody,
+                eventId,
+                eventName,
+                title,
+                message,
+                type,
+                source,
+                status,
+                entrants,
+                callback));
+    }
+
+    private void sendUsingTemplate(String templateId,
+                                   @Nullable String templateTitle,
+                                   @Nullable String templateBody,
+                                   String eventId,
+                                   @Nullable String eventName,
+                                   String fallbackTitle,
+                                   String fallbackBody,
+                                   String type,
+                                   @Nullable String source,
+                                   NotificationStatus status,
+                                   List<WaitlistEntry> entrants,
+                                   RepositoryCallback<Integer> callback) {
         if (entrants == null || entrants.isEmpty()) {
             callback.onComplete(0, null);
             return;
@@ -68,9 +96,9 @@ public class NotificationRepository {
         NotificationStatus safeStatus = status != null ? status : NotificationStatus.UNREAD;
         String safeSource = source != null ? source : "ORGANIZER";
         WriteBatch batch = firestore.batch();
-        final int[] added = {0};
-        final int totalRecipients = entrants.size();
-        final int[] processed = {0};
+        AtomicInteger added = new AtomicInteger(0);
+        AtomicInteger processed = new AtomicInteger(0);
+        int totalRecipients = entrants.size();
 
         for (WaitlistEntry entry : entrants) {
             String recipientId = entry.getEntrantId();
@@ -78,38 +106,46 @@ public class NotificationRepository {
                 recipientId = entry.getId();
             }
             if (recipientId == null || recipientId.isEmpty()) {
-                processed[0]++;
+                processed.incrementAndGet();
                 continue;
             }
 
             String finalRecipientId = recipientId;
             fetchNotificationPrefs(recipientId, safeSource, (allowPush, allowSource) -> {
                 if (allowPush && allowSource) {
-                    DocumentReference doc = firestore.collection("notifications").document();
+                    String renderedTitle = renderText(templateTitle, fallbackTitle, eventName);
+                    String renderedBody = renderText(templateBody, fallbackBody, eventName);
+                    String safeEventId = eventId != null ? eventId : "unknown_event";
+                    DocumentReference userDoc = firestore.collection("notifications")
+                            .document(templateId)
+                            .collection("events")
+                            .document(safeEventId)
+                            .collection("recipients")
+                            .document();
                     Map<String, Object> payload = new HashMap<>();
                     payload.put("recipientId", finalRecipientId);
                     payload.put("recipientName", entry.getEntrantName());
                     payload.put("eventId", eventId);
                     payload.put("eventName", eventName);
-                    payload.put("title", title);
-                    payload.put("body", message);
+                    payload.put("title", renderedTitle);
+                    payload.put("body", renderedBody);
                     payload.put("type", type);
                     payload.put("source", safeSource);
+                    payload.put("templateId", templateId);
                     payload.put("waitlistEntryId", entry.getId());
                     payload.put("status", safeStatus.name());
                     payload.put("createdAt", FieldValue.serverTimestamp());
-                    batch.set(doc, payload);
-                    added[0]++;
+                    batch.set(userDoc, payload);
+                    added.incrementAndGet();
                 }
-                processed[0]++;
-                if (processed[0] == totalRecipients) {
-                    if (added[0] == 0) {
+                if (processed.incrementAndGet() == totalRecipients) {
+                    int totalAdded = added.get();
+                    if (totalAdded == 0) {
                         callback.onComplete(0, null);
                         return;
                     }
-                    int total = added[0];
                     batch.commit()
-                            .addOnSuccessListener(unused -> callback.onComplete(total, null))
+                            .addOnSuccessListener(unused -> callback.onComplete(totalAdded, null))
                             .addOnFailureListener(e -> callback.onComplete(null, e));
                 }
             });
@@ -121,7 +157,7 @@ public class NotificationRepository {
      */
     public ListenerRegistration listenToUserNotifications(String recipientId,
                                                           NotificationFeedListener listener) {
-        return firestore.collection("notifications")
+        return firestore.collectionGroup("recipients")
                 .whereEqualTo("recipientId", recipientId)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .addSnapshotListener((snapshots, error) -> {
@@ -146,7 +182,7 @@ public class NotificationRepository {
      * Admin view of all notifications.
      */
     public ListenerRegistration listenToAllNotifications(NotificationFeedListener listener) {
-        return firestore.collection("notifications")
+        return firestore.collectionGroup("recipients")
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .limit(200)
                 .addSnapshotListener((snapshots, error) -> {
@@ -170,13 +206,34 @@ public class NotificationRepository {
     /**
      * Mark a notification as handled/read.
      */
-    public void updateNotificationStatus(String notificationId,
+    public void updateNotificationStatus(NotificationMessage message,
                                          NotificationStatus status,
                                          RepositoryCallback<Void> callback) {
-        firestore.collection("notifications")
-                .document(notificationId)
-                .update("status", status.name())
-                .addOnSuccessListener(unused -> callback.onComplete(null, null))
+        if (message == null
+                || message.getTemplateId() == null
+                || message.getTemplateId().isEmpty()
+                || message.getEventId() == null
+                || message.getEventId().isEmpty()
+                || message.getId() == null
+                || message.getId().isEmpty()) {
+            callback.onComplete(null, new IllegalArgumentException("Missing identifiers to update notification status"));
+            return;
+        }
+        DocumentReference recipientDoc = firestore.collection("notifications")
+                .document(message.getTemplateId())
+                .collection("events")
+                .document(message.getEventId())
+                .collection("recipients")
+                .document(message.getId());
+        recipientDoc.update("status", status.name())
+                .addOnSuccessListener(unused -> {
+                    String outcomeTemplate = outcomeTemplateFor(status);
+                    if (outcomeTemplate == null) {
+                        callback.onComplete(null, null);
+                        return;
+                    }
+                    writeOutcomeNotification(outcomeTemplate, message, status, callback);
+                })
                 .addOnFailureListener(e -> callback.onComplete(null, e));
     }
 
@@ -187,11 +244,31 @@ public class NotificationRepository {
             message = new NotificationMessage();
         }
         message.setId(snapshot.getId());
+        message.setRecipientId(snapshot.getString("recipientId"));
         message.setStatus(parseStatus(snapshot.getString("status")));
         message.setCreatedAt(snapshot.getTimestamp("createdAt"));
         message.setRespondBy(snapshot.getTimestamp("respondBy"));
         message.setType(snapshot.getString("type"));
         message.setSource(snapshot.getString("source"));
+        message.setTemplateId(snapshot.getString("templateId"));
+        if ((message.getTemplateId() == null || message.getTemplateId().isEmpty()) && snapshot.getReference() != null) {
+            DocumentReference templateRef = snapshot.getReference()
+                    .getParent()     // recipients
+                    .getParent()     // eventId doc
+                    .getParent()     // events collection
+                    .getParent();    // template doc
+            if (templateRef != null) {
+                message.setTemplateId(templateRef.getId());
+            }
+        }
+        if ((message.getEventId() == null || message.getEventId().isEmpty()) && snapshot.getReference() != null) {
+            DocumentReference eventRef = snapshot.getReference()
+                    .getParent()   // recipients
+                    .getParent();  // eventId doc
+            if (eventRef != null) {
+                message.setEventId(eventRef.getId());
+            }
+        }
         return message;
     }
 
@@ -227,6 +304,111 @@ public class NotificationRepository {
                     // Fail open so users still receive critical messages if prefs unreadable.
                     callback.onComplete(true, true);
                 });
+    }
+
+    private interface TemplateCallback {
+        void onComplete(@Nullable String title, @Nullable String body);
+    }
+
+    private void fetchTemplate(String templateId, TemplateCallback callback) {
+        firestore.collection("notifications")
+                .document(templateId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    String title = snapshot.getString("title");
+                    String body = snapshot.getString("content");
+                    callback.onComplete(title, body);
+                })
+                .addOnFailureListener(e -> callback.onComplete(null, null));
+    }
+
+    private String renderText(@Nullable String template, @Nullable String fallback, @Nullable String eventName) {
+        String base = template != null ? template : (fallback != null ? fallback : "");
+        if (eventName != null && !eventName.isEmpty()) {
+            return base.replace("{{eventName}}", eventName);
+        }
+        return base;
+    }
+
+    private String templateIdFor(String type, NotificationStatus status) {
+        if (type == null) {
+            return "selected_notification";
+        }
+        switch (type.toUpperCase(Locale.US)) {
+            case "INVITE":
+                return "selected_notification";
+            case "RESULT":
+                return "not_selected_notification";
+            case "BROADCAST":
+                return "selected_notification";
+            case "CANCELLED":
+                return "invite_cancelled_notification";
+            case "DECLINED":
+                return "invite_rejected_notification";
+            case "ACCEPTED":
+            case "REGISTERED":
+                return "invite_accepted_notification";
+            case "WAITLIST":
+                return "joined_waitlist_notification";
+            default:
+                if (status == NotificationStatus.DECLINED) {
+                    return "invite_rejected_notification";
+                }
+                if (status == NotificationStatus.REGISTERED || status == NotificationStatus.ACCEPTED) {
+                    return "invite_accepted_notification";
+                }
+                if (status == NotificationStatus.NOT_SELECTED) {
+                    return "not_selected_notification";
+                }
+                if (status == NotificationStatus.WAITING) {
+                    return "joined_waitlist_notification";
+                }
+                return "selected_notification";
+        }
+    }
+
+    @Nullable
+    private String outcomeTemplateFor(NotificationStatus status) {
+        if (status == NotificationStatus.DECLINED) {
+            return "invite_rejected_notification";
+        }
+        if (status == NotificationStatus.ACCEPTED || status == NotificationStatus.REGISTERED) {
+            return "invite_accepted_notification";
+        }
+        return null;
+    }
+
+    private void writeOutcomeNotification(String templateId,
+                                          NotificationMessage base,
+                                          NotificationStatus status,
+                                          RepositoryCallback<Void> callback) {
+        fetchTemplate(templateId, (templateTitle, templateBody) -> {
+            String renderedTitle = renderText(templateTitle, base.getTitle(), base.getEventName());
+            String renderedBody = renderText(templateBody, base.getBody(), base.getEventName());
+            String safeEventId = base.getEventId() != null ? base.getEventId() : "unknown_event";
+            DocumentReference doc = firestore.collection("notifications")
+                    .document(templateId)
+                    .collection("events")
+                    .document(safeEventId)
+                    .collection("recipients")
+                    .document();
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("recipientId", base.getRecipientId());
+            payload.put("recipientName", base.getRecipientName());
+            payload.put("eventId", base.getEventId());
+            payload.put("eventName", base.getEventName());
+            payload.put("title", renderedTitle);
+            payload.put("body", renderedBody);
+            payload.put("type", base.getType());
+            payload.put("source", base.getSource());
+            payload.put("templateId", templateId);
+            payload.put("waitlistEntryId", base.getWaitlistEntryId());
+            payload.put("status", status.name());
+            payload.put("createdAt", FieldValue.serverTimestamp());
+            doc.set(payload)
+                    .addOnSuccessListener(unused -> callback.onComplete(null, null))
+                    .addOnFailureListener(e -> callback.onComplete(null, e));
+        });
     }
 
     private NotificationStatus parseStatus(@Nullable String statusValue) {

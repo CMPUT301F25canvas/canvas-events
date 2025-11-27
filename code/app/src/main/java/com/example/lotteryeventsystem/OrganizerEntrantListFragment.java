@@ -269,8 +269,9 @@ public class OrganizerEntrantListFragment extends Fragment {
             return;
         }
         String eventTitle = currentEvent != null ? currentEvent.getName() : null;
-        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
-        String body = getString(R.string.notification_not_selected_body, title);
+        String safeEventTitle = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
+        String title = getString(R.string.notification_not_selected_title);
+        String body = getString(R.string.notification_not_selected_body, safeEventTitle);
         notificationRepository.sendNotificationsToEntrants(
                 eventId,
                 eventTitle,
@@ -278,7 +279,7 @@ public class OrganizerEntrantListFragment extends Fragment {
                 body,
                 "RESULT",
                 "ORGANIZER",
-                NotificationStatus.INFO,
+                NotificationStatus.NOT_SELECTED,
                 notSelectedEntrants,
                 (count, error) -> {
                     if (error != null) {

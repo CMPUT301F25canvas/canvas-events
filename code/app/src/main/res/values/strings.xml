@@ -69,7 +69,6 @@
     <string name="notification_view_details">View details</string>
     <string name="notification_title_fallback">Organizer update</string>
     <string name="notification_invited_body">You were selected for %1$s.</string>
-    <string name="notification_not_selected_body">You were not selected for %1$s this round.</string>
     <string name="notification_broadcast_title">Organizer update</string>
     <string name="notification_status_unread">New</string>
     <string name="notification_status_pending">Pending</string>
@@ -77,6 +76,8 @@
     <string name="notification_status_declined">Declined</string>
     <string name="notification_status_registered">Registered</string>
     <string name="notification_status_info">Update</string>
+    <string name="notification_status_waiting">Waiting</string>
+    <string name="notification_status_not_selected">Not selected</string>
     <string name="notification_detail_title">Invitation</string>
     <string name="notification_accept">Accept</string>
     <string name="notification_decline">Decline</string>
@@ -91,4 +92,8 @@
     <string name="notification_admin_messages">Admin messages</string>
     <string name="notification_marketing">Marketing</string>
     <string name="notification_critical_updates">Critical updates always shown in-app.</string>
+    <string name="notification_waitlist_joined_title">Waitlist joined</string>
+    <string name="notification_waitlist_joined_body">You have been added to the waitlist for %1$s.</string>
+    <string name="notification_not_selected_title">Not Selected</string>
+    <string name="notification_not_selected_body">Sorry, you weren’t selected in the draw for %1$s. But please keep an eye out, you may be contacted if a spot opens up.</string>
 </resources>

@@ -14,7 +14,6 @@
         android:id="@+id/header_fragment"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        app:layout_constraintBottom_toTopOf="@+id/event_detail_fragment"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"

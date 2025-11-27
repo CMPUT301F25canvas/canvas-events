@@ -49,6 +49,7 @@ public class OrganizerEntrantListFragment extends Fragment {
     private String eventId;
     private ImageView posterImageView;
     private FirebaseWaitlistRepository waitlistRepository;
+    private Boolean isEventSampled = false;
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
      *
@@ -123,6 +124,10 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnSample.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (isEventSampled) {
+                    Toast.makeText(getContext(), "Entrants have already been sampled.", Toast.LENGTH_LONG).show();
+                    return;
+                }
                 if (currentEvent != null && currentEvent.getSampleSize() != null) {
                     selectRandomSample();
                 } else {
@@ -181,8 +186,26 @@ public class OrganizerEntrantListFragment extends Fragment {
                     // Send notifications
                     sendSelectedNotifications(selectedEntrants);
                     sendNotSelectedNotifications(notSelectedEntrants);
+                    markEventAsSampled();
             }
         });
+    }
+
+    private void markEventAsSampled() {
+        FirebaseFirestore.getInstance()
+                .collection("events")
+                .document(eventId)
+                .update("sampled", true)
+                .addOnSuccessListener(aVoid -> {
+                    // Update local state
+                    isEventSampled = true;
+                    if (currentEvent != null) {
+                        currentEvent.setSampled(true);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "Error updating event status", Toast.LENGTH_SHORT).show();
+                });
     }
 
     /**
@@ -280,6 +303,14 @@ public class OrganizerEntrantListFragment extends Fragment {
                         }
                         if (documentSnapshot.contains("sampleSize")) {
                             currentEvent.setSampleSize(documentSnapshot.getLong("sampleSize").intValue());
+                        }
+                        if (documentSnapshot.contains("sampled")) {
+                            currentEvent.setSampled(documentSnapshot.getBoolean("sampled"));
+                            isEventSampled = Boolean.TRUE.equals(currentEvent.getSampled());
+                        } else {
+                            // If field doesn't exist, assume false
+                            currentEvent.setSampled(false);
+                            isEventSampled = false;
                         }
                         String criteria = "";
                         String tmp;

@@ -86,7 +86,6 @@ public class OrganizerEntrantListFragment extends Fragment {
             eventId = args.getString("EVENT_ID");
         }
         waitlistRepository = new FirebaseWaitlistRepository();
-        notificationRepository = new NotificationRepository();
         eventName = view.findViewById(R.id.event_name);
         eventDescription = view.findViewById(R.id.event_description);
         eventStartTime = view.findViewById(R.id.event_start_time);
@@ -279,23 +278,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                 NotificationsManager.sendSelected(requireContext(), eventId, userId);
             }
         }
-        String eventTitle = currentEvent != null ? currentEvent.getName() : null;
-        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
-        String body = getString(R.string.notification_invited_body, title);
-        notificationRepository.sendNotificationsToEntrants(
-                eventId,
-                eventTitle,
-                title,
-                body,
-                "INVITE",
-                "ORGANIZER",
-                NotificationStatus.PENDING,
-                selectedEntrants,
-                (count, error) -> {
-                    if (error != null) {
-                        Log.e("SampleSelection", "Error sending invite notifications: " + error.getMessage());
-                    }
-                });
     }
 
     /**
@@ -308,23 +290,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                 NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
             }
         }
-        String eventTitle = currentEvent != null ? currentEvent.getName() : null;
-        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
-        String body = getString(R.string.notification_not_selected_body, title);
-        notificationRepository.sendNotificationsToEntrants(
-                eventId,
-                eventTitle,
-                title,
-                body,
-                "RESULT",
-                "ORGANIZER",
-                NotificationStatus.INFO,
-                notSelectedEntrants,
-                (count, error) -> {
-                    if (error != null) {
-                        Log.e("SampleSelection", "Error sending not-selected notifications: " + error.getMessage());
-                    }
-                });
     }
 
     /**

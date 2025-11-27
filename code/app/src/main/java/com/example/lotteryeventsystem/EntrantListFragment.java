@@ -170,12 +170,6 @@ public class EntrantListFragment extends Fragment {
             }
         });
 
-        if (btnNotifyAll != null) {
-            btnNotifyAll.setOnClickListener(v -> promptAndSendNotifications());
-        }
-
-        btnNotifyAll.setOnClickListener(v -> promptAndSendNotifications());
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             /**
              * Handles item clicks in the ListView to select an entrant.

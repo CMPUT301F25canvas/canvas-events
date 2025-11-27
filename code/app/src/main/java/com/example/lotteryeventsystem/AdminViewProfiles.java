@@ -36,6 +36,8 @@ public class AdminViewProfiles extends Fragment {
 
     private ArrayAdapter<String> adapter;
     private ArrayList<String> itemsList;
+
+    private ArrayList<String> idList;
     private static ArrayList<String> cachedItems;
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
@@ -62,6 +64,7 @@ public class AdminViewProfiles extends Fragment {
         ImageButton filterButton = view.findViewById(R.id.filter_button);
         ListView listView = view.findViewById(R.id.list_view);
 
+        idList = new ArrayList<>();
         itemsList = new ArrayList<>();
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, itemsList);
         listView.setAdapter(adapter);
@@ -76,7 +79,16 @@ public class AdminViewProfiles extends Fragment {
                     .addOnSuccessListener(querySnapshot -> {
                         for (QueryDocumentSnapshot doc : querySnapshot) {
                             String docId = doc.getId();
-                            itemsList.add(docId);
+                            String userName = doc.getString("name");
+                            if (userName != null && !userName.trim().isEmpty()) {
+                                itemsList.add(userName);
+                                idList.add(docId);
+                            }
+                            else {
+                                itemsList.add(docId);
+                                idList.add(docId);
+                            }
+
                         }
                         cachedItems = new ArrayList<>(itemsList);
                         adapter.notifyDataSetChanged();
@@ -88,15 +100,15 @@ public class AdminViewProfiles extends Fragment {
             // TODO: all the search logic
         });
 
-        filterButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Filter Clicked!", Toast.LENGTH_SHORT).show();
-            // TODO: all the dialog and filtering
-        });
-
         listView.setOnItemClickListener((parent, itemView, position, id) -> {
-            String profileId = itemsList.get(position);
+            String profileId = idList.get(position);
             FirebaseFirestore db = FirebaseFirestore.getInstance();
+            LayoutInflater inflater = LayoutInflater.from(requireContext());
+            View dialogView = inflater.inflate(R.layout.dialog_user_profile, null);
 
+            TextView textName = dialogView.findViewById(R.id.textUserName);
+            TextView textEnrolled = dialogView.findViewById(R.id.textEnrolled);
+            TextView textOrganized = dialogView.findViewById(R.id.textOrganized);
             db.collection("users").document(profileId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
@@ -105,13 +117,20 @@ public class AdminViewProfiles extends Fragment {
                             Toast.makeText(requireContext(), "Error: No data available for this user", Toast.LENGTH_SHORT).show();
                             return;
                         }
-                        StringBuilder info = new StringBuilder();
-                        for (Map.Entry<String, Object> entry : data.entrySet()) {
-                            info.append(entry.getKey())
-                                    .append(": ").append(entry.getValue()).append("\n");
-                        }
+                        String userName = data.get("name") != null ? data.get("name").toString() : "N/A";
+                        Object enrolledObj = data.get("enrolled_events");
+                        Object organizedObj = data.get("organized_events");
+                        String enrolledStr = (enrolledObj instanceof java.util.List)
+                                ? String.join("\n• ", (java.util.List<String>) enrolledObj)
+                                : "None";
+                        String organizedStr = (organizedObj instanceof java.util.List)
+                                ? String.join("\n• ", (java.util.List<String>) organizedObj)
+                                : "None";
+                        textName.setText("Name: " + userName);
+                        textEnrolled.setText("Enrolled Events:\n• " + enrolledStr);
+                        textOrganized.setText("Organized Events:\n• " + organizedStr);
                         new AlertDialog.Builder(requireContext()).setTitle("User Profile")
-                                .setMessage(info.toString())
+                                .setView(dialogView)
                                 .setPositiveButton("Delete", (dialog, which) -> {
                                     new AlertDialog.Builder(requireContext())
                                             .setTitle("Confirm Deletion")
@@ -121,8 +140,10 @@ public class AdminViewProfiles extends Fragment {
                                                 itemsList.remove(position);
                                                 adapter.notifyDataSetChanged();
                                             })
+                                            .setNegativeButton("Cancel", null)
                                             .show();
                                 })
+                                .setNegativeButton("Close", null)
                                 .show();
                     } else {
                         Toast.makeText(requireContext(), "Error: Profile doesn't exist", Toast.LENGTH_SHORT).show();
@@ -135,4 +156,5 @@ public class AdminViewProfiles extends Fragment {
             navController.popBackStack();
         });
     }
+
 }

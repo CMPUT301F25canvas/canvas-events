@@ -3,6 +3,8 @@ package com.example.lotteryeventsystem;
 import android.Manifest;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,15 +18,18 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.NavigationUI;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
     private FirebaseFirestore db;
+    private static final String TAG = "MainActivity";
     private boolean isAdmin = false; // True if the user is in admin mode
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Toast.makeText(this, "MAIN ACTIVITY", Toast.LENGTH_LONG).show();
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
@@ -40,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
                 new String[]{Manifest.permission.POST_NOTIFICATIONS},
                 1001
         );
-
+        NotificationListener.startListening(this);
     }
 
     public void setAdmin(boolean admin) {

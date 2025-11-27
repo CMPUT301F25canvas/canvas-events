@@ -153,7 +153,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                 Bundle args = new Bundle();
                 args.putString("EVENT_ID", eventId);
                 NavController navController = Navigation.findNavController(requireView());
-                navController.navigate(R.id.action_organizerEntrantListFragment_to_eventMapFragment, args);
             }
         });
         return view;

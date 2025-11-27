@@ -62,9 +62,7 @@
         android:id="@+id/adminProfilesFragment"
         android:name="com.example.lotteryeventsystem.AdminViewProfiles"
         android:label="Profiles" />
-
     <fragment
-<<<<<<< HEAD
         android:id="@+id/adminNotificationsFragment"
         android:name="com.example.lotteryeventsystem.AdminNotificationsView"
         android:label="AdminNotifications">
@@ -72,7 +70,7 @@
             android:id="@+id/action_adminNotificationFragment_to_notificationFragment"
             app:destination="@id/notificationFragment"/>
     </fragment>
-=======
+    <fragment
         android:id="@+id/adminPosterFragment"
         android:name="com.example.lotteryeventsystem.AdminPosterFragment"
         tools:layout="@layout/fragment_admin_view_images" />
@@ -81,7 +79,6 @@
         android:id="@+id/adminNotificationLogFragment"
         android:name="com.example.lotteryeventsystem.AdminNotificationLogFragment"
         tools:layout="@layout/fragment_admin_notifications" />
->>>>>>> origin/main
 
     <fragment
         android:id="@+id/notificationFragment"

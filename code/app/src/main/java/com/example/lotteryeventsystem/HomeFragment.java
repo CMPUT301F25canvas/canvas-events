@@ -287,6 +287,8 @@ public class HomeFragment extends Fragment {
         String category = doc.getString("categories");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
+        String posterUrl = doc.getString("posterURL");
+
 
         String highlight = registrationStart != null && !registrationStart.isEmpty()
                 ? registrationStart
@@ -300,7 +302,8 @@ public class HomeFragment extends Fragment {
                 range,
                 category,
                 latitude,
-                longitude);
+                longitude,
+                posterUrl);
     }
 
     private String buildRange(String start, String end, String fallbackDate) {

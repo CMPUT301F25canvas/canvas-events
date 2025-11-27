@@ -1,5 +1,6 @@
 package com.example.lotteryeventsystem;
 
+import android.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,9 +16,16 @@ import java.util.List;
 public class AdminPosterAdapter extends RecyclerView.Adapter<AdminPosterAdapter.ViewHolder> {
 
     private List<String>  posterList;
+    private OnPosterDeleteListener deleteListener;
 
-    public AdminPosterAdapter(List<String> posterList) {
+    public interface OnPosterDeleteListener {
+        void onPosterDelete(String posterUrl , int position);
+    }
+
+
+    public AdminPosterAdapter(List<String> posterList, OnPosterDeleteListener listener) {
         this.posterList = posterList;
+        this.deleteListener = listener;
     }
 
     @NonNull
@@ -35,6 +43,19 @@ public class AdminPosterAdapter extends RecyclerView.Adapter<AdminPosterAdapter.
         Glide.with(holder.posterImage.getContext())
                 .load(imageUrl)
                 .into(holder.posterImage);
+
+        holder.posterImage.setOnClickListener(v -> {
+            new AlertDialog.Builder(holder.posterImage.getContext())
+                    .setTitle("Delete Poster")
+                    .setMessage("Are you sure you want to delete this poster?")
+                    .setPositiveButton("Yes", (dialog, which) -> {
+                        if (deleteListener != null) {
+                            deleteListener.onPosterDelete(imageUrl, position);
+                        }
+                    })
+                    .setNegativeButton("Cancel", null)
+                    .show();
+        });
     }
 
     @Override

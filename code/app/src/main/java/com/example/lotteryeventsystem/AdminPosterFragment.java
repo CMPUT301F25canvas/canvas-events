@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,7 +41,19 @@ public class AdminPosterFragment extends Fragment {
         posterRecycleView = view.findViewById(R.id.postersRecyclerView);
         posterRecycleView.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 2 rows
 
-        adapter = new AdminPosterAdapter(posterUrls);
+        adapter = new AdminPosterAdapter(posterUrls, (posterUrl, position) -> {
+            FirebaseFirestore.getInstance()
+                    .collection("events")
+                    .whereEqualTo("posterURL", posterUrl)
+                    .get()
+                    .addOnSuccessListener(querySnapshot -> {
+                        for (DocumentSnapshot doc : querySnapshot) {
+                            doc.getReference().delete();
+                        }
+                        posterUrls.remove(position);
+                        adapter.notifyItemRemoved(position);
+                    });
+        });
         posterRecycleView.setAdapter(adapter);
 
         loadPosters();

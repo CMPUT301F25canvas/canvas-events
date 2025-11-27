@@ -70,7 +70,6 @@
     <string name="notification_title_fallback">Organizer update</string>
     <string name="notification_invited_body">You were selected for %1$s.</string>
     <string name="notification_not_selected_body">You were not selected for %1$s this round.</string>
-    <string name="notification_broadcast_title">Organizer update</string>
     <string name="notification_status_unread">New</string>
     <string name="notification_status_pending">Pending</string>
     <string name="notification_status_accepted">Accepted</string>
@@ -80,8 +79,6 @@
     <string name="notification_detail_title">Invitation</string>
     <string name="notification_accept">Accept</string>
     <string name="notification_decline">Decline</string>
-    <string name="notification_view_event">View event</string>
-    <string name="notification_my_events">Go to My Events</string>
     <string name="notification_action_error">We could not update your response. Try again.</string>
     <string name="notification_action_success">Updated.</string>
     <string name="notification_respond_placeholder">Respond soon to hold your spot.</string>

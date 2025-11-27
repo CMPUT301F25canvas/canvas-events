@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,6 +44,11 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        if (((MainActivity) requireActivity()).getAdmin()) {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_notificationFragment_to_adminNotificationFragment);
+            return;
+        }
         super.onViewCreated(view, savedInstanceState);
         notificationList = view.findViewById(R.id.notification_list);
         emptyView = view.findViewById(R.id.notification_empty);

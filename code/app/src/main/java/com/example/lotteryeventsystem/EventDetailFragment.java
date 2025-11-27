@@ -214,6 +214,7 @@ public class EventDetailFragment extends Fragment {
                         // Leave the waitlist
                         waitlistRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
                         userRef.update("enrolled_events", FieldValue.arrayRemove(eventId));
+                        NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
                         Toast.makeText(getContext(), "You were removed from the waiting list!", Toast.LENGTH_SHORT).show();
                         updateAvailableSpotsMessage(db);
                     }

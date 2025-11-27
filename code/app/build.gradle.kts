@@ -54,6 +54,7 @@ dependencies {
     implementation(libs.ext.junit)
     implementation("com.squareup.picasso:picasso:2.8")
     implementation(libs.firebase.storage)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")

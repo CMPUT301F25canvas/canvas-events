@@ -667,20 +667,6 @@ public class OrganizerEventCreateFragment extends Fragment {
         CheckBox geolocationCheckBox = getView().findViewById(R.id.geolocation_requirement_checkbox);
         geolocationCheckBox.setChecked(event.getGeolocationRequirement());
 
-//        TextInputEditText minAgeInput = getView().findViewById(R.id.min_age_input);
-//        if (event.getMinAge() != null && minAgeInput != null) {
-//            minAgeInput.setText(event.getMinAge());
-//        }
-//
-//        TextInputEditText dietaryRestrictionsInput = getView().findViewById(R.id.dietary_restrictions_input_text);
-//        if (event.getDietaryRestrictions() != null && dietaryRestrictionsInput != null) {
-//            dietaryRestrictionsInput.setText(event.getDietaryRestrictions());
-//        }
-//
-//        TextInputEditText otherRestrictionsInput = getView().findViewById(R.id.other_restrictions_input);
-//        if (event.getOtherRestrictions() != null && otherRestrictionsInput != null) {
-//            otherRestrictionsInput.setText(event.getOtherRestrictions());
-//        }
     }
 
     /**
@@ -699,7 +685,6 @@ public class OrganizerEventCreateFragment extends Fragment {
             updatedEvent.setMinAge(existingEvent.getMinAge());
             updatedEvent.setDietaryRestrictions(existingEvent.getDietaryRestrictions());
             updatedEvent.setOtherRestrictions(existingEvent.getOtherRestrictions());
-            updatedEvent.setCategories(existingEvent.getCategories());
         }
         // Handle poster update if changed
         if (eventCreationForm.getLocalImageUri() != null) {

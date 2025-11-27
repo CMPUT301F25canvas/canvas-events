@@ -19,7 +19,10 @@ public class Event {
     private String registrationStart;
     private String registrationEnd;
     private Integer sampleSize;
-    private List<String> categories;
+    private boolean isConcertCategory;
+    private boolean isSportsCategory;
+    private boolean isArtsCategory;
+    private boolean isFamilyCategory;
     private String posterURL; // Optional
     private boolean geolocationRequirement;
     private Integer entrantLimit; // Optional
@@ -96,8 +99,18 @@ public class Event {
         return sampleSize;
     }
 
-    public List<String> getCategories() {
-        return categories;
+    public boolean getIsConcertCategory() {
+        return isConcertCategory;
+    }
+
+    public boolean getIsSportsCategory() {
+        return isSportsCategory;
+    }
+    public boolean getIsArtsCategory() {
+        return isArtsCategory;
+    }
+    public boolean getIsFamilyCategory() {
+        return isFamilyCategory;
     }
 
     public String getPosterURL() {
@@ -152,8 +165,20 @@ public class Event {
         this.startTime = startTime;
     }
 
-    public void setCategories(List<String> categories) {
-        this.categories = categories;
+    public void setIsConcertCategory(boolean isConcertCategory) {
+        this.isConcertCategory = isConcertCategory;
+    }
+
+    public void setIsSportsCategory(boolean isSportsCategory) {
+        this.isSportsCategory = isSportsCategory;
+    }
+
+    public void setIsArtsCategory(boolean isArtsCategory) {
+        this.isArtsCategory = isArtsCategory;
+    }
+
+    public void setIsFamilyCategory(boolean isFamilyCategory) {
+        this.isFamilyCategory = isFamilyCategory;
     }
 
     public void setEndTime(String endTime) {

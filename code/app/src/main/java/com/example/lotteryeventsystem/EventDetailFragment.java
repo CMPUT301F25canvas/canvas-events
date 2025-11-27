@@ -130,13 +130,12 @@ public class EventDetailFragment extends Fragment {
                     ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
                     ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
                     ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
-                    ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("start_time"));
-                    ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("end_time"));
+                    ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("startTime"));
+                    ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("endTime"));
 
                     // Criteria text
                     String criteria = "";
                     String tmp;
-
                     if ((tmp = doc.getString("dietaryRestrictions")) != null) {
                         criteria += "Dietary Restrictions: " + tmp;
                     }
@@ -183,7 +182,7 @@ public class EventDetailFragment extends Fragment {
                         setupJoinLeaveButton(db);
                     }
 
-                    updateAvailableSpotsMessage(db);
+
                 });
     }
 

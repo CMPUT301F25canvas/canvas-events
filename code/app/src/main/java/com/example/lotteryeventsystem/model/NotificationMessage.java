@@ -15,6 +15,7 @@ public class NotificationMessage {
     private String recipientName;
     private String waitlistEntryId;
     private String type;
+    private String source;
     private NotificationStatus status = NotificationStatus.UNREAD;
     private Timestamp createdAt;
     private Timestamp respondBy;
@@ -117,6 +118,14 @@ public class NotificationMessage {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     /**

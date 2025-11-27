@@ -19,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
 import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
+import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -49,6 +50,7 @@ public class OrganizerEntrantListFragment extends Fragment {
     private String eventId;
     private ImageView posterImageView;
     private FirebaseWaitlistRepository waitlistRepository;
+    private NotificationRepository notificationRepository;
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
      *
@@ -82,6 +84,7 @@ public class OrganizerEntrantListFragment extends Fragment {
             eventId = args.getString("EVENT_ID");
         }
         waitlistRepository = new FirebaseWaitlistRepository();
+        notificationRepository = new NotificationRepository();
         eventName = view.findViewById(R.id.event_name);
         eventDescription = view.findViewById(R.id.event_description);
         eventStartTime = view.findViewById(R.id.event_start_time);
@@ -236,24 +239,52 @@ public class OrganizerEntrantListFragment extends Fragment {
      * Send notifications to selected entrants
      */
     private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
-        for (WaitlistEntry entrant : selectedEntrants) {
-            String userId = entrant.getId(); // Make sure this gets the actual user ID
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendSelected(requireContext(), eventId, userId);
-            }
+        if (selectedEntrants == null || selectedEntrants.isEmpty()) {
+            return;
         }
+        String eventTitle = currentEvent != null ? currentEvent.getName() : null;
+        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
+        String body = getString(R.string.notification_invited_body, title);
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                eventTitle,
+                title,
+                body,
+                "INVITE",
+                "ORGANIZER",
+                NotificationStatus.PENDING,
+                selectedEntrants,
+                (count, error) -> {
+                    if (error != null) {
+                        Log.e("SampleSelection", "Error sending invite notifications: " + error.getMessage());
+                    }
+                });
     }
 
     /**
      * Send notifications to not selected entrants
      */
     private void sendNotSelectedNotifications(List<WaitlistEntry> notSelectedEntrants) {
-        for (WaitlistEntry entrant : notSelectedEntrants) {
-            String userId = entrant.getId(); // Make sure this gets the actual user ID
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
-            }
+        if (notSelectedEntrants == null || notSelectedEntrants.isEmpty()) {
+            return;
         }
+        String eventTitle = currentEvent != null ? currentEvent.getName() : null;
+        String title = eventTitle != null ? eventTitle : getString(R.string.notification_title_fallback);
+        String body = getString(R.string.notification_not_selected_body, title);
+        notificationRepository.sendNotificationsToEntrants(
+                eventId,
+                eventTitle,
+                title,
+                body,
+                "RESULT",
+                "ORGANIZER",
+                NotificationStatus.INFO,
+                notSelectedEntrants,
+                (count, error) -> {
+                    if (error != null) {
+                        Log.e("SampleSelection", "Error sending not-selected notifications: " + error.getMessage());
+                    }
+                });
     }
 
     /**

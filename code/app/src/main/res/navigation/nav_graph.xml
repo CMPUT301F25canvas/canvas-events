@@ -126,6 +126,9 @@
         <action
             android:id="@+id/action_organizerEventListFragment_to_organizerEventCreateFragment"
             app:destination="@id/organizerEventCreateFragment"/>
+        <action
+            android:id="@+id/action_organizerEventListFragment_to_eventDetailFragment"
+            app:destination="@id/eventDetailFragment"/>
     </fragment>
 
     <fragment

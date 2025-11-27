@@ -48,6 +48,7 @@ public class NotificationRepository {
      * @param title          title to show in the feed
      * @param message        long-form body
      * @param type           a short string like INVITE or BROADCAST
+     * @param source         who sent it (ORGANIZER/ADMIN/MARKETING); defaults to ORGANIZER if null
      * @param entrants       recipients
      * @param callback       completion callback with how many notifications were written
      */
@@ -56,45 +57,63 @@ public class NotificationRepository {
                                             String title,
                                             String message,
                                             String type,
+                                            @Nullable String source,
+                                            NotificationStatus status,
                                             List<WaitlistEntry> entrants,
                                             RepositoryCallback<Integer> callback) {
         if (entrants == null || entrants.isEmpty()) {
             callback.onComplete(0, null);
             return;
         }
+        NotificationStatus safeStatus = status != null ? status : NotificationStatus.UNREAD;
+        String safeSource = source != null ? source : "ORGANIZER";
         WriteBatch batch = firestore.batch();
-        int added = 0;
+        final int[] added = {0};
+        final int totalRecipients = entrants.size();
+        final int[] processed = {0};
+
         for (WaitlistEntry entry : entrants) {
             String recipientId = entry.getEntrantId();
             if (recipientId == null || recipientId.isEmpty()) {
                 recipientId = entry.getId();
             }
             if (recipientId == null || recipientId.isEmpty()) {
+                processed[0]++;
                 continue;
             }
-            DocumentReference doc = firestore.collection("notifications").document();
-            Map<String, Object> payload = new HashMap<>();
-            payload.put("recipientId", recipientId);
-            payload.put("recipientName", entry.getEntrantName());
-            payload.put("eventId", eventId);
-            payload.put("eventName", eventName);
-            payload.put("title", title);
-            payload.put("body", message);
-            payload.put("type", type);
-            payload.put("waitlistEntryId", entry.getId());
-            payload.put("status", NotificationStatus.PENDING.name());
-            payload.put("createdAt", FieldValue.serverTimestamp());
-            batch.set(doc, payload);
-            added++;
+
+            String finalRecipientId = recipientId;
+            fetchNotificationPrefs(recipientId, safeSource, (allowPush, allowSource) -> {
+                if (allowPush && allowSource) {
+                    DocumentReference doc = firestore.collection("notifications").document();
+                    Map<String, Object> payload = new HashMap<>();
+                    payload.put("recipientId", finalRecipientId);
+                    payload.put("recipientName", entry.getEntrantName());
+                    payload.put("eventId", eventId);
+                    payload.put("eventName", eventName);
+                    payload.put("title", title);
+                    payload.put("body", message);
+                    payload.put("type", type);
+                    payload.put("source", safeSource);
+                    payload.put("waitlistEntryId", entry.getId());
+                    payload.put("status", safeStatus.name());
+                    payload.put("createdAt", FieldValue.serverTimestamp());
+                    batch.set(doc, payload);
+                    added[0]++;
+                }
+                processed[0]++;
+                if (processed[0] == totalRecipients) {
+                    if (added[0] == 0) {
+                        callback.onComplete(0, null);
+                        return;
+                    }
+                    int total = added[0];
+                    batch.commit()
+                            .addOnSuccessListener(unused -> callback.onComplete(total, null))
+                            .addOnFailureListener(e -> callback.onComplete(null, e));
+                }
+            });
         }
-        if (added == 0) {
-            callback.onComplete(0, null);
-            return;
-        }
-        final int total = added;
-        batch.commit()
-                .addOnSuccessListener(unused -> callback.onComplete(total, null))
-                .addOnFailureListener(e -> callback.onComplete(null, e));
     }
 
     /**
@@ -105,6 +124,31 @@ public class NotificationRepository {
         return firestore.collection("notifications")
                 .whereEqualTo("recipientId", recipientId)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
+                .addSnapshotListener((snapshots, error) -> {
+                    if (error != null) {
+                        listener.onChanged(null, error);
+                        return;
+                    }
+                    List<NotificationMessage> messages = new ArrayList<>();
+                    if (snapshots != null) {
+                        for (DocumentSnapshot snapshot : snapshots.getDocuments()) {
+                            NotificationMessage message = mapMessage(snapshot);
+                            if (message != null) {
+                                messages.add(message);
+                            }
+                        }
+                    }
+                    listener.onChanged(messages, null);
+                });
+    }
+
+    /**
+     * Admin view of all notifications.
+     */
+    public ListenerRegistration listenToAllNotifications(NotificationFeedListener listener) {
+        return firestore.collection("notifications")
+                .orderBy("createdAt", Query.Direction.DESCENDING)
+                .limit(200)
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) {
                         listener.onChanged(null, error);
@@ -146,7 +190,43 @@ public class NotificationRepository {
         message.setStatus(parseStatus(snapshot.getString("status")));
         message.setCreatedAt(snapshot.getTimestamp("createdAt"));
         message.setRespondBy(snapshot.getTimestamp("respondBy"));
+        message.setType(snapshot.getString("type"));
+        message.setSource(snapshot.getString("source"));
         return message;
+    }
+
+    public interface NotificationPrefsCallback {
+        void onComplete(boolean allowPush, boolean allowSource);
+    }
+
+    private void fetchNotificationPrefs(String recipientId,
+                                        String source,
+                                        NotificationPrefsCallback callback) {
+        firestore.collection("users")
+                .document(recipientId)
+                .collection("preferences")
+                .document("notifications")
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    boolean allowPush = snapshot.getBoolean("allow_push") == null || snapshot.getBoolean("allow_push");
+                    boolean allowOrganizer = snapshot.getBoolean("organizer") == null || snapshot.getBoolean("organizer");
+                    boolean allowAdmin = snapshot.getBoolean("admin") == null || snapshot.getBoolean("admin");
+                    boolean allowMarketing = snapshot.getBoolean("marketing") != null && snapshot.getBoolean("marketing");
+
+                    boolean allowSource;
+                    if ("ADMIN".equalsIgnoreCase(source)) {
+                        allowSource = allowAdmin;
+                    } else if ("MARKETING".equalsIgnoreCase(source)) {
+                        allowSource = allowMarketing;
+                    } else {
+                        allowSource = allowOrganizer; // default organizer
+                    }
+                    callback.onComplete(allowPush, allowSource);
+                })
+                .addOnFailureListener(e -> {
+                    // Fail open so users still receive critical messages if prefs unreadable.
+                    callback.onComplete(true, true);
+                });
     }
 
     private NotificationStatus parseStatus(@Nullable String statusValue) {

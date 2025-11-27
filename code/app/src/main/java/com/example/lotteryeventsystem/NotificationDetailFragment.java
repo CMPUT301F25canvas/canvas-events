@@ -37,12 +37,15 @@ public class NotificationDetailFragment extends Fragment {
     private ProgressBar progressBar;
     private MaterialButton acceptButton;
     private MaterialButton declineButton;
+    private MaterialButton viewEventButton;
+    private MaterialButton myEventsButton;
 
     private String notificationId;
     private String eventId;
     private String waitlistEntryId;
     private String eventName;
     private String body;
+    private String messageType;
     private NotificationStatus currentStatus = NotificationStatus.UNREAD;
 
     @Nullable
@@ -62,6 +65,8 @@ public class NotificationDetailFragment extends Fragment {
         progressBar = view.findViewById(R.id.detail_progress);
         acceptButton = view.findViewById(R.id.detail_accept);
         declineButton = view.findViewById(R.id.detail_decline);
+        viewEventButton = view.findViewById(R.id.detail_view_event);
+        myEventsButton = view.findViewById(R.id.detail_my_events);
         ImageButton backButton = view.findViewById(R.id.detail_back);
 
         backButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
@@ -72,6 +77,7 @@ public class NotificationDetailFragment extends Fragment {
             waitlistEntryId = getArguments().getString("waitlistEntryId");
             eventName = getArguments().getString("eventName");
             body = getArguments().getString("body");
+            messageType = getArguments().getString("type");
             String statusValue = getArguments().getString("status");
             if (!TextUtils.isEmpty(statusValue)) {
                 try {
@@ -83,8 +89,11 @@ public class NotificationDetailFragment extends Fragment {
         }
 
         bindContent();
-        acceptButton.setOnClickListener(v -> handleAction(NotificationStatus.ACCEPTED, WaitlistStatus.CONFIRMED));
+        updateActionVisibility();
+        acceptButton.setOnClickListener(v -> handleAction(NotificationStatus.REGISTERED, WaitlistStatus.CONFIRMED));
         declineButton.setOnClickListener(v -> handleAction(NotificationStatus.DECLINED, WaitlistStatus.DECLINED));
+        viewEventButton.setOnClickListener(v -> openEventDetails());
+        myEventsButton.setOnClickListener(v -> navigateToMyEvents());
     }
 
     private void bindContent() {
@@ -102,6 +111,9 @@ public class NotificationDetailFragment extends Fragment {
     }
 
     private void handleAction(NotificationStatus notificationStatus, @Nullable WaitlistStatus waitlistStatus) {
+        if (!isActionable()) {
+            return;
+        }
         setLoading(true);
         if (waitlistStatus != null && eventId != null && waitlistEntryId != null) {
             waitlistRepository.updateEntrantStatus(eventId, waitlistEntryId, waitlistStatus,
@@ -136,8 +148,7 @@ public class NotificationDetailFragment extends Fragment {
                             }
                             currentStatus = notificationStatus;
                             statusView.setText(getStatusText(notificationStatus));
-                            acceptButton.setEnabled(false);
-                            declineButton.setEnabled(false);
+                            updateActionVisibility();
                             showToast(getString(R.string.notification_action_success));
                         });
                     });
@@ -167,6 +178,38 @@ public class NotificationDetailFragment extends Fragment {
         progressBar.setVisibility(loading ? View.VISIBLE : View.GONE);
         acceptButton.setEnabled(!loading);
         declineButton.setEnabled(!loading);
+        viewEventButton.setEnabled(!loading);
+        myEventsButton.setEnabled(!loading);
+    }
+
+    private void updateActionVisibility() {
+        boolean actionable = isActionable();
+        acceptButton.setVisibility(actionable ? View.VISIBLE : View.GONE);
+        declineButton.setVisibility(actionable ? View.VISIBLE : View.GONE);
+        boolean followUp = currentStatus == NotificationStatus.REGISTERED || currentStatus == NotificationStatus.ACCEPTED;
+        viewEventButton.setVisibility(followUp ? View.VISIBLE : View.GONE);
+        myEventsButton.setVisibility(followUp ? View.VISIBLE : View.GONE);
+    }
+
+    private boolean isActionable() {
+        return currentStatus == NotificationStatus.PENDING;
+    }
+
+    private void openEventDetails() {
+        if (eventId == null || eventId.isEmpty() || !isAdded()) {
+            showToast(getString(R.string.notification_action_error));
+            return;
+        }
+        Bundle args = new Bundle();
+        args.putString(EventDetailFragment.ARG_EVENT_ID, eventId);
+        Navigation.findNavController(requireView()).navigate(R.id.eventDetailFragment, args);
+    }
+
+    private void navigateToMyEvents() {
+        if (!isAdded()) {
+            return;
+        }
+        Navigation.findNavController(requireView()).navigate(R.id.eventHistoryFragment);
     }
 
     private void showToast(String message) {

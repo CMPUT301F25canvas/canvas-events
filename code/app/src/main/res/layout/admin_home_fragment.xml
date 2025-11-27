@@ -79,4 +79,14 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/admin_notifications_button"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Notification Logs"
+        app:layout_constraintTop_toBottomOf="@id/admin_images_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="40dp"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

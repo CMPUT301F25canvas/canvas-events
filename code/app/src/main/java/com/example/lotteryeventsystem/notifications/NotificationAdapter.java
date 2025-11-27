@@ -98,7 +98,8 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
                 timestampView.setText("");
             }
 
-            String buttonText = message.requiresResponse()
+            boolean pendingInvite = message.getStatus() == NotificationStatus.PENDING;
+            String buttonText = pendingInvite
                     ? itemView.getContext().getString(R.string.notification_open)
                     : itemView.getContext().getString(R.string.notification_view_details);
             openButton.setText(buttonText);

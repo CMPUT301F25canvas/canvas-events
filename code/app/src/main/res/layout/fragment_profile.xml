@@ -90,22 +90,6 @@
             android:layout_height="1dp"
             android:background="@color/lighter_gray" />
 
-        <!-- Our Events -->
-        <TextView
-            android:id="@+id/my_registered_events"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Registered Events"
-            android:textSize="16sp"
-            android:gravity="center_vertical"
-            android:paddingStart="10dp"
-            android:paddingEnd="16dp"
-            android:background="?attr/selectableItemBackground" />
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="@color/lighter_gray" />
-
         <TextView
             android:id="@+id/admin_login"
             android:layout_width="match_parent"

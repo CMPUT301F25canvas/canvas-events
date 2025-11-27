@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_profileFragment_to_adminHomeFragment"
             app:destination="@id/adminHomeFragment"/>
+        <action
+            android:id="@+id/action_homeFragment_to_organizerEventCreateFragment"
+            app:destination="@id/organizerEventCreateFragment"/>
     </fragment>
 
     <fragment
@@ -47,6 +50,12 @@
         <action
             android:id="@+id/action_adminHomeFragment_to_adminProfilesFragment"
             app:destination="@id/adminProfilesFragment"/>
+        <action
+            android:id="@+id/action_adminHomeFragment_to_adminPosterFragment"
+            app:destination="@id/adminPosterFragment" />
+        <action
+            android:id="@+id/action_adminHomeFragment_to_adminNotificationLogFragment"
+            app:destination="@id/adminNotificationLogFragment" />
     </fragment>
 
     <fragment
@@ -62,6 +71,16 @@
         android:id="@+id/adminProfilesFragment"
         android:name="com.example.lotteryeventsystem.AdminViewProfiles"
         android:label="Profiles" />
+
+    <fragment
+        android:id="@+id/adminPosterFragment"
+        android:name="com.example.lotteryeventsystem.AdminPosterFragment"
+        tools:layout="@layout/fragment_admin_view_images" />
+
+    <fragment
+        android:id="@+id/adminNotificationLogFragment"
+        android:name="com.example.lotteryeventsystem.AdminNotificationLogFragment"
+        tools:layout="@layout/fragment_admin_notifications" />
 
     <fragment
         android:id="@+id/notificationFragment"
@@ -170,6 +189,18 @@
         <action
             android:id="@+id/eventHistoryFragment_to_profileFragment"
             app:destination="@id/profileFragment"/>
+        <action
+            android:id="@+id/action_eventHistoryFragment_to_eventDetailFragment"
+            app:destination="@id/eventDetailFragment"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/eventMapFragment"
+        android:name="com.example.lotteryeventsystem.EventMapFragment"
+        tools:layout="@layout/fragment_event_map">
+        <argument
+            android:name="EVENT_ID"
+            app:argType="string" />
     </fragment>
 
     <fragment

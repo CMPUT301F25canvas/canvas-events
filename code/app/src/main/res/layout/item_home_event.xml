@@ -1,53 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:paddingTop="14dp"
-    android:paddingBottom="14dp">
+    android:layout_margin="8dp"
+    card_view:cardCornerRadius="12dp"
+    card_view:cardElevation="4dp"
+    card_view:cardUseCompatPadding="true"
+    card_view:cardPreventCornerOverlap="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:padding="10dp">
+
+        <ImageView
+            android:id="@+id/event_poster"
+            android:layout_width="match_parent"
+            android:layout_height="298dp"
+            android:scaleType="centerCrop"
+            android:adjustViewBounds="true"
+            android:background="@drawable/rounded_corner_mask"
+            android:clipToOutline="true"
+            android:src="@drawable/img_placeholder" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/event_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Event Title"
+                android:textColor="#1F152E"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/event_date_highlight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Nov 05"
+                android:textColor="#3D3350"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
-            android:id="@+id/event_title"
-            android:layout_width="0dp"
+            android:id="@+id/event_description"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Event Title"
-            android:textColor="#1F152E"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="4dp"
+            android:text="Short description of the event."
+            android:textColor="#4F475B"
+            android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/event_date_highlight"
-            android:layout_width="wrap_content"
+            android:id="@+id/event_location"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Nov 05"
-            android:textColor="#3D3350"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:layout_marginTop="4dp"
+            android:text="Oct 31 - Nov 03"
+            android:textColor="#7A728B"
+            android:textSize="12sp" />
+
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/event_description"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
-        android:text="Short description of the event."
-        android:textColor="#4F475B"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/event_range"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:text="Oct 31 - Nov 03"
-        android:textColor="#7A728B"
-        android:textSize="12sp" />
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

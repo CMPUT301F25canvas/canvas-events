@@ -70,7 +70,7 @@ public class EventHistoryFragment extends Fragment {
             Bundle args = new Bundle();
             args.putString(EventDetailFragment.ARG_EVENT_ID, item.id);
             NavController navController = Navigation.findNavController(requireView());
-            navController.navigate(R.id.action_homeFragment_to_eventDetailFragment, args);
+            navController.navigate(R.id.action_eventHistoryFragment_to_eventDetailFragment, args);
         });
         RecyclerView recyclerView = view.findViewById(R.id.events_recycler);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

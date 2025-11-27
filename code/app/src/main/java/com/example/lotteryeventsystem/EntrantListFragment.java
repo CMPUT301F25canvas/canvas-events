@@ -24,7 +24,9 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
+import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
+import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 
@@ -51,10 +53,11 @@ public class EntrantListFragment extends Fragment {
     private ListView listView;
     private TextView tvTitle;
     private ImageButton btnBack, btnFilter;
-    private Button btnDeleteSelectedEntrant, btnExportCSV;
+    private Button btnDeleteSelectedEntrant, btnExportCSV, btnNotifyAll;
     private int entrantPosition = -1;
     private WaitlistEntryAdapter adapter;
     private final FirebaseWaitlistRepository repository = new FirebaseWaitlistRepository();
+    private final NotificationRepository notificationRepository = new NotificationRepository();
     private ArrayList<WaitlistEntry> entrantsList = new ArrayList<>();
     private String eventId;
     private String listType;
@@ -111,6 +114,7 @@ public class EntrantListFragment extends Fragment {
         btnFilter = view.findViewById(R.id.btnFilter);
         btnDeleteSelectedEntrant = view.findViewById(R.id.btnDeleteSelectedEntrant);
         btnExportCSV = view.findViewById(R.id.btnExportCSV);
+        btnNotifyAll = view.findViewById(R.id.btnNotifyAll);
         adapter = new WaitlistEntryAdapter(requireContext(), entrantsList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -165,6 +169,12 @@ public class EntrantListFragment extends Fragment {
                 exportEnrolledEntrantsToCSV();
             }
         });
+
+        if (btnNotifyAll != null) {
+            btnNotifyAll.setOnClickListener(v -> promptAndSendNotifications());
+        }
+
+        btnNotifyAll.setOnClickListener(v -> promptAndSendNotifications());
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             /**
@@ -390,6 +400,9 @@ public class EntrantListFragment extends Fragment {
                     entrantsList.clear();
                     entrantsList.addAll(result);
                     adapter.notifyDataSetChanged();
+                    if (btnNotifyAll != null) {
+                        btnNotifyAll.setEnabled(!entrantsList.isEmpty());
+                    }
                 }
             }
         });

@@ -76,15 +76,6 @@ public class EventRepository {
                 .get();
     }
 
-    /**
-     * Retreieves the list of events that are of the given
-     * @param category the category to search for
-     * @return - unimplemented
-     */
-    public Task<QuerySnapshot> getEventsByCategory(String category) {
-        return null;
-    }
-
 
     /**
      * Retrieves the waitlist for the given event

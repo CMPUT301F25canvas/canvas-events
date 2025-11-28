@@ -749,9 +749,10 @@ public class OrganizerEventCreateFragment extends Fragment {
         String organizerID = Settings.Secure.getString(requireContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
 
+        // TODO: REFACTOR HOW EVENT_ID IS GENERATED?
         eventRepository.generateEventID().addOnSuccessListener(snapshot -> {
             long count = snapshot.getCount() + 1;
-            String eventID = "event_id" + count;
+            String eventID = "event_id" + Instant.now().toString();
 
             event.setEventID(eventID);
             event.setOrganizerID(organizerID);

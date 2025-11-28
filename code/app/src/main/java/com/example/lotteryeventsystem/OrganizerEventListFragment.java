@@ -75,7 +75,7 @@ public class OrganizerEventListFragment extends Fragment {
         db.collection("users").document(deviceId).get()
                 .addOnSuccessListener(users -> {
                     List<String> organized_events = (List<String>) users.get("organized_events");
-                    if (organized_events.isEmpty() || organized_events == null) {
+                    if (organized_events == null || organized_events.isEmpty()) {
                         return;
                     }
                     db.collection("events")

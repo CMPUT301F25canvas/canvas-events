@@ -95,6 +95,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
 
+
     <!-- poster -->
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/event_poster"
@@ -105,10 +106,10 @@
         app:shapeAppearanceOverlay="@style/RoundedPoster"
         app:strokeColor="#1F152E"
         app:strokeWidth="3dp"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="120dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/event_criteria" />
+        app:layout_constraintTop_toBottomOf="@+id/header_title" />
 
 
     <!-- Interaction Button -->

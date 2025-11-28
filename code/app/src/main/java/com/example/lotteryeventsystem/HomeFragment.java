@@ -66,7 +66,7 @@ public class HomeFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        if (((MainActivity) requireActivity()).getAdmin()) {
+                if (((MainActivity) requireActivity()).getAdmin()) {
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.action_profileFragment_to_adminHomeFragment);
         }

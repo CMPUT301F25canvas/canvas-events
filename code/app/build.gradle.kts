@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.ext.junit)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")

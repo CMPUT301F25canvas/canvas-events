@@ -62,12 +62,10 @@ public class AdminHomeFragment extends Fragment {
 
         imagesBtn.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.action_adminHomeFragment_to_adminPosterFragment);
         });
 
         notificationsBtn.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
-            navController.navigate(R.id.action_adminHomeFragment_to_adminNotificationLogFragment);
         });
     }
 }

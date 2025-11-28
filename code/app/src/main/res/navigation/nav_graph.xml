@@ -50,12 +50,6 @@
         <action
             android:id="@+id/action_adminHomeFragment_to_adminProfilesFragment"
             app:destination="@id/adminProfilesFragment"/>
-        <action
-            android:id="@+id/action_adminHomeFragment_to_adminPosterFragment"
-            app:destination="@id/adminPosterFragment" />
-        <action
-            android:id="@+id/action_adminHomeFragment_to_adminNotificationLogFragment"
-            app:destination="@id/adminNotificationLogFragment" />
     </fragment>
 
     <fragment
@@ -71,7 +65,14 @@
         android:id="@+id/adminProfilesFragment"
         android:name="com.example.lotteryeventsystem.AdminViewProfiles"
         android:label="Profiles" />
-
+    <fragment
+        android:id="@+id/adminNotificationsFragment"
+        android:name="com.example.lotteryeventsystem.AdminNotificationsView"
+        android:label="AdminNotifications">
+        <action
+            android:id="@+id/action_adminNotificationFragment_to_notificationFragment"
+            app:destination="@id/notificationFragment"/>
+    </fragment>
     <fragment
         android:id="@+id/adminPosterFragment"
         android:name="com.example.lotteryeventsystem.AdminPosterFragment"
@@ -93,6 +94,9 @@
         <action
             android:id="@+id/action_notificationFragment_to_notificationDetailFragment"
             app:destination="@id/notificationDetailFragment" />
+        <action
+            android:id="@+id/action_notificationFragment_to_adminNotificationFragment"
+            app:destination="@id/adminNotificationsFragment"/>
     </fragment>
 
     <fragment
@@ -161,28 +165,25 @@
         <action
             android:id="@+id/action_organizerEntrantListFragment_to_organizerEventCreateFragment"
             app:destination="@id/organizerEventCreateFragment" />
-        <action
-            android:id="@+id/action_organizerEntrantListFragment_to_eventMapFragment"
-            app:destination="@id/eventMapFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/EntrantListFragment"
         android:name="com.example.lotteryeventsystem.EntrantListFragment"
         android:label="Entrant Lists" >
-    <argument
-        android:name="LIST_TYPE"
-        app:argType="string"
-        android:defaultValue="waiting" />
+        <argument
+            android:name="LIST_TYPE"
+            app:argType="string"
+            android:defaultValue="waiting" />
     </fragment>
 
     <fragment
         android:id="@+id/personalInfoFragment"
         android:name="com.example.lotteryeventsystem.PersonalInfoFragment"
         tools:layout="@layout/fragment_personal_info">
-    <action
-        android:id="@+id/personalInfoFragment_to_profileFragment"
-        app:destination="@id/profileFragment"/>
+        <action
+            android:id="@+id/personalInfoFragment_to_profileFragment"
+            app:destination="@id/profileFragment"/>
     </fragment>
 
     <fragment

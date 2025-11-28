@@ -50,7 +50,6 @@ public class OrganizerEntrantListFragment extends Fragment {
     private ImageButton btnBack;
     private String eventId;
     private ImageView posterImageView;
-    private ImageButton btnEdit;
     private FirebaseWaitlistRepository waitlistRepository;
     private Boolean isEventSampled = false;
     /**

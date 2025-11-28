@@ -36,6 +36,17 @@
                 android:textColor="#221638"
                 android:textSize="22sp"
                 android:textStyle="bold" />
+
+            <ImageButton
+                android:id="@+id/create_event_button"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@color/zxing_transparent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_plus"
+                android:textSize="40sp"
+                android:layout_marginStart="100dp" />
+
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
@@ -45,13 +56,6 @@
             android:layout_marginTop="12dp"
             android:clipToPadding="false"
             android:padding="15dp" />
-
-        <Button
-            android:id="@+id/create_event_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Create Event"
-            />
 
     </LinearLayout>
 </ScrollView>

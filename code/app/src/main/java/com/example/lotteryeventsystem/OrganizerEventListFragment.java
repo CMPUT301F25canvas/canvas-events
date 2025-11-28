@@ -55,7 +55,7 @@ public class OrganizerEventListFragment extends Fragment {
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Button createEventButton = view.findViewById(R.id.create_event_button);
+        ImageButton createEventButton = view.findViewById(R.id.create_event_button);
         ImageButton backButton = view.findViewById(R.id.back_button);
 
         eventsList = new ArrayList<>();

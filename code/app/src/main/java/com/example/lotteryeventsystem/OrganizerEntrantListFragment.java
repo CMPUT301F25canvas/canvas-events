@@ -44,7 +44,7 @@ import java.util.List;
  */
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnViewEntrants, btnSample;
-    private ImageView btnViewMap, btnDownloadQR;
+    private ImageButton btnViewMap, btnEdit, btnDownloadQR;
     private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
     private Event currentEvent;
     private ImageButton btnBack;

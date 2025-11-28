@@ -9,9 +9,6 @@ public class Event {
     private String organizerID;
     private String name;
     private String description;
-    private String minAge;
-    private String dietaryRestrictions;
-    private String otherRestrictions;
     private String startDate;
     private String endDate;
     private String startTime;
@@ -19,10 +16,7 @@ public class Event {
     private String registrationStart;
     private String registrationEnd;
     private Integer sampleSize;
-    private boolean isConcertCategory;
-    private boolean isSportsCategory;
-    private boolean isArtsCategory;
-    private boolean isFamilyCategory;
+    private ArrayList<String> categories;
     private String posterURL; // Optional
     private boolean geolocationRequirement;
     private Integer entrantLimit; // Optional
@@ -68,9 +62,6 @@ public class Event {
     public String getDescription() {
         return description;
     }
-    public String getMinAge() { return minAge; }
-    public String getDietaryRestrictions() { return dietaryRestrictions; }
-    public String getOtherRestrictions() { return otherRestrictions; }
 
     public String getStartDate() {
         return startDate;
@@ -99,18 +90,8 @@ public class Event {
         return sampleSize;
     }
 
-    public boolean getIsConcertCategory() {
-        return isConcertCategory;
-    }
-
-    public boolean getIsSportsCategory() {
-        return isSportsCategory;
-    }
-    public boolean getIsArtsCategory() {
-        return isArtsCategory;
-    }
-    public boolean getIsFamilyCategory() {
-        return isFamilyCategory;
+    public ArrayList<String> getCategories() {
+        return categories;
     }
 
     public String getPosterURL() {
@@ -148,12 +129,6 @@ public class Event {
         this.description = description;
     }
 
-    public void setMinAge(String minAge) { this.minAge = minAge; }
-
-    public void setDietaryRestrictions(String dietaryRestrictions) { this.dietaryRestrictions = dietaryRestrictions; }
-
-    public void setOtherRestrictions(String otherRestrictions) { this.otherRestrictions = otherRestrictions; }
-
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
@@ -165,20 +140,8 @@ public class Event {
         this.startTime = startTime;
     }
 
-    public void setIsConcertCategory(boolean isConcertCategory) {
-        this.isConcertCategory = isConcertCategory;
-    }
-
-    public void setIsSportsCategory(boolean isSportsCategory) {
-        this.isSportsCategory = isSportsCategory;
-    }
-
-    public void setIsArtsCategory(boolean isArtsCategory) {
-        this.isArtsCategory = isArtsCategory;
-    }
-
-    public void setIsFamilyCategory(boolean isFamilyCategory) {
-        this.isFamilyCategory = isFamilyCategory;
+    public void setCategories(ArrayList<String> categories) {
+        this.categories = categories;
     }
 
     public void setEndTime(String endTime) {

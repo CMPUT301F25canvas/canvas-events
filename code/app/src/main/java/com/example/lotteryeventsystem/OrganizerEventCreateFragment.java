@@ -53,6 +53,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -67,6 +68,7 @@ public class OrganizerEventCreateFragment extends Fragment {
     private EventRepository eventRepository;
     private ActivityResultLauncher<String> pickImageLauncher;
     private ImageButton eventPoster; // Stores the image being saved?
+    private boolean isSport, isArt, isConcert, isFamily;
     private String mode = "create";
     private String existingEventId;
     private Event existingEvent;
@@ -156,19 +158,6 @@ public class OrganizerEventCreateFragment extends Fragment {
             startActivityForResult(intent, 1001);
         });
         setupTextWatcher(eventLocationInput, event::setLocation);
-
-//
-//        // Min. Age
-//        TextInputEditText minAgeInput = view.findViewById(R.id.min_age_input);
-//        setupTextWatcher(minAgeInput, event::setMinAge);
-//
-//        // Dietary Restrictions
-//        TextInputEditText dietaryRestrictionsInput = view.findViewById(R.id.dietary_restrictions_input_text);
-//        setupTextWatcher(dietaryRestrictionsInput, event::setDietaryRestrictions);
-//
-//        // Other Restrictions
-//        TextInputEditText otherRestrictionsInput = view.findViewById(R.id.other_restrictions_input);
-//        setupTextWatcher(otherRestrictionsInput, event::setOtherRestrictions);
 
         // Event Start Date
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -460,6 +449,39 @@ public class OrganizerEventCreateFragment extends Fragment {
             }
         });
 
+        // Event Categories
+        CheckBox isConcertCheckbox = view.findViewById(R.id.concert_category_checkbox);
+        isConcertCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
+                isConcert = isChecked;
+            }
+        });
+
+        CheckBox isSportCheckbox = view.findViewById(R.id.sports_category_checkbox);
+        isSportCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
+                isSport = isChecked;
+            }
+        });
+
+        CheckBox isArtCheckbox = view.findViewById(R.id.arts_category_checkbox);
+        isArtCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
+                isArt = isChecked;
+            }
+        });
+
+        CheckBox isFamilyCheckbox = view.findViewById(R.id.family_category_checkbox);
+        isFamilyCheckbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
+                isFamily = isChecked;
+            }
+        });
+
         // Event Poster
         eventPoster = view.findViewById(R.id.event_poster_upload_button);
         eventPoster.setOnClickListener(v -> {
@@ -534,9 +556,12 @@ public class OrganizerEventCreateFragment extends Fragment {
                         return;
                     }
                     if ("edit".equals(mode)) {
+                        setEventCategories(event);
                         updateEvent(event);
                     } else {
+                        setEventCategories(event);
                         createEvent(event);
+
                     }
                 } else {
                     Toast.makeText(getContext(), "Fill in the Required Fields", Toast.LENGTH_LONG).show();
@@ -681,10 +706,6 @@ public class OrganizerEventCreateFragment extends Fragment {
         if (existingEvent != null) {
             updatedEvent.setOrganizerID(existingEvent.getOrganizerID());
             updatedEvent.setQRCodeURL(existingEvent.getQRCodeURL());
-            // Preserve any other fields that shouldn't change during edit
-            updatedEvent.setMinAge(existingEvent.getMinAge());
-            updatedEvent.setDietaryRestrictions(existingEvent.getDietaryRestrictions());
-            updatedEvent.setOtherRestrictions(existingEvent.getOtherRestrictions());
         }
         // Handle poster update if changed
         if (eventCreationForm.getLocalImageUri() != null) {
@@ -822,6 +843,23 @@ public class OrganizerEventCreateFragment extends Fragment {
             }
         }
         return inSampleSize;
+    }
+
+    private void setEventCategories(Event event) {
+        ArrayList<String> categories = new ArrayList<>();
+        if (isSport) {
+            categories.add("Sports");
+        }
+        if (isConcert) {
+            categories.add("Concert");
+        }
+        if (isArt) {
+            categories.add("Art");
+        }
+        if (isFamily) {
+            categories.add("Family");
+        }
+        event.setCategories(categories);
     }
 
     @Override

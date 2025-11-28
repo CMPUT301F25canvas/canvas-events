@@ -284,7 +284,7 @@ public class HomeFragment extends Fragment {
         String registrationStart = doc.getString("registrationStart");
         String registrationEnd = doc.getString("registrationEnd");
         @SuppressWarnings("unchecked")
-        String category = doc.getString("categories");
+        ArrayList<String> category = (ArrayList<String>) doc.get("categories");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
 

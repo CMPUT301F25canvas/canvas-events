@@ -43,10 +43,9 @@ import java.util.List;
  */
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnViewEntrants, btnSample;
-    private ImageButton btnViewMap, btnEdit, btnDownloadQR;
-    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
+    private ImageButton btnViewMap, btnEdit, btnDownloadQR, btnBack;
+    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria, startDate, endDate;
     private Event currentEvent;
-    private ImageButton btnBack;
     private String eventId;
     private ImageView posterImageView;
     private FirebaseWaitlistRepository waitlistRepository;
@@ -143,9 +142,9 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentEvent != null && currentEvent.getDate() != null) {
+                if (currentEvent != null && currentEvent.getEndDate() != null) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                        LocalDate eventDate = LocalDate.parse(currentEvent.getDate(), formatter);
+                        LocalDate eventDate = LocalDate.parse(currentEvent.getEndDate(), formatter);
                         LocalDate currentDate = LocalDate.now();
                         if (currentDate.isAfter(eventDate)) {
                             Toast.makeText(getContext(), "Event date has passed", Toast.LENGTH_LONG).show();

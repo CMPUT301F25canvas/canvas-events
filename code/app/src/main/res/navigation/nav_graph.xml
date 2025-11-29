@@ -165,6 +165,9 @@
         <action
             android:id="@+id/action_organizerEntrantListFragment_to_organizerEventCreateFragment"
             app:destination="@id/organizerEventCreateFragment" />
+        <action
+            android:id="@+id/action_organizerEntrantListFragment_to_eventMapFragment"
+            app:destination="@id/eventMapFragment" />
     </fragment>
 
     <fragment

@@ -150,8 +150,12 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         waitingList.addOnSuccessListener(queryDocumentSnapshots -> {
             for (int i = 0; i < queryDocumentSnapshots.size(); i++) {
                 String userID = queryDocumentSnapshots.getDocuments().get(i).getId();
-                double latitude = queryDocumentSnapshots.getDocuments().get(i).getDouble("latitude");
-                double longitude = queryDocumentSnapshots.getDocuments().get(i).getDouble("longitude");
+                Double latitude = queryDocumentSnapshots.getDocuments().get(i).getDouble("latitude");
+                Double longitude = queryDocumentSnapshots.getDocuments().get(i).getDouble("longitude");
+
+                if (longitude == null || latitude == null) {
+                    continue;
+                }
 
                 // Add marker to map
                 map.addMarker(new MarkerOptions()

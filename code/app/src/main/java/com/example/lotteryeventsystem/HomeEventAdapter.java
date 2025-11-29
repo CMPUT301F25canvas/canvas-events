@@ -64,7 +64,7 @@ public class HomeEventAdapter extends RecyclerView.Adapter<HomeEventAdapter.Even
     static class EventViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleView;
         private final TextView descriptionView;
-        private final TextView dateRangeView;
+        private final TextView locationView;
         private final TextView dateHighlightView;
         private final ImageView posterView;
 
@@ -73,7 +73,7 @@ public class HomeEventAdapter extends RecyclerView.Adapter<HomeEventAdapter.Even
             super(itemView);
             titleView = itemView.findViewById(R.id.event_title);
             descriptionView = itemView.findViewById(R.id.event_description);
-            dateRangeView = itemView.findViewById(R.id.event_location);
+            locationView = itemView.findViewById(R.id.event_location);
             dateHighlightView = itemView.findViewById(R.id.event_date_highlight);
             posterView = itemView.findViewById(R.id.event_poster);
         }
@@ -81,7 +81,7 @@ public class HomeEventAdapter extends RecyclerView.Adapter<HomeEventAdapter.Even
         void bind(EventItem item, OnEventClickListener listener) {
             titleView.setText(item.name != null ? item.name : "");
             descriptionView.setText(item.description != null ? item.description : "");
-            dateRangeView.setText(item.dateRange != null ? item.dateRange : "");
+            locationView.setText(item.location != null ? item.location : "");
             dateHighlightView.setText(formatHighlight(item.dateHighlight));
             itemView.setOnClickListener(v -> listener.onEventClick(item));
 

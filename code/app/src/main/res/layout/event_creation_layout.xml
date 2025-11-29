@@ -84,75 +84,110 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
-            android:id="@+id/event_criteria_text"
+            android:id="@+id/event_location_text"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="20dp"
-            android:text="Event Requirements"
+            android:text="Event Location"
             android:textSize="20sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/event_description_input_layout" />
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/min_age_input_layout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            app:endIconMode="clear_text"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_criteria_text" >
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/min_age_input"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:inputType="number"
-                android:hint="Min. Age"
-                android:paddingHorizontal="10dp"
-                android:textSize="14sp"
-                android:textColor="@color/black"/>
-        </com.google.android.material.textfield.TextInputLayout>
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/dietary_restrictions_input_layout"
+            android:id="@+id/event_location_input_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            app:endIconMode="clear_text"
-            app:layout_constraintStart_toEndOf="@id/min_age_input_layout"
-            app:layout_constraintTop_toBottomOf="@id/event_criteria_text">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/dietary_restrictions_input_text"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:inputType="text"
-                android:hint="Diet. Restr."
-                android:paddingHorizontal="10dp"
-                android:textSize="14sp"
-                android:textColor="@color/black"/>
-        </com.google.android.material.textfield.TextInputLayout>
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/other_restrictions_input_layout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            app:endIconMode="clear_text"
-            app:layout_constraintStart_toEndOf="@id/dietary_restrictions_input_layout"
-            app:layout_constraintTop_toBottomOf="@id/event_criteria_text">
-
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/other_restrictions_input"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:inputType="text"
-            android:hint="Other"
-            android:paddingHorizontal="10dp"
-            android:textSize="14sp"
-            android:textColor="@color/black"/>
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_location_text" >
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/event_location_input"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="Event Location"
+                android:inputType="text"
+                android:singleLine="false"
+                android:textSize="14sp"
+                android:textColor="@color/black" />
         </com.google.android.material.textfield.TextInputLayout>
+
+<!--        <TextView-->
+<!--            android:id="@+id/event_criteria_text"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:paddingTop="20dp"-->
+<!--            android:text="Event Requirements"-->
+<!--            android:textSize="20sp"-->
+<!--            android:textStyle="bold"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/event_location_input_layout" />-->
+
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/min_age_input_layout"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            android:layout_width="110dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            app:endIconMode="clear_text"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/event_criteria_text" >-->
+
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:id="@+id/min_age_input"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:inputType="number"-->
+<!--                android:hint="Min. Age"-->
+<!--                android:paddingHorizontal="10dp"-->
+<!--                android:textSize="14sp"-->
+<!--                android:textColor="@color/black"/>-->
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/dietary_restrictions_input_layout"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            android:layout_width="110dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:endIconMode="clear_text"-->
+<!--            app:layout_constraintStart_toEndOf="@id/min_age_input_layout"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/event_criteria_text">-->
+
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:id="@+id/dietary_restrictions_input_text"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:inputType="text"-->
+<!--                android:hint="Diet. Restr."-->
+<!--                android:paddingHorizontal="10dp"-->
+<!--                android:textSize="14sp"-->
+<!--                android:textColor="@color/black"/>-->
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            android:id="@+id/other_restrictions_input_layout"-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"-->
+<!--            android:layout_width="110dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginEnd="20dp"-->
+<!--            app:endIconMode="clear_text"-->
+<!--            app:layout_constraintStart_toEndOf="@id/dietary_restrictions_input_layout"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/event_criteria_text">-->
+
+<!--            <com.google.android.material.textfield.TextInputEditText-->
+<!--                android:id="@+id/other_restrictions_input"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="match_parent"-->
+<!--                android:inputType="text"-->
+<!--                android:hint="Other"-->
+<!--                android:paddingHorizontal="10dp"-->
+<!--                android:textSize="14sp"-->
+<!--                android:textColor="@color/black"/>-->
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
 
         <TextView
             android:id="@+id/event_date_text"
@@ -164,13 +199,13 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/min_age_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_location_input_layout"
             app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/event_date_input_layout"
+            android:id="@+id/start_date_input_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="150dp"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
             app:endIconMode="clear_text"
             app:helperText="Required"
@@ -178,7 +213,7 @@
             app:layout_constraintStart_toStartOf="parent" >
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/event_date_input_text"
+                android:id="@+id/start_date_input_text"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:hint="YYYY-MM-DD"
@@ -189,15 +224,49 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <ImageButton
-            android:id="@+id/calendar_button"
+            android:id="@+id/start_calendar_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/calendar"
+            app:layout_constraintStart_toEndOf="@id/start_date_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/event_date_text"
+            app:layout_constraintBottom_toTopOf="@id/event_time_text"
+            app:layout_constraintVertical_bias="0.35" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/end_date_input_layout"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="140dp"
+            android:layout_height="wrap_content"
+            app:endIconMode="clear_text"
+            app:helperText="Required"
+            app:layout_constraintTop_toBottomOf="@id/event_date_text"
+            app:layout_constraintEnd_toStartOf="@id/end_calendar_button">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/end_date_input_text"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="YYYY-MM-DD"
+                android:inputType="date"
+                android:paddingHorizontal="20dp"
+                android:textSize="14sp"
+                android:textColor="@color/black"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/end_calendar_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:background="@drawable/calendar"
-            app:layout_constraintStart_toEndOf="@id/entrant_limit_input_layout"
-            app:layout_constraintTop_toBottomOf="@id/event_date_text"
             app:layout_constraintBottom_toTopOf="@id/event_time_text"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/event_date_text"
             app:layout_constraintVertical_bias="0.35" />
+
+
 
         <TextView
             android:id="@+id/event_time_text"
@@ -209,7 +278,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_date_input_layout"
+            app:layout_constraintTop_toBottomOf="@id/start_date_input_layout"
             app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -403,6 +472,43 @@
             app:layout_constraintTop_toBottomOf="@id/sample_size_input_layout"
             app:layout_constraintVertical_bias="0.0" />
 
+        <CheckBox
+            android:id="@+id/concert_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Concert"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/event_categories_text"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <CheckBox
+            android:id="@+id/sports_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sports"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/concert_category_checkbox"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <CheckBox
+            android:id="@+id/arts_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Arts"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/sports_category_checkbox"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <CheckBox
+            android:id="@+id/family_category_checkbox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Family"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/arts_category_checkbox"
+            app:layout_constraintVertical_bias="0.0" />
+
+
         <TextView
             android:id="@+id/event_poster_text"
             android:layout_width="match_parent"
@@ -413,7 +519,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/event_categories_text"
+            app:layout_constraintTop_toBottomOf="@id/family_category_checkbox"
             app:layout_constraintVertical_bias="0.0" />
 
         <ImageButton

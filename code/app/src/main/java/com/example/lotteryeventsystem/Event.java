@@ -9,20 +9,19 @@ public class Event {
     private String organizerID;
     private String name;
     private String description;
-    private String minAge;
-    private String dietaryRestrictions;
-    private String otherRestrictions;
-    private String date;
+    private String startDate;
+    private String endDate;
     private String startTime;
     private String endTime;
     private String registrationStart;
     private String registrationEnd;
     private Integer sampleSize;
-    private List<String> categories;
+    private ArrayList<String> categories;
     private String posterURL; // Optional
     private boolean geolocationRequirement;
     private Integer entrantLimit; // Optional
     private String QRCodeURL;
+    private String location;
     private Boolean sampled;
 
 
@@ -31,12 +30,13 @@ public class Event {
     }
 
     public Event(String eventID, String organizerID, String name, String description,
-                 String date, String startTime, String endTime) {
+                 String startDate, String endDate, String startTime, String endTime) {
         this.eventID = eventID;
         this.organizerID = organizerID;
         this.name = name;
         this.description = description;
-        this.date = date;
+        this.startDate = startDate;
+        this.endDate = endDate;
         this.startTime = startTime;
         this.endTime = endTime;
         this.entrantLimit = null; // Set null if no limit
@@ -63,12 +63,12 @@ public class Event {
     public String getDescription() {
         return description;
     }
-    public String getMinAge() { return minAge; }
-    public String getDietaryRestrictions() { return dietaryRestrictions; }
-    public String getOtherRestrictions() { return otherRestrictions; }
 
-    public String getDate() {
-        return date;
+    public String getStartDate() {
+        return startDate;
+    }
+    public String getEndDate() {
+        return endDate;
     }
 
     public String getStartTime() {
@@ -91,7 +91,7 @@ public class Event {
         return sampleSize;
     }
 
-    public List<String> getCategories() {
+    public ArrayList<String> getCategories() {
         return categories;
     }
 
@@ -108,6 +108,9 @@ public class Event {
     }
     public String getQRCodeURL() {
         return QRCodeURL;
+    }
+    public String getLocation() {
+        return location;
     }
 
     // Setters
@@ -127,21 +130,18 @@ public class Event {
         this.description = description;
     }
 
-    public void setMinAge(String minAge) { this.minAge = minAge; }
-
-    public void setDietaryRestrictions(String dietaryRestrictions) { this.dietaryRestrictions = dietaryRestrictions; }
-
-    public void setOtherRestrictions(String otherRestrictions) { this.otherRestrictions = otherRestrictions; }
-
-    public void setDate(String date) {
-        this.date = date;
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
 
-    public void setCategories(List<String> categories) {
+    public void setCategories(ArrayList<String> categories) {
         this.categories = categories;
     }
 
@@ -175,6 +175,9 @@ public class Event {
 
     public void setQRCodeURL(String QRCodeURL) {
         this.QRCodeURL = QRCodeURL;
+    }
+    public void setLocation(String location) {
+        this.location = location;
     }
 
     public Boolean getSampled() { return sampled; }

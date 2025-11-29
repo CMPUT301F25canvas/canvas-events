@@ -19,7 +19,6 @@ import androidx.navigation.Navigation;
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
 import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
-import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -44,10 +43,9 @@ import java.util.List;
  */
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnViewEntrants, btnSample;
-    private ImageButton btnViewMap, btnEdit, btnDownloadQR;
-    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria;
+    private ImageButton btnViewMap, btnEdit, btnDownloadQR, btnBack;
+    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria, startDate, endDate;
     private Event currentEvent;
-    private ImageButton btnBack;
     private String eventId;
     private ImageView posterImageView;
     private FirebaseWaitlistRepository waitlistRepository;
@@ -89,7 +87,8 @@ public class OrganizerEntrantListFragment extends Fragment {
         eventDescription = view.findViewById(R.id.event_description);
         eventStartTime = view.findViewById(R.id.event_start_time);
         eventEndTime = view.findViewById(R.id.event_end_time);
-        eventDate = view.findViewById(R.id.event_date);
+        startDate = view.findViewById(R.id.start_date);
+        endDate = view.findViewById(R.id.end_date);
         eventCriteria = view.findViewById(R.id.event_criteria);
         btnViewEntrants = view.findViewById(R.id.btnViewEntrants);
         btnBack = view.findViewById(R.id.back_button);
@@ -143,9 +142,9 @@ public class OrganizerEntrantListFragment extends Fragment {
         btnEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentEvent != null && currentEvent.getDate() != null) {
+                if (currentEvent != null && currentEvent.getEndDate() != null) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                        LocalDate eventDate = LocalDate.parse(currentEvent.getDate(), formatter);
+                        LocalDate eventDate = LocalDate.parse(currentEvent.getEndDate(), formatter);
                         LocalDate currentDate = LocalDate.now();
                         if (currentDate.isAfter(eventDate)) {
                             Toast.makeText(getContext(), "Event date has passed", Toast.LENGTH_LONG).show();
@@ -167,6 +166,7 @@ public class OrganizerEntrantListFragment extends Fragment {
                 Bundle args = new Bundle();
                 args.putString("EVENT_ID", eventId);
                 NavController navController = Navigation.findNavController(requireView());
+                navController.navigate(R.id.action_organizerEntrantListFragment_to_eventMapFragment, args);
             }
         });
         return view;
@@ -312,8 +312,11 @@ public class OrganizerEntrantListFragment extends Fragment {
                         if (documentSnapshot.contains("description")) {
                             currentEvent.setDescription(documentSnapshot.getString("description"));
                         }
-                        if (documentSnapshot.contains("date")) {
-                            currentEvent.setDate(documentSnapshot.getString("date"));
+                        if (documentSnapshot.contains("startDate")) {
+                            currentEvent.setStartDate(documentSnapshot.getString("startDate"));
+                        }
+                        if (documentSnapshot.contains("endDate")) {
+                            currentEvent.setEndDate(documentSnapshot.getString("endDate"));
                         }
                         if (documentSnapshot.contains("startTime")) {
                             currentEvent.setStartTime(documentSnapshot.getString("startTime"));
@@ -389,10 +392,15 @@ public class OrganizerEntrantListFragment extends Fragment {
             } else {
                 eventEndTime.setText("End: Not specified");
             }
-            if (currentEvent.getDate() != null) {
-                eventDate.setText("Date: " + currentEvent.getDate());
+            if (currentEvent.getStartDate() != null) {
+                startDate.setText("Start Date: " + currentEvent.getStartDate());
             } else {
-                eventDate.setText("Date: Not specified");
+                startDate.setText("Start Date: Not specified");
+            }
+            if (currentEvent.getEndDate() != null) {
+                endDate.setText("End Date: " + currentEvent.getEndDate());
+            } else {
+                endDate.setText("End Date: Not specified");
             }
             loadPosterImage();
         }

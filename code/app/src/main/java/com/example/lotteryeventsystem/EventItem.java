@@ -5,6 +5,8 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class EventItem {
@@ -14,7 +16,7 @@ public class EventItem {
     public String description;
     public String dateHighlight;
     public String dateRange;
-    public String category;
+    public ArrayList<String> category;
     public Double latitude;
     public Double longitude;
     public String posterUrl;
@@ -25,7 +27,7 @@ public class EventItem {
                      String description,
                      String dateHighlight,
                      String dateRange,
-                     String category,
+                     ArrayList<String> category,
                      Double latitude,
                      Double longitude,
                      String posterUrl) {
@@ -51,7 +53,8 @@ public class EventItem {
         String date = doc.getString("date");
         String registrationStart = doc.getString("registrationStart");
         String registrationEnd = doc.getString("registrationEnd");
-        String category = doc.getString("category");
+        @SuppressWarnings("unchecked")
+        ArrayList<String> category = (ArrayList<String>) doc.get("category");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
         String posterUrl = doc.getString("posterURL"); // <-- Add poster URL

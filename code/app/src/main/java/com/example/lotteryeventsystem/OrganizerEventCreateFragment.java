@@ -756,6 +756,7 @@ public class OrganizerEventCreateFragment extends Fragment {
 
             event.setEventID(eventID);
             event.setOrganizerID(organizerID);
+            event.setSampled(false); // Initialize sampled as false
 
             // Check if an event poster was uploaded
             if (eventCreationForm.getLocalImageUri() != null) {

@@ -2,16 +2,21 @@ package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -43,6 +48,11 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        if (((MainActivity) requireActivity()).getAdmin()) {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_notificationFragment_to_adminNotificationFragment);
+            return;
+        }
         super.onViewCreated(view, savedInstanceState);
         notificationList = view.findViewById(R.id.notification_list);
         emptyView = view.findViewById(R.id.notification_empty);
@@ -57,6 +67,7 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         if (recipientId == null) {
             recipientId = "";
         }
+        Log.d("NotificationFragment", "Subscribing to notifications for recipientId=" + recipientId);
         settingsButton.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(view);
             navController.navigate(R.id.action_notificationFragment_to_notificationSettingsFragment);
@@ -92,13 +103,19 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         }
         requireActivity().runOnUiThread(() -> {
             setLoading(false);
-            if (error != null || messages == null) {
+            if (error != null) {
+                Log.e("NotificationFragment", "Notification query failed for recipientId=" + recipientId, error);
+                Toast.makeText(getContext(), "Could not load notifications. Check connection/index.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (messages == null) {
                 emptyView.setVisibility(View.VISIBLE);
                 adapter.submitList(null);
                 return;
             }
-            adapter.submitList(messages);
-            emptyView.setVisibility(messages.isEmpty() ? View.VISIBLE : View.GONE);
+            List<NotificationMessage> filtered = applyPreferences(messages);
+            adapter.submitList(filtered);
+            emptyView.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
         });
     }
 
@@ -121,7 +138,37 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         args.putString("title", message.getTitle());
         args.putString("status", message.getStatus() != null ? message.getStatus().name() : null);
         args.putString("waitlistEntryId", message.getWaitlistEntryId());
+        args.putString("type", message.getType());
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_notificationFragment_to_notificationDetailFragment, args);
+    }
+
+    private List<NotificationMessage> applyPreferences(List<NotificationMessage> messages) {
+        SharedPreferences prefs = requireContext().getSharedPreferences("notification_prefs", Context.MODE_PRIVATE);
+        boolean allowPush = prefs.getBoolean("allow_push", true);
+        boolean allowOrganizer = prefs.getBoolean("organizer", true);
+        boolean allowAdmin = prefs.getBoolean("admin", true);
+        boolean allowMarketing = prefs.getBoolean("marketing", false);
+        if (!allowPush) {
+            return java.util.Collections.emptyList();
+        }
+        List<NotificationMessage> result = new java.util.ArrayList<>();
+        for (NotificationMessage msg : messages) {
+            String source = msg.getSource();
+            if (source == null || source.isEmpty()) {
+                source = "ORGANIZER";
+            }
+            if (source.equalsIgnoreCase("ORGANIZER") && !allowOrganizer) {
+                continue;
+            }
+            if (source.equalsIgnoreCase("ADMIN") && !allowAdmin) {
+                continue;
+            }
+            if (source.equalsIgnoreCase("MARKETING") && !allowMarketing) {
+                continue;
+            }
+            result.add(msg);
+        }
+        return result;
     }
 }

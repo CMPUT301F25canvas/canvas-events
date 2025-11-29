@@ -10,7 +10,9 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
@@ -28,7 +30,8 @@ public class EventRepository {
 
 
     /**
-     * Adds an Event object to the Firestore "events" collection
+     * Adds an Event object to the Firestore "events" collection. Also adds the event to the user's
+     * "organized_events" list.
      * @param event the event to add to the database
      */
     public void addEvent(Event event) {
@@ -38,22 +41,10 @@ public class EventRepository {
                 .addOnSuccessListener(aVoid -> {
                     Log.d("Event Repository", "Event added successfully: " + event.getEventID());
                 });
-    }
 
-    /**
-     * Adds an entrants ID + status to an events waitlist
-     * @param eventID event the entrant registered for
-     * @param entrantID the entrant
-     */
-    public void addEntrantToEventWaitlist(String eventID, String entrantID) {
-        var waitlistEntry = new java.util.HashMap<String, Object>();
-        waitlistEntry.put("entrant", entrantID);
-        waitlistEntry.put("status", "waiting"); // Default value when initially joining waitlist
-
-        db.collection("events")
-                .document(eventID)
-                .collection("waitlist")
-                .add(waitlistEntry);
+        db.collection("users")
+                .document(event.getOrganizerID())
+                .update("organized_events", FieldValue.arrayUnion(event.getEventID()));
     }
 
     /**
@@ -64,16 +55,6 @@ public class EventRepository {
         return db.collection("events")
                 .count()
                 .get(AggregateSource.SERVER);
-    }
-
-    /**
-     * Retrieves the list of events created by the given organizer
-     * @param organizerID Android device ID of the organizer
-     */
-    public Task<QuerySnapshot> getEventsByOrganizer(String organizerID) {
-        return db.collection("events")
-                .whereEqualTo("organizerID", organizerID)
-                .get();
     }
 
 
@@ -148,5 +129,6 @@ public class EventRepository {
                 .document(eventId)
                 .get();
     }
+
 
 }

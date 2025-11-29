@@ -42,11 +42,12 @@ android {
 }
 
 dependencies {
-    implementation("com.google.android.material:material:1.12.0")
     implementation("com.google.zxing:core:3.5.3")
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation(platform("com.google.firebase:firebase-bom:34.3.0"))
     implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-storage")
+    implementation("androidx.appcompat:appcompat-resources:1.7.1")
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -54,13 +55,11 @@ dependencies {
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
-    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-    implementation("com.google.zxing:core:3.5.3")
-    implementation(libs.firebase.firestore)
+    implementation("androidx.cardview:cardview:1.0.0")
     implementation(libs.ext.junit)
-    implementation(libs.firebase.storage)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.firebase.auth)
     testImplementation(libs.junit)
     testImplementation("org.robolectric:robolectric:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
@@ -69,9 +68,6 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.fragment:fragment-testing:1.8.5")
     debugImplementation("androidx.fragment:fragment-testing:1.8.5")
-    // firebase
-    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
-    implementation("com.google.firebase:firebase-firestore:25.1.1")
     // Glide
     implementation("com.github.bumptech.glide:glide:4.12.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")

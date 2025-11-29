@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#F0F0F0"
+    android:layout_marginBottom="8dp"
+    android:padding="12dp">
+
+    <!-- Type Header -->
+    <LinearLayout
+        android:id="@+id/type_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackground">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/notification_type_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Selected"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
+
+            <TextView
+                android:id="@+id/user_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="15 users"
+                android:textSize="14sp"
+                android:textColor="#666666" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/dropdown_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center_vertical"
+            android:src="@android:drawable/arrow_down_float"
+            android:tint="#999999" />
+    </LinearLayout>
+
+    <!-- Users Container -->
+    <LinearLayout
+        android:id="@+id/users_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="vertical"
+        android:visibility="gone" />
+</LinearLayout>

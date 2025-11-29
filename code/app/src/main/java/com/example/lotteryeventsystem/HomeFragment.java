@@ -66,7 +66,7 @@ public class HomeFragment extends Fragment {
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-        if (((MainActivity) requireActivity()).getAdmin()) {
+                if (((MainActivity) requireActivity()).getAdmin()) {
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.action_profileFragment_to_adminHomeFragment);
         }
@@ -82,9 +82,10 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         TextView title = view.findViewById(R.id.home_header);
-        title.setText("Upcoming Events");
+        title.setText("Events");
         ImageButton scanButton = view.findViewById(R.id.button_scan_qr);
         ImageButton filterButton = view.findViewById(R.id.filter_button);
+        ImageButton createButton = view.findViewById(R.id.create_event_button);
         TextInputEditText searchInput = view.findViewById(R.id.search_input);
         RecyclerView recyclerView = view.findViewById(R.id.events_recycler);
 
@@ -110,7 +111,10 @@ public class HomeFragment extends Fragment {
         searchInput.addTextChangedListener(new SimpleTextWatcher(text ->
                 applyFilter(text != null ? text : "")));
 
-
+        createButton.setOnClickListener(v -> {
+            NavController navController = Navigation.findNavController(requireView());
+            navController.navigate(R.id.action_homeFragment_to_organizerEventCreateFragment);
+        });
     }
 
     private void reloadEvents() {
@@ -287,6 +291,8 @@ public class HomeFragment extends Fragment {
         ArrayList<String> category = (ArrayList<String>) doc.get("categories");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
+        String posterUrl = doc.getString("posterURL");
+
 
         String highlight = registrationStart != null && !registrationStart.isEmpty()
                 ? registrationStart
@@ -300,7 +306,8 @@ public class HomeFragment extends Fragment {
                 range,
                 category,
                 latitude,
-                longitude);
+                longitude,
+                posterUrl);
     }
 
     private String buildRange(String start, String end, String fallbackDate) {

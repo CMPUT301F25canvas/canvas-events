@@ -3,10 +3,14 @@ package com.example.lotteryeventsystem;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -62,13 +66,16 @@ public class HomeEventAdapter extends RecyclerView.Adapter<HomeEventAdapter.Even
         private final TextView descriptionView;
         private final TextView dateRangeView;
         private final TextView dateHighlightView;
+        private final ImageView posterView;
+
 
         EventViewHolder(@NonNull View itemView) {
             super(itemView);
             titleView = itemView.findViewById(R.id.event_title);
             descriptionView = itemView.findViewById(R.id.event_description);
-            dateRangeView = itemView.findViewById(R.id.event_range);
+            dateRangeView = itemView.findViewById(R.id.event_location);
             dateHighlightView = itemView.findViewById(R.id.event_date_highlight);
+            posterView = itemView.findViewById(R.id.event_poster);
         }
 
         void bind(EventItem item, OnEventClickListener listener) {
@@ -77,6 +84,14 @@ public class HomeEventAdapter extends RecyclerView.Adapter<HomeEventAdapter.Even
             dateRangeView.setText(item.dateRange != null ? item.dateRange : "");
             dateHighlightView.setText(formatHighlight(item.dateHighlight));
             itemView.setOnClickListener(v -> listener.onEventClick(item));
+
+            Glide.with(itemView.getContext())
+                    .load(item.posterUrl != null ? item.posterUrl : R.drawable.img_placeholder)
+                    .placeholder(R.drawable.img_placeholder)
+                    .error(R.drawable.img_placeholder)
+                    .centerCrop()
+                    .transition(DrawableTransitionOptions.withCrossFade())
+                    .into(posterView);
         }
 
         private String formatHighlight(String raw) {

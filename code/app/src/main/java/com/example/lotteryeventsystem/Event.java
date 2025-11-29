@@ -22,6 +22,7 @@ public class Event {
     private Integer entrantLimit; // Optional
     private String QRCodeURL;
     private String location;
+    private Boolean sampled;
 
 
     // For firestore
@@ -178,4 +179,8 @@ public class Event {
     public void setLocation(String location) {
         this.location = location;
     }
+
+    public Boolean getSampled() { return sampled; }
+
+    public void setSampled(Boolean sampled) { this.sampled = sampled; }
 }

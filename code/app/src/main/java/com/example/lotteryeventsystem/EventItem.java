@@ -19,24 +19,9 @@ public class EventItem {
     public ArrayList<String> category;
     public Double latitude;
     public Double longitude;
+    public String posterUrl;
 
-    public EventItem(String id, String name) {
-        this.id = id;
-        this.name = name;
-    }
-
-    public EventItem(String id,
-                     String name,
-                     String description,
-                     String dateHighlight,
-                     String dateRange) {
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.dateHighlight = dateHighlight;
-        this.dateRange = dateRange;
-    }
-
+    // Main constructor
     public EventItem(String id,
                      String name,
                      String description,
@@ -44,7 +29,8 @@ public class EventItem {
                      String dateRange,
                      ArrayList<String> category,
                      Double latitude,
-                     Double longitude) {
+                     Double longitude,
+                     String posterUrl) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -53,6 +39,7 @@ public class EventItem {
         this.category = category;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.posterUrl = posterUrl;
     }
 
     @Override
@@ -70,20 +57,22 @@ public class EventItem {
         ArrayList<String> category = (ArrayList<String>) doc.get("category");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
+        String posterUrl = doc.getString("posterURL"); // <-- Add poster URL
 
-        String highlight = registrationStart != null && !registrationStart.isEmpty()
-                ? registrationStart
-                : date;
+        String highlight = registrationStart != null && !registrationStart.isEmpty() ? registrationStart : date;
         String range = buildRange(registrationStart, registrationEnd, date);
 
-        return new EventItem(doc.getId(),
+        return new EventItem(
+                doc.getId(),
                 name != null ? name : "Untitled Event",
                 description != null ? description : "",
                 highlight,
                 range,
                 category,
                 latitude,
-                longitude);
+                longitude,
+                posterUrl
+        );
     }
 
     private static String buildRange(String start, String end, String fallbackDate) {

@@ -37,6 +37,16 @@ public class OrganizerEventListFragment extends Fragment {
     private HomeEventAdapter eventAdapter;
     private ArrayList<EventItem> eventsList;
 
+    /**
+     * Called to have the OrganizerEventListFragment instantiate its user interface view.
+     * This method inflates the fragment's layout, retrieves arguments, and initializes
+     * the UI components and data loading.
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate views
+     * @param container The parent view that the fragment's UI should be attached to
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
+     * @return The View for the fragment's UI, or null
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,

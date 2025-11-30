@@ -75,17 +75,17 @@ public class SampleEntrantsManager {
                 if (result.size() <= actualSampleSize) {
                     selectedEntrants = new ArrayList<>(result);
                     notSelectedEntrants = new ArrayList<>();
-                    String message = isSingleSample ?
-                            "Selected " + selectedEntrants.size() + " entrant" :
-                            "Selected " + selectedEntrants.size() + " entrants and notified all applicants";
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    if (!isSingleSample) {
+                        String message = "Selected " + selectedEntrants.size() + " entrants and notified all applicants";
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    }
                 } else {
                     selectedEntrants = getRandomSample(result, actualSampleSize);
                     notSelectedEntrants = isSingleSample ? new ArrayList<>() : getNotSelectedEntrants(result, selectedEntrants);
-                    String message = isSingleSample ?
-                            "Sampled new entrant" :
-                            "Selected " + selectedEntrants.size() + " entrants and notified all applicants";
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    if (!isSingleSample) {
+                        String message = "Selected " + selectedEntrants.size() + " entrants and notified all applicants";
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    }
                 }
                 updateEntrantsStatus(selectedEntrants, WaitlistStatus.INVITED);
                 sendSelectedNotifications(selectedEntrants);

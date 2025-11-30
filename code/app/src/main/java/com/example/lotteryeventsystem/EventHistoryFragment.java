@@ -29,12 +29,20 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Combined MVC code for the Event History page
+ *
+ * @author Ethan Kinch
+ */
 public class EventHistoryFragment extends Fragment {
 
+    /**
+     * Required empty constructor
+     */
     public EventHistoryFragment() {}
 
     /**
-     * Called to have the fragment instantiate its user interface view.
+     * Called to have the EventHistoyFragment instantiate its user interface view.
      * This method inflates the fragment's layout, retrieves arguments, and initializes
      * the UI components and data loading.
      *
@@ -53,8 +61,9 @@ public class EventHistoryFragment extends Fragment {
 
     /**
      * Once the view is created, we set up listeners for the profile options.
+     * Also instantiate fields from firebase.
      *
-     * @param view The Profile view (fragment_profile.xml)
+     * @param view The Profile view (fragment_event_history.xml)
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
      */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {

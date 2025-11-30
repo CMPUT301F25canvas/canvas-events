@@ -9,20 +9,75 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Class that holds Event data for display
+ */
 public class EventItem {
 
+    /**
+     * Event id
+     */
     public String id;
+
+    /**
+     * Event name
+     */
     public String name;
+
+    /**
+     * Event description
+     */
     public String description;
+
+    /**
+     *
+     */
     public String dateHighlight;
+
+    /**
+     *
+     */
     public String dateRange;
+
+    /**
+     * Event category: One of a number of predefined categories
+     */
     public ArrayList<String> category;
+
+    /**
+     * Event geospatial latitude
+     */
     public Double latitude;
+
+    /**
+     * Event geospatial longitude
+     */
     public Double longitude;
+
+    /**
+     * Event poster Url
+     */
     public String posterUrl;
+
+    /**
+     * Event location
+     */
     public String location;
 
-    // Main constructor
+    /**
+     * Main constructor
+     *
+     * @param id
+     * @param name
+     * @param description
+     * @param dateHighlight
+     * @param dateRange
+     * @param category
+     * @param latitude
+     * @param longitude
+     * @param posterUrl
+     * @param location
+     */
     public EventItem(String id,
                      String name,
                      String description,
@@ -45,11 +100,21 @@ public class EventItem {
         this.location = location;
     }
 
+    /**
+     * Returns event name
+     * @return The event name
+     */
     @Override
     public String toString() {
         return name;
     }
 
+    /**
+     * Converts a queryDocumentSnapshot of an Event to an EventItem
+     *
+     * @param doc: Firebase representation of an Event
+     * @return The converted EventItem
+     */
     public static EventItem queryDocumentSnapshotToEventItem(QueryDocumentSnapshot doc) {
         String name = doc.getString("name");
         String description = doc.getString("description");

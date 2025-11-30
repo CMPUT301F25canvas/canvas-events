@@ -67,15 +67,4 @@
         android:backgroundTint="@color/purple"
         android:visibility="gone" />
 
-    <Button
-        android:id="@+id/btnNotifyAll"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
-        android:layout_marginBottom="16dp"
-        android:text="Notify This List"
-        android:textColor="@color/black"
-        android:backgroundTint="@color/purple"
-        android:visibility="visible" />
-
 </LinearLayout>

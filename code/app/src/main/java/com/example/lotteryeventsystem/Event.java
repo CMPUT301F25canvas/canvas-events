@@ -180,7 +180,15 @@ public class Event {
         this.location = location;
     }
 
+    /**
+     * Gets whether the event has been sampled.
+     * @return true if the event has been sampled, false otherwise
+     */
     public Boolean getSampled() { return sampled; }
 
+    /**
+     * Sets whether the event has been sampled.
+     * @param sampled (true if sampled, false if not sampled)
+     */
     public void setSampled(Boolean sampled) { this.sampled = sampled; }
 }

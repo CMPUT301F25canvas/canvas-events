@@ -129,7 +129,7 @@ public class NotificationDetailFragment extends Fragment {
                     String eventPath = "events/" + eventId + "/waitlist/" + userId;
 
                     db.document(eventPath)
-                            .update("status", newResponse.equals("Accepted") ? "ENROLLED" : "DECLINED");
+                            .update("status", newResponse.equals("Accepted") ? "CONFIRMED" : "DECLINED");
                     setLoading(false);
                     acceptBtn.setVisibility(View.GONE);
                     declineBtn.setVisibility(View.GONE);

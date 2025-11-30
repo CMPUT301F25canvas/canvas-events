@@ -51,7 +51,6 @@ public class NotificationsManager {
      */
     public static void sendInviteAccepted(Context context, String eventId, String userId) {
         write("invite_accepted_notification", eventId, userId);
-        pushLocalNotification(context, "invite_accepted_notification", eventId, userId);
     }
 
     /**
@@ -61,7 +60,6 @@ public class NotificationsManager {
      */
     public static void sendInviteCancelled(Context context, String eventId, String userId) {
         write("invite_cancelled_notification", eventId, userId);
-        pushLocalNotification(context, "invite_cancelled_notification", eventId, userId);
     }
 
     /**
@@ -71,7 +69,6 @@ public class NotificationsManager {
      */
     public static void sendInviteRejected(Context context, String eventId, String userId) {
         write("invite_rejected_notification", eventId, userId);
-        pushLocalNotification(context, "invite_rejected_notification", eventId, userId);
     }
 
     /**
@@ -91,7 +88,6 @@ public class NotificationsManager {
      */
     public static void sendNotSelected(Context context, String eventId, String userId) {
         write("not_selected_notification", eventId, userId);
-        pushLocalNotification(context, "not_selected_notification", eventId, userId);
     }
 
     /**
@@ -101,7 +97,6 @@ public class NotificationsManager {
      */
     public static void sendSelected(Context context, String eventId, String userId) {
         write("selected_notification", eventId, userId);
-        pushLocalNotification(context, "selected_notification", eventId, userId);
     }
 
     /**

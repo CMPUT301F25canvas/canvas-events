@@ -46,6 +46,7 @@ public class NotificationDetailFragment extends Fragment {
     private String eventName;
     private String body;
     private String messageType;
+    private SampleEntrantsManager sampleManager;
     private NotificationStatus currentStatus = NotificationStatus.UNREAD;
 
     @Nullable
@@ -91,7 +92,16 @@ public class NotificationDetailFragment extends Fragment {
         bindContent();
         updateActionVisibility();
         acceptButton.setOnClickListener(v -> handleAction(NotificationStatus.REGISTERED, WaitlistStatus.CONFIRMED));
-        declineButton.setOnClickListener(v -> handleAction(NotificationStatus.DECLINED, WaitlistStatus.DECLINED));
+        declineButton.setOnClickListener(v -> {
+            handleAction(NotificationStatus.DECLINED, WaitlistStatus.DECLINED);
+            sampleManager.sampleSingleEntrantAfterDeletion(new SampleEntrantsManager.SamplingCallback() {
+                @Override
+                public void onComplete(Exception error) {
+                    // No toast needed - just handle silently
+                    // You could refresh UI here if needed
+                }
+            });
+        });
         viewEventButton.setOnClickListener(v -> openEventDetails());
         myEventsButton.setOnClickListener(v -> navigateToMyEvents());
     }

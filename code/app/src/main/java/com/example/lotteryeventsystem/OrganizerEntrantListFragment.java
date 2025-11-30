@@ -1,7 +1,6 @@
 package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,34 +9,23 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
-
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
-import com.example.lotteryeventsystem.data.NotificationRepository;
-import com.example.lotteryeventsystem.data.RepositoryCallback;
-import com.example.lotteryeventsystem.model.WaitlistEntry;
-import com.example.lotteryeventsystem.model.WaitlistStatus;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.squareup.picasso.Picasso;
-
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * A Fragment that displays event details and provides navigation to different entrant lists
  * for lottery event organizers. This fragment shows event information and allows organizers
  * to view enrolled, canceled, and unenrolled entrants for a specific event.
+ * Provides functionality for sampling entrants, editing events, viewing maps, and managing event details.
  *
  * @author Emily Lan
- * @version 1.1
+ * @version 1.2
  * @see EntrantListFragment
  * @see Event
  */
@@ -50,11 +38,13 @@ public class OrganizerEntrantListFragment extends Fragment {
     private ImageView posterImageView;
     private FirebaseWaitlistRepository waitlistRepository;
     private Boolean isEventSampled = false;
+    private SampleEntrantsManager sampleManager;
+
     /**
      * Creates a new instance of OrganizerEntrantListFragment with the specified event ID.
      *
      * @param eventId the unique identifier of the event to display
-     * @return a new instance of OrganizerEntrantListFragment
+     * @return a new instance of OrganizerEntrantListFragment configured for the specified event
      */
     public static OrganizerEntrantListFragment newInstance(String eventId) {
         OrganizerEntrantListFragment fragment = new OrganizerEntrantListFragment();
@@ -66,18 +56,17 @@ public class OrganizerEntrantListFragment extends Fragment {
 
     /**
      * Called to have the fragment instantiate its user interface view.
-     * Initializes UI components and sets up event listeners for navigation buttons.
+     * Initializes UI components, loads event data from Firestore, and sets up event listeners
+     * for navigation and action buttons.
      *
-     * @param inflater The LayoutInflater object that can be used to inflate views
-     * @param container The parent view that the fragment's UI should be attached to
+     * @param inflater           The LayoutInflater object that can be used to inflate views
+     * @param container          The parent view that the fragment's UI should be attached to
      * @param savedInstanceState Bundle containing previous state, or null if none
      * @return the View for the fragment's UI, or null
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.organizer_view_entrant_page, container, false);
-
-        // Get event ID from arguments
         Bundle args = getArguments();
         if (args != null) {
             eventId = args.getString("EVENT_ID");
@@ -97,11 +86,14 @@ public class OrganizerEntrantListFragment extends Fragment {
         posterImageView = view.findViewById(R.id.poster);
         btnSample = view.findViewById(R.id.btnSample);
         btnViewMap = view.findViewById(R.id.btnViewMap);
-
         loadEventFromFirestore(eventId);
-        btnViewMap = view.findViewById(R.id.btnViewMap);
-
+        sampleManager = new SampleEntrantsManager(requireContext(), waitlistRepository, eventId);
         btnViewEntrants.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Navigates to the EntrantListFragment to view waiting list entrants.
+             *
+             * @param v the View that was clicked
+             */
             @Override
             public void onClick(View v) {
                 Bundle args = new Bundle();
@@ -111,7 +103,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                 navController.navigate(R.id.action_organizerEntrantListFragment_to_EntrantListFragment, args);
             }
         });
-
         btnBack.setOnClickListener(new View.OnClickListener() {
             /**
              * Handles back navigation by popping the fragment from the back stack.
@@ -126,6 +117,12 @@ public class OrganizerEntrantListFragment extends Fragment {
             }
         });
         btnSample.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Handles the sampling button click to select random entrants for the event.
+             * Prevents multiple sampling operations and validates sample size availability.
+             *
+             * @param v the View that was clicked
+             */
             @Override
             public void onClick(View v) {
                 if (isEventSampled) {
@@ -140,18 +137,23 @@ public class OrganizerEntrantListFragment extends Fragment {
             }
         });
         btnEdit.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Handles edit button click to navigate to event editing fragment.
+             * Validates that the event date hasn't passed before allowing edits.
+             *
+             * @param v the View that was clicked
+             */
             @Override
             public void onClick(View v) {
                 if (currentEvent != null && currentEvent.getEndDate() != null) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-                        LocalDate eventDate = LocalDate.parse(currentEvent.getEndDate(), formatter);
-                        LocalDate currentDate = LocalDate.now();
-                        if (currentDate.isAfter(eventDate)) {
-                            Toast.makeText(getContext(), "Event date has passed", Toast.LENGTH_LONG).show();
-                            return;
-                        }
+                    LocalDate eventDate = LocalDate.parse(currentEvent.getEndDate(), formatter);
+                    LocalDate currentDate = LocalDate.now();
+                    if (currentDate.isAfter(eventDate)) {
+                        Toast.makeText(getContext(), "Event date has passed", Toast.LENGTH_LONG).show();
+                        return;
                     }
-                // Navigate to OrganizerEventCreateFragment in edit mode
+                }
                 Bundle args = new Bundle();
                 args.putString("EVENT_ID", eventId);
                 args.putString("MODE", "edit");
@@ -160,9 +162,13 @@ public class OrganizerEntrantListFragment extends Fragment {
             }
         });
         btnViewMap.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Navigates to the EventMapFragment.
+             *
+             * @param v the View that was clicked
+             */
             @Override
             public void onClick(View v) {
-                // Navigate to EventMapFragment
                 Bundle args = new Bundle();
                 args.putString("EVENT_ID", eventId);
                 NavController navController = Navigation.findNavController(requireView());
@@ -172,126 +178,32 @@ public class OrganizerEntrantListFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Selects a random sample of entrants for the event using the specified sample size.
+     * Updates the sampling status upon successful completion.
+     */
     private void selectRandomSample() {
         int sampleSize = currentEvent.getSampleSize();
-
-        // Get all waiting entrants
-        waitlistRepository.getWaitingEntrants(eventId, new RepositoryCallback<List<WaitlistEntry>>() {
+        sampleManager.selectRandomSample(sampleSize, currentEvent, new SampleEntrantsManager.SamplingCallback() {
+            /**
+             * Callback method invoked when the sampling operation completes.
+             * Updates the sampling status if the operation was successful.
+             *
+             * @param error The exception that occurred during sampling, or null if successful
+             */
             @Override
-            public void onComplete(List<WaitlistEntry> result, Exception error) {
-                if (error != null) {
-                    Toast.makeText(getContext(), "Error loading entrants: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
+            public void onComplete(Exception error) {
+                if (error == null) {
+                    // Refresh UI if needed
+                    isEventSampled = true;
                 }
-
-                if (result == null || result.isEmpty()) {
-                    Toast.makeText(getContext(), "No waiting entrants found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                List<WaitlistEntry> selectedEntrants;
-                List<WaitlistEntry> notSelectedEntrants;
-                if (result.size() < sampleSize) {
-                    selectedEntrants = new ArrayList<>(result); // Select all
-                    notSelectedEntrants = new ArrayList<>();
-                    Toast.makeText(getContext(),
-                            "Selected " + selectedEntrants.size() + " entrants and notified all applicants",
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    // Select random sample
-                    selectedEntrants = getRandomSample(result, sampleSize);
-                    notSelectedEntrants = getNotSelectedEntrants(result, selectedEntrants);
-                    Toast.makeText(getContext(),
-                            "Selected " + selectedEntrants.size() + " entrants and notified all applicants",
-                            Toast.LENGTH_SHORT).show();
-                }
-                    // Update selected entrants status to INVITED
-                    updateEntrantsStatus(selectedEntrants, WaitlistStatus.INVITED);
-                    // Send notifications
-                    sendSelectedNotifications(selectedEntrants);
-                    sendNotSelectedNotifications(notSelectedEntrants);
-                    markEventAsSampled();
             }
         });
     }
 
-    private void markEventAsSampled() {
-        FirebaseFirestore.getInstance()
-                .collection("events")
-                .document(eventId)
-                .update("sampled", true)
-                .addOnSuccessListener(aVoid -> {
-                    // Update local state
-                    isEventSampled = true;
-                    if (currentEvent != null) {
-                        currentEvent.setSampled(true);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "Error updating event status", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    /**
-     * Get random sample from the list
-     */
-    private List<WaitlistEntry> getRandomSample(List<WaitlistEntry> allEntrants, int sampleSize) {
-        List<WaitlistEntry> shuffled = new ArrayList<>(allEntrants);
-        Collections.shuffle(shuffled);
-        return shuffled.subList(0, sampleSize);
-    }
-
-    /**
-     * Get entrants who were not selected
-     */
-    private List<WaitlistEntry> getNotSelectedEntrants(List<WaitlistEntry> allEntrants, List<WaitlistEntry> selected) {
-        List<WaitlistEntry> notSelected = new ArrayList<>(allEntrants);
-        notSelected.removeAll(selected);
-        return notSelected;
-    }
-
-    /**
-     * Update status for a list of entrants
-     */
-    private void updateEntrantsStatus(List<WaitlistEntry> entrants, WaitlistStatus status) {
-        for (WaitlistEntry entrant : entrants) {
-            waitlistRepository.updateEntrantStatus(eventId, entrant.getId(), status,
-                    new RepositoryCallback<WaitlistEntry>() {
-                        @Override
-                        public void onComplete(WaitlistEntry result, Exception error) {
-                            if (error != null) {
-                                Log.e("SampleSelection", "Error updating entrant " + entrant.getId() + ": " + error.getMessage());
-                            }
-                        }
-                    });
-        }
-    }
-
-    /**
-     * Send notifications to selected entrants
-     */
-    public void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
-        for (WaitlistEntry entrant : selectedEntrants) {
-            String userId = entrant.getId(); // Make sure this gets the actual user ID
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendSelected(requireContext(), eventId, userId);
-            }
-        }
-    }
-
-    /**
-     * Send notifications to not selected entrants
-     */
-    private void sendNotSelectedNotifications(List<WaitlistEntry> notSelectedEntrants) {
-        for (WaitlistEntry entrant : notSelectedEntrants) {
-            String userId = entrant.getId();
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendNotSelected(requireContext(), eventId, userId);
-            }
-        }
-    }
-
     /**
      * Loads event details from Firestore database using the provided event ID.
+     * Populates the currentEvent object with data retrieved from Firestore.
      *
      * @param eventId the unique identifier of the event to load
      */
@@ -338,24 +250,6 @@ public class OrganizerEntrantListFragment extends Fragment {
                             currentEvent.setSampled(false);
                             isEventSampled = false;
                         }
-                        String criteria = "";
-                        String tmp;
-                        if ((tmp = documentSnapshot.getString("minAge")) != null) {
-                            criteria += String.format("Min. Age: %s", tmp);
-                        }
-                        if ((tmp = documentSnapshot.getString("dietaryRestrictions")) != null) {
-                            if (!criteria.isBlank()) {
-                                criteria += " | ";
-                            }
-                            criteria += String.format("Dietary Restrictions: %s", tmp);
-                        }
-                        if ((tmp = documentSnapshot.getString("otherRestrictions")) != null) {
-                            if (!criteria.isBlank()) {
-                                criteria += " | ";
-                            }
-                            criteria += String.format("Other Restrictions: %s", tmp);
-                        }
-                        eventCriteria.setText(criteria);
                         displayEventInfo();
                     } else {
                         showError("Event not found: " + eventId);
@@ -368,7 +262,7 @@ public class OrganizerEntrantListFragment extends Fragment {
 
     /**
      * Displays the loaded event information in the corresponding TextViews.
-     * Sets default values for any missing event information.
+     * Sets default values for any missing event information and loads the event poster image.
      */
     private void displayEventInfo() {
         if (currentEvent != null) {
@@ -383,14 +277,14 @@ public class OrganizerEntrantListFragment extends Fragment {
                 eventDescription.setText("No Description");
             }
             if (currentEvent.getStartTime() != null) {
-                eventStartTime.setText("Start: " + currentEvent.getStartTime());
+                eventStartTime.setText("Start Time: " + currentEvent.getStartTime());
             } else {
-                eventStartTime.setText("Start: Not specified");
+                eventStartTime.setText("Start Time: Not specified");
             }
             if (currentEvent.getEndTime() != null) {
-                eventEndTime.setText("End: " + currentEvent.getEndTime());
+                eventEndTime.setText("End Time: " + currentEvent.getEndTime());
             } else {
-                eventEndTime.setText("End: Not specified");
+                eventEndTime.setText("End Time: Not specified");
             }
             if (currentEvent.getStartDate() != null) {
                 startDate.setText("Start Date: " + currentEvent.getStartDate());
@@ -406,15 +300,24 @@ public class OrganizerEntrantListFragment extends Fragment {
         }
     }
 
+    /**
+     * Loads and displays the event poster image from the URL stored in currentEvent.
+     * Uses a default placeholder image if no poster URL is available or if loading fails.
+     */
     private void loadPosterImage() {
         if (currentEvent != null && currentEvent.getPosterURL() != null && !currentEvent.getPosterURL().isEmpty()) {
             loadImageWithPicasso(currentEvent.getPosterURL());
         } else {
-            // Set the default placeholder when no poster exists
             posterImageView.setImageResource(R.drawable.qrcodeplaceholder);
         }
     }
 
+    /**
+     * Loads an image from the specified URL using Picasso library.
+     * Displays placeholder images during loading and on error.
+     *
+     * @param imageUrl the URL of the image to load
+     */
     private void loadImageWithPicasso(String imageUrl) {
         Picasso.get()
                 .load(imageUrl)
@@ -425,6 +328,7 @@ public class OrganizerEntrantListFragment extends Fragment {
 
     /**
      * Displays an error message in the event information fields.
+     * Used when event loading fails or event data is unavailable.
      *
      * @param message the error message to display
      */

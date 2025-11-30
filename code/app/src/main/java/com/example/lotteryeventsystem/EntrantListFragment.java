@@ -1,9 +1,7 @@
 package com.example.lotteryeventsystem;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -17,33 +15,27 @@ import android.widget.PopupMenu;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
-
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
-import com.example.lotteryeventsystem.data.NotificationRepository;
 import com.example.lotteryeventsystem.data.RepositoryCallback;
-import com.example.lotteryeventsystem.model.NotificationStatus;
 import com.example.lotteryeventsystem.model.WaitlistEntry;
 import com.example.lotteryeventsystem.model.WaitlistStatus;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Fragment that displays a filtered list of event entrants based on their status.
- * This fragment shows different categories of entrants (Canceled, Enrolled, Unenrolled)
- * and provides functionality to manage them, including canceling unenrolled entrants.
+ * This fragment shows different categories of entrants (Canceled, Enrolled, Unenrolled, Waiting, All Chosen, and Declined)
+ * and provides functionality to manage them, including canceling unenrolled entrants, exporting enrolled entrants to CSV,
+ * and filtering between different entrant status views.
  *
  * @author Emily Lan
- * @version 1.1
+ * @version 1.2
  * @see OrganizerEntrantListFragment
  * @see WaitlistEntry
  * @see WaitlistStatus
@@ -53,20 +45,20 @@ public class EntrantListFragment extends Fragment {
     private ListView listView;
     private TextView tvTitle;
     private ImageButton btnBack, btnFilter;
-    private Button btnDeleteSelectedEntrant, btnExportCSV, btnNotifyAll;
+    private Button btnDeleteSelectedEntrant, btnExportCSV;
     private int entrantPosition = -1;
     private WaitlistEntryAdapter adapter;
     private final FirebaseWaitlistRepository repository = new FirebaseWaitlistRepository();
-    private final NotificationRepository notificationRepository = new NotificationRepository();
     private ArrayList<WaitlistEntry> entrantsList = new ArrayList<>();
     private String eventId;
     private String listType;
+    private SampleEntrantsManager sampleManager;
 
     /**
      * Method to create a new instance of EntrantListFragment with required parameters.
      *
      * @param eventId  The Firestore document ID of the event
-     * @param listType The type of list to display: "canceled", "enrolled", or "unenrolled"
+     * @param listType The type of list to display: "canceled", "enrolled", "unenrolled", "waiting", "all", or "declined"
      * @return A new instance of EntrantListFragment with the provided arguments
      */
     public static EntrantListFragment newInstance(String eventId, String listType) {
@@ -95,6 +87,7 @@ public class EntrantListFragment extends Fragment {
             eventId = getArguments().getString("EVENT_ID");
             listType = getArguments().getString("LIST_TYPE");
         }
+        sampleManager = new SampleEntrantsManager(requireContext(), repository, eventId);
         initializeViews(view);
         setupClickListeners();
         loadDataFromFirebase();
@@ -103,7 +96,7 @@ public class EntrantListFragment extends Fragment {
 
     /**
      * Initializes all the view components and sets up the adapter for the ListView.
-     * Configures the title and visibility of the delete button based on the list type.
+     * Configures the title and visibility of buttons based on the list type.
      *
      * @param view The root view of the fragment containing all the UI components
      */
@@ -114,13 +107,15 @@ public class EntrantListFragment extends Fragment {
         btnFilter = view.findViewById(R.id.btnFilter);
         btnDeleteSelectedEntrant = view.findViewById(R.id.btnDeleteSelectedEntrant);
         btnExportCSV = view.findViewById(R.id.btnExportCSV);
-        btnNotifyAll = view.findViewById(R.id.btnNotifyAll);
         adapter = new WaitlistEntryAdapter(requireContext(), entrantsList);
         listView.setAdapter(adapter);
         listView.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
         updateTitle();
     }
 
+    /**
+     * Updates the fragment title and button visibility based on the current list type.
+     */
     private void updateTitle() {
         if ("canceled".equals(listType)) {
             tvTitle.setText("Canceled Entrants");
@@ -147,29 +142,35 @@ public class EntrantListFragment extends Fragment {
 
     /**
      * Sets up all click listeners for the fragment's interactive elements.
-     * Includes back navigation, item selection, and entrant deletion functionality.
-     *
+     * Includes back navigation, filter menu, CSV export, item selection, entrant deletion, and notification functionality.
      */
     private void setupClickListeners() {
         btnBack.setOnClickListener(v -> {
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();
         });
-
         btnFilter.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Shows the filter menu when the filter button is clicked.
+             *
+             * @param v The clicked view (filter button)
+             */
             @Override
             public void onClick(View v) {
                 showFilterMenu(v);
             }
         });
-
         btnExportCSV.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Exports enrolled entrants to CSV format when the export button is clicked.
+             *
+             * @param v The clicked view (export button)
+             */
             @Override
             public void onClick(View v) {
                 exportEnrolledEntrantsToCSV();
             }
         });
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             /**
              * Handles item clicks in the ListView to select an entrant.
@@ -185,7 +186,6 @@ public class EntrantListFragment extends Fragment {
                 entrantPosition = position;
             }
         });
-
         btnDeleteSelectedEntrant.setOnClickListener(new View.OnClickListener() {
             /**
              * Handles delete button click to cancel the selected unenrolled entrant.
@@ -204,113 +204,94 @@ public class EntrantListFragment extends Fragment {
     }
 
     /**
-     * Exports enrolled entrants to CSV and shows it in a dialog
+     * Exports enrolled entrants to CSV format and displays the content in a dialog.
+     * The CSV contains entrant names separated by commas, with proper escaping for CSV format.
+     * Users can view the content in-app or save it as a file.
      */
     private void exportEnrolledEntrantsToCSV() {
         if (entrantsList.isEmpty()) {
             Toast.makeText(getContext(), "No enrolled entrants to export", Toast.LENGTH_SHORT).show();
             return;
         }
-
         try {
-            // Create CSV content - names separated by commas on one line
             StringBuilder csvContent = new StringBuilder();
-
             for (int i = 0; i < entrantsList.size(); i++) {
                 WaitlistEntry entrant = entrantsList.get(i);
-
-                // Use the same logic as WaitlistEntryAdapter to get display name
                 String displayName = adapter.getUserDisplayName(entrant);
                 if (displayName == null || displayName.isEmpty()) {
-                    // If no name, use anonymous numbering like the adapter does
                     int anonymousNumber = adapter.getConsistentAnonymousNumber(entrant);
                     displayName = "Anonymous" + anonymousNumber;
                 }
-
-                // Escape commas and quotes in the name for proper CSV format
                 String escapedName = displayName.replace("\"", "\"\"");
                 if (escapedName.contains(",") || escapedName.contains("\"")) {
                     escapedName = "\"" + escapedName + "\"";
                 }
-
-                // Add the name to CSV
                 csvContent.append(escapedName);
-
-                // Add comma separator if it's not the last entry
                 if (i < entrantsList.size() - 1) {
                     csvContent.append(",");
                 }
             }
-
-            // Show the CSV content in a dialog
             showCSVContentInDialog(csvContent.toString());
-
         } catch (Exception e) {
             Toast.makeText(getContext(), "Error exporting CSV", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
-     * Saves CSV content to a file (optional - for users who still want files)
+     * Saves CSV content to a file in the device's Downloads folder.
+     *
+     * @param fileName The name of the file to create
+     * @param csvContent The CSV content to write to the file
      */
     private void saveCSVFile(String fileName, String csvContent) {
         try {
-            // Use the public Download folder
             File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File csvFile = new File(downloadsDir, fileName);
-
-            // Create parent directories if they don't exist
             if (!downloadsDir.exists()) {
                 downloadsDir.mkdirs();
             }
-
-            // Write CSV content to file
             FileWriter writer = new FileWriter(csvFile);
             writer.write(csvContent);
             writer.flush();
             writer.close();
-
-            // Show success message
             Toast.makeText(getContext(), "CSV saved to Downloads folder", Toast.LENGTH_SHORT).show();
-
         } catch (IOException e) {
             Toast.makeText(getContext(), "Error saving CSV file", Toast.LENGTH_SHORT).show();
         }
     }
 
     /**
-     * Shows CSV content in a dialog within the app
+     * Shows CSV content in a scrollable dialog within the app.
+     * The dialog allows users to view the CSV content and optionally save it as a file.
+     *
+     * @param csvContent The CSV content to display in the dialog
      */
     private void showCSVContentInDialog(String csvContent) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         builder.setTitle("Enrolled Entrants CSV (" + entrantsList.size() + " entrants)");
-
-        // Create a scrollable text view
         ScrollView scrollView = new ScrollView(requireContext());
         TextView textView = new TextView(requireContext());
-
-        // Format the text for better readability
         textView.setText(csvContent);
         textView.setPadding(50, 30, 50, 30);
-        textView.setTextIsSelectable(true); // Allow text selection
-        textView.setTextSize(14); // Slightly smaller to fit more text
-        textView.setTypeface(Typeface.MONOSPACE); // Use monospace font for CSV
-
+        textView.setTextIsSelectable(true);
+        textView.setTextSize(14);
+        textView.setTypeface(Typeface.MONOSPACE);
         scrollView.addView(textView);
         builder.setView(scrollView);
-
         builder.setPositiveButton("Close", (dialog, which) -> dialog.dismiss());
-
         builder.setNeutralButton("Save as CSV", (dialog, which) -> {
-            // Save the file for users who want it
             String timestamp = String.valueOf(System.currentTimeMillis());
             String fileName = "enrolled_entrants_" + timestamp + ".csv";
             saveCSVFile(fileName, csvContent);
         });
-
         builder.show();
     }
 
+    /**
+     * Displays a filter menu allowing users to switch between different entrant status views.
+     *
+     * @param anchor The view to anchor the popup menu to
+     */
     private void showFilterMenu(View anchor) {
         PopupMenu popupMenu = new PopupMenu(requireContext(), anchor);
         popupMenu.getMenu().add("All Chosen Entrants");
@@ -318,7 +299,6 @@ public class EntrantListFragment extends Fragment {
         popupMenu.getMenu().add("Canceled Entrants");
         popupMenu.getMenu().add("Unenrolled Entrants");
         popupMenu.getMenu().add("Waitlist");
-
         popupMenu.setOnMenuItemClickListener(item -> {
             String title = item.getTitle().toString();
             switch (title) {
@@ -342,14 +322,13 @@ public class EntrantListFragment extends Fragment {
             loadDataFromFirebase();
             return true;
         });
-
         popupMenu.show();
     }
 
     /**
      * Loads entrants from Firestore based on the current list type and event ID.
      * Filters entrants by status and updates the ListView adapter with the results.
-     * This method is automatically called when the fragment is created.
+     * This method is automatically called when the fragment is created and when filters change.
      */
     private void loadDataFromFirebase() {
         if (listType == null || eventId == null) {
@@ -379,7 +358,6 @@ public class EntrantListFragment extends Fragment {
             default:
                 return;
         }
-
         repository.getEntrantsByStatusWithUserDetails(eventId, statusesToLoad, new RepositoryCallback<List<WaitlistEntry>>() {
             /**
              * Callback method that handles the result of the Firestore query.
@@ -394,9 +372,6 @@ public class EntrantListFragment extends Fragment {
                     entrantsList.clear();
                     entrantsList.addAll(result);
                     adapter.notifyDataSetChanged();
-                    if (btnNotifyAll != null) {
-                        btnNotifyAll.setEnabled(!entrantsList.isEmpty());
-                    }
                 }
             }
         });
@@ -405,6 +380,7 @@ public class EntrantListFragment extends Fragment {
     /**
      * Updates the status of an entrant to CANCELLED in Firestore and removes them
      * from the current list. This method is only available for unenrolled entrants.
+     * Sends a cancellation notification and triggers sampling of a new entrant after deletion.
      *
      * @param entrant The WaitlistEntry object representing the entrant to be canceled
      */
@@ -413,7 +389,8 @@ public class EntrantListFragment extends Fragment {
                 new RepositoryCallback<WaitlistEntry>() {
                     /**
                      * Callback method that handles the result of the status update operation.
-                     * Removes the entrant from the local list and updates the UI on success.
+                     * Removes the entrant from the local list, sends notification, and triggers
+                     * new entrant sampling on success.
                      *
                      * @param updatedEntry The updated WaitlistEntry object, or null if error
                      * @param error The exception that occurred during the update, or null if successful
@@ -421,81 +398,29 @@ public class EntrantListFragment extends Fragment {
                     @Override
                     public void onComplete(WaitlistEntry updatedEntry, Exception error) {
                         if (error == null) {
-                            String userId = entrant.getId(); //
+                            String userId = entrant.getId();
                             if (userId != null && !userId.isEmpty()) {
                                 NotificationsManager.sendInviteCancelled(requireContext(), eventId, userId);
                             }
-                            // Success - remove from current list and refresh
                             entrantsList.remove(entrantPosition);
                             entrantPosition = -1;
                             adapter.notifyDataSetChanged();
-                            // Sample one person, print toast message
-                            sampleSingleEntrantAfterDeletion();
+                            sampleManager.sampleSingleEntrantAfterDeletion(new SampleEntrantsManager.SamplingCallback() {
+                                /**
+                                 * Handles completion of entrant sampling operation.
+                                 * Refreshes Firebase data on success.
+                                 *
+                                 * @param error Exception from sampling operation, or null if successful
+                                 */
+                                @Override
+                                public void onComplete(Exception error) {
+                                    if (error == null) {
+                                        loadDataFromFirebase();
+                                    }
+                                }
+                            });
                         }
                     }
                 });
-    }
-
-    private void sampleSingleEntrantAfterDeletion() {
-        // Get all waiting entrants
-        repository.getWaitingEntrants(eventId, new RepositoryCallback<List<WaitlistEntry>>() {
-            @Override
-            public void onComplete(List<WaitlistEntry> result, Exception error) {
-                if (error != null) {
-                    Toast.makeText(getContext(), "Error loading entrants: " + error.getMessage(), Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (result == null || result.isEmpty()) {
-                    Toast.makeText(getContext(), "No waiting entrants found", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Sample exactly 1 entrant
-                List<WaitlistEntry> selectedEntrant = getRandomSample(result, 1);
-
-                if (!selectedEntrant.isEmpty()) {
-                    // Update status to INVITED
-                    updateEntrantsStatus(selectedEntrant, WaitlistStatus.INVITED);
-
-                    // Send notification to the selected entrant
-                    sendSelectedNotifications(selectedEntrant);
-
-                    Toast.makeText(getContext(),
-                            "Sampled new entrant",
-                            Toast.LENGTH_LONG).show();
-
-                    // Refresh the list
-                    loadDataFromFirebase();
-                }
-            }
-        });
-    }
-
-    private List<WaitlistEntry> getRandomSample(List<WaitlistEntry> allEntrants, int sampleSize) {
-        List<WaitlistEntry> shuffled = new ArrayList<>(allEntrants);
-        Collections.shuffle(shuffled);
-        return shuffled.subList(0, sampleSize);
-    }
-
-    private void updateEntrantsStatus(List<WaitlistEntry> entrants, WaitlistStatus status) {
-        for (WaitlistEntry entrant : entrants) {
-            repository.updateEntrantStatus(eventId, entrant.getId(), status,
-                    new RepositoryCallback<WaitlistEntry>() {
-                        @Override
-                        public void onComplete(WaitlistEntry result, Exception error) {
-                            // Handle errors if needed
-                        }
-                    });
-        }
-    }
-
-    private void sendSelectedNotifications(List<WaitlistEntry> selectedEntrants) {
-        for (WaitlistEntry entrant : selectedEntrants) {
-            String userId = entrant.getId();
-            if (userId != null && !userId.isEmpty()) {
-                NotificationsManager.sendSelected(requireContext(), eventId, userId);
-            }
-        }
     }
 }

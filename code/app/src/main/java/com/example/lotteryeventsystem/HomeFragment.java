@@ -219,26 +219,52 @@ public class HomeFragment extends Fragment {
     private void applyFilter(String query) {
         filteredItems.clear();
         String lower = query.toLowerCase();
+
         for (EventItem item : itemsList) {
+
             String name = item.name != null ? item.name.toLowerCase() : "";
             String description = item.description != null ? item.description.toLowerCase() : "";
-            boolean passesQuery = lower.isEmpty() || name.contains(lower) || description.contains(lower);
+            String location = item.location != null ? item.location.toLowerCase() : "";
+
+            // 🔍 Query filter: name OR description OR location OR category text
+            boolean passesQuery =
+                    lower.isEmpty() ||
+                            name.contains(lower) ||
+                            description.contains(lower) ||
+                            location.contains(lower) ||
+                            item.category != null &&
+                                    item.category.stream()
+                                            .anyMatch(c -> c.toLowerCase().contains(lower));  // <-- search categories too
+
             boolean passesCategory = matchesCategory(item);
             boolean passesDate = matchesDate(item);
             boolean passesAvailability = matchesAvailability(item);
             boolean passesDistance = matchesDistance(item);
+
             if (passesQuery && passesCategory && passesDate && passesAvailability && passesDistance) {
                 filteredItems.add(item);
             }
         }
+
         adapter.submitList(new ArrayList<>(filteredItems));
     }
 
     private boolean matchesCategory(EventItem item) {
-        if (filterState.category.equals("any")) {
-            return true; // no filtering if "any" is selected
+        // If no category selected → always pass
+        if (filterState.category == null || filterState.category.equals("any")) {
+            return true;
         }
-        return item.category != null && item.category.equals(filterState.category);
+
+        // If item has no categories → fail
+        if (item.category == null || item.category.isEmpty()) {
+            return false;
+        }
+
+        String wanted = filterState.category.toLowerCase();
+
+        // Event belongs to multiple categories → check if ANY matches
+        return item.category.stream()
+                .anyMatch(cat -> cat != null && cat.toLowerCase().equals(wanted));
     }
 
     private boolean matchesDate(EventItem item) {
@@ -292,6 +318,8 @@ public class HomeFragment extends Fragment {
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
         String posterUrl = doc.getString("posterURL");
+        String location = doc.getString("location");
+
 
 
         String highlight = registrationStart != null && !registrationStart.isEmpty()
@@ -307,7 +335,8 @@ public class HomeFragment extends Fragment {
                 category,
                 latitude,
                 longitude,
-                posterUrl);
+                posterUrl,
+                location != null ? location : "No Location Provided");
     }
 
     private String buildRange(String start, String end, String fallbackDate) {
@@ -433,7 +462,7 @@ public class HomeFragment extends Fragment {
             } else if (checked == R.id.category_sports) {
                 filterState.category = "sports";
             } else if (checked == R.id.category_arts) {
-                filterState.category = "arts";
+                filterState.category = "art";
             }  else if (checked == R.id.category_family) {
                 filterState.category = "family";
             } else {

@@ -20,6 +20,7 @@ public class EventItem {
     public Double latitude;
     public Double longitude;
     public String posterUrl;
+    public String location;
 
     // Main constructor
     public EventItem(String id,
@@ -30,7 +31,8 @@ public class EventItem {
                      ArrayList<String> category,
                      Double latitude,
                      Double longitude,
-                     String posterUrl) {
+                     String posterUrl,
+                     String location) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -40,6 +42,7 @@ public class EventItem {
         this.latitude = latitude;
         this.longitude = longitude;
         this.posterUrl = posterUrl;
+        this.location = location;
     }
 
     @Override
@@ -57,7 +60,9 @@ public class EventItem {
         ArrayList<String> category = (ArrayList<String>) doc.get("category");
         Double latitude = doc.getDouble("latitude");
         Double longitude = doc.getDouble("longitude");
-        String posterUrl = doc.getString("posterURL"); // <-- Add poster URL
+        String posterUrl = doc.getString("posterURL");
+        String location = doc.getString("location");
+
 
         String highlight = registrationStart != null && !registrationStart.isEmpty() ? registrationStart : date;
         String range = buildRange(registrationStart, registrationEnd, date);
@@ -71,7 +76,8 @@ public class EventItem {
                 category,
                 latitude,
                 longitude,
-                posterUrl
+                posterUrl,
+                location
         );
     }
 

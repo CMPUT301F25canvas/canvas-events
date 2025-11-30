@@ -46,7 +46,12 @@ public class AdminNotificationsView extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup parent,
                              @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_admin_notifications, parent, false);
+        View view = inflater.inflate(R.layout.fragment_admin_notifications, parent, false);
+        if (!((MainActivity) requireActivity()).getAdmin()) {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_adminNotificationsFragment_to_notificationFragment);
+        }
+        return view;
     }
 
     /**
@@ -54,11 +59,6 @@ public class AdminNotificationsView extends Fragment {
      */
     @Override
     public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
-        if (!((MainActivity) requireActivity()).getAdmin()) {
-            NavController nav = NavHostFragment.findNavController(this);
-            nav.navigate(R.id.action_adminHomeFragment_to_homeFragment);
-            return;
-        }
 
         db = FirebaseFirestore.getInstance();
         eventsContainer = v.findViewById(R.id.events_container);
@@ -220,27 +220,12 @@ public class AdminNotificationsView extends Fragment {
         // Show timestamp if available
         if (ts != null) {
             long diff = System.currentTimeMillis() - ts.toDate().getTime();
-            time.setText(formatTimeDiff(diff));
+            time.setText(TimeAgo.formatTimeDiff(diff));
             time.setVisibility(View.VISIBLE);
         } else {
             time.setVisibility(View.GONE);
         }
 
         parent.addView(row);
-    }
-
-    /**
-     * Converts milliseconds into a readable "time ago" format.
-     */
-    private String formatTimeDiff(long diffMillis) {
-        long seconds = diffMillis / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-
-        if (days > 0) return days + " day" + (days > 1 ? "s" : "") + " ago";
-        if (hours > 0) return hours + " hour" + (hours > 1 ? "s" : "") + " ago";
-        if (minutes > 0) return minutes + " min" + (minutes > 1 ? "s" : "") + " ago";
-        return "Just now";
     }
 }

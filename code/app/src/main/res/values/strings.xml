@@ -65,7 +65,7 @@
     <string name="notify_selected_success">Sent to %1$d selected entrants.</string>
     <string name="notification_settings">Notification settings</string>
     <string name="notification_empty">You are all caught up.</string>
-    <string name="notification_open">Open invitation</string>
+    <string name="notification_open">Details</string>
     <string name="notification_view_details">View details</string>
     <string name="notification_title_fallback">Organizer update</string>
     <string name="notification_invited_body">You were selected for %1$s.</string>

@@ -5,4 +5,11 @@
     <color name="lighter_gray">#D3D3D3</color>
     <color name="darker_gray">#A9A9A9</color>
     <color name="purple">#C1B4CC</color>
+    <color name="notif_pending_bg">#FFE5E5</color>
+    <color name="notif_pending_text">#D00000</color>
+    <color name="notif_accepted_bg">#E6F6E6</color>
+    <color name="notif_accepted_text">#1B7F1B</color>
+    <color name="notif_rejected_bg">#FFF3E0</color>
+    <color name="notif_rejected_text">#E65100</color>
+
 </resources>

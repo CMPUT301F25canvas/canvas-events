@@ -228,8 +228,6 @@ public class EventDetailFragment extends Fragment {
                 if (!documentSnapshot.exists()) return;
                 // Debug: surface which device id is being used for waitlist writes.
                 Log.d("EventDetailFragment", "Join/Leave using deviceId=" + deviceId + " for eventId=" + eventId);
-                Toast.makeText(getContext(), "Using device id: " + deviceId, Toast.LENGTH_SHORT).show();
-
                 Object limitObj = documentSnapshot.get("entrantLimit");
                 long entrantLimit;
 
@@ -263,7 +261,6 @@ public class EventDetailFragment extends Fragment {
                             waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
                                 joinLeaveButton.setText("Leave Waiting List");
                                 NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
-                                Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
                                 updateAvailableSpotsMessage(db);
                             });
 

@@ -48,7 +48,6 @@ public class AdminHomeFragment extends Fragment {
         Button eventsBtn = view.findViewById(R.id.admin_events_button);
         Button profilesBtn = view.findViewById(R.id.admin_profiles_button);
         Button imagesBtn = view.findViewById(R.id.admin_images_button);
-        Button notificationsBtn = view.findViewById(R.id.admin_notifications_button);
 
         eventsBtn.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
@@ -62,10 +61,8 @@ public class AdminHomeFragment extends Fragment {
 
         imagesBtn.setOnClickListener(v -> {
             NavController navController = Navigation.findNavController(v);
+            navController.navigate(R.id.action_adminHomeFragment_to_adminPosterFragment);
         });
 
-        notificationsBtn.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(v);
-        });
     }
 }

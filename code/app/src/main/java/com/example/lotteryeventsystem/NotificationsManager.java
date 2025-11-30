@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
@@ -26,21 +27,22 @@ public class NotificationsManager {
     private static final String CHANNEL_ID = "app_notifications_channel";
 
     private static void write(String docName, String eventId, String userId) {
+        Map<String, Object> data = createNotifDetails(docName);
         db.collection("notifications")
                 .document(docName)
                 .collection(eventId)
                 .document(userId)
-                .set(createNotifDetails());
+                .set(data);
         db.collection("notifications")
                 .document(docName)
                 .update("event_collection", FieldValue.arrayUnion(eventId))
                 .addOnFailureListener(e -> {
                     // If document doesn't exist, create it
-                    Map<String, Object> data = new HashMap<>();
-                    data.put("event_collection", new ArrayList<String>() {{
+                    Map<String, Object> newData = new HashMap<>();
+                    newData.put("event_collection", new ArrayList<String>() {{
                         add(eventId);
                     }});
-                    db.collection("notifications").document(docName).set(data);
+                    db.collection("notifications").document(docName).set(newData);
                 });
     }
 
@@ -108,10 +110,15 @@ public class NotificationsManager {
      * Creates the notification details map for Firestore.
      * @return A Map<String, Object> containing the initial notification fields.
      */
-    private static Map<String, Object> createNotifDetails() {
+    private static Map<String, Object> createNotifDetails(String docName) {
         Map<String, Object> data = new HashMap<>();
         data.put("timestamp", Timestamp.now());
-        data.put("seen_status", false);
+        if (docName.equals("selected_notification")) {
+            data.put("response", "None");
+        } else {
+            data.put("seen_status", false);
+        }
+
         return data;
     }
 

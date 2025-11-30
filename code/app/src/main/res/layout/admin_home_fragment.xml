@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#F7F3FF">
 
-    <!-- Top Card Header -->
     <androidx.cardview.widget.CardView
         android:id="@+id/headerCard"
         android:layout_width="0dp"
@@ -41,7 +40,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Events -->
         <Button
             android:id="@+id/admin_events_button"
             android:layout_width="260dp"
@@ -53,7 +51,6 @@
             android:textColor="#FFFFFF"
             android:background="@drawable/admin_button"/>
 
-        <!-- Profiles -->
         <Button
             android:id="@+id/admin_profiles_button"
             android:layout_width="260dp"
@@ -65,7 +62,6 @@
             android:textColor="#FFFFFF"
             android:background="@drawable/admin_button"/>
 
-        <!-- Images -->
         <Button
             android:id="@+id/admin_images_button"
             android:layout_width="260dp"
@@ -78,15 +74,4 @@
             android:background="@drawable/admin_button"/>
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/admin_notifications_button"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:text="Notification Logs"
-        app:layout_constraintTop_toBottomOf="@id/admin_images_button"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="40dp"/>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

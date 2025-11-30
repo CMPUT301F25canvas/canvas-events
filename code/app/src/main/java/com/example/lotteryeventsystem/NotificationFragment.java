@@ -2,16 +2,12 @@ package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
 import android.provider.Settings;
-import android.util.Log;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
@@ -20,155 +16,99 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.lotteryeventsystem.data.NotificationRepository;
-import com.example.lotteryeventsystem.di.ServiceLocator;
-import com.example.lotteryeventsystem.model.NotificationMessage;
-import com.example.lotteryeventsystem.notifications.NotificationAdapter;
-import com.google.firebase.firestore.ListenerRegistration;
+import java.util.ArrayList;
 
-import java.util.List;
+public class NotificationFragment extends Fragment implements NotificationAdapter.Listener {
 
-/**
- * Entrant-facing notifications feed.
- */
-public class NotificationFragment extends Fragment implements NotificationAdapter.NotificationClickListener {
-    private RecyclerView notificationList;
+    private RecyclerView recyclerView;
     private View emptyView;
     private View progressView;
-    private final NotificationRepository notificationRepository = ServiceLocator.provideNotificationRepository();
-    private ListenerRegistration registration;
     private NotificationAdapter adapter;
-    private String recipientId = "";
+    private NotificationRepository repo = new NotificationRepository();
+
+    private String userId = "";
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_notification, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_notification, container, false);
         if (((MainActivity) requireActivity()).getAdmin()) {
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_notificationFragment_to_adminNotificationFragment);
-            return;
+            navController.navigate(R.id.action_notificationFragment_to_adminNotificationsFragment);
         }
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        notificationList = view.findViewById(R.id.notification_list);
+
+        recyclerView = view.findViewById(R.id.notification_list);
         emptyView = view.findViewById(R.id.notification_empty);
         progressView = view.findViewById(R.id.notification_progress);
-        ImageButton settingsButton = view.findViewById(R.id.button_notification_settings);
 
         adapter = new NotificationAdapter(this);
-        notificationList.setLayoutManager(new LinearLayoutManager(getContext()));
-        notificationList.setAdapter(adapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
 
-        recipientId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-        if (recipientId == null) {
-            recipientId = "";
+        // Get device user ID
+        userId = Settings.Secure.getString(
+                requireContext().getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
+
+        if (userId == null) {
+            userId = "";
         }
-        Log.d("NotificationFragment", "Subscribing to notifications for recipientId=" + recipientId);
-        settingsButton.setOnClickListener(v -> {
-            NavController navController = Navigation.findNavController(view);
-            navController.navigate(R.id.action_notificationFragment_to_notificationSettingsFragment);
-        });
+
+        listenToNotifications();
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        subscribeToNotifications();
-    }
+    private void listenToNotifications() {
+        progressView.setVisibility(View.VISIBLE);
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        if (registration != null) {
-            registration.remove();
-            registration = null;
-        }
-    }
+        repo.listenToUserNotifications(userId, (messages, error) -> {
+            if (!isAdded()) return;
 
-    private void subscribeToNotifications() {
-        setLoading(true);
-        if (registration != null) {
-            registration.remove();
-        }
-        registration = notificationRepository.listenToUserNotifications(recipientId, this::handleNotificationUpdate);
-    }
+            progressView.setVisibility(View.GONE);
 
-    private void handleNotificationUpdate(@Nullable List<NotificationMessage> messages, @Nullable Exception error) {
-        if (!isAdded()) {
-            return;
-        }
-        requireActivity().runOnUiThread(() -> {
-            setLoading(false);
             if (error != null) {
-                Log.e("NotificationFragment", "Notification query failed for recipientId=" + recipientId, error);
-                Toast.makeText(getContext(), "Could not load notifications. Check connection/index.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            if (messages == null) {
+                Toast.makeText(getContext(), "Failed to load notifications", Toast.LENGTH_SHORT).show();
                 emptyView.setVisibility(View.VISIBLE);
-                adapter.submitList(null);
+                adapter.submitList(new ArrayList<>());
                 return;
             }
-            List<NotificationMessage> filtered = applyPreferences(messages);
-            adapter.submitList(filtered);
-            emptyView.setVisibility(filtered.isEmpty() ? View.VISIBLE : View.GONE);
+
+            if (messages == null || messages.isEmpty()) {
+                emptyView.setVisibility(View.VISIBLE);
+                adapter.submitList(new ArrayList<>());
+                return;
+            }
+
+            emptyView.setVisibility(View.GONE);
+            adapter.submitList(messages);
         });
     }
 
-    private void setLoading(boolean loading) {
-        if (progressView != null) {
-            progressView.setVisibility(loading ? View.VISIBLE : View.GONE);
-        }
-    }
-
     @Override
-    public void onOpen(NotificationMessage message) {
-        if (!isAdded()) {
-            return;
-        }
+    public void onOpen(NotificationMessage msg) {
+        if (!isAdded()) return;
+
+        NotificationRepository repo = new NotificationRepository();
+        userId = Settings.Secure.getString(
+                requireContext().getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
+        repo.markAsSeen(msg.getType(), msg.getEventId(), userId);
+
         Bundle args = new Bundle();
-        args.putString("notificationId", message.getId());
-        args.putString("eventId", message.getEventId());
-        args.putString("eventName", message.getEventName());
-        args.putString("body", message.getBody());
-        args.putString("title", message.getTitle());
-        args.putString("status", message.getStatus() != null ? message.getStatus().name() : null);
-        args.putString("waitlistEntryId", message.getWaitlistEntryId());
-        args.putString("type", message.getType());
+        args.putString("type", msg.getType());
+        args.putString("body", msg.getBody());
+        args.putString("title", msg.getTitle());
+        args.putString("eventId", msg.getEventId());
+        args.putString("response", msg.getResponse());
+
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_notificationFragment_to_notificationDetailFragment, args);
-    }
-
-    private List<NotificationMessage> applyPreferences(List<NotificationMessage> messages) {
-        SharedPreferences prefs = requireContext().getSharedPreferences("notification_prefs", Context.MODE_PRIVATE);
-        boolean allowPush = prefs.getBoolean("allow_push", true);
-        boolean allowOrganizer = prefs.getBoolean("organizer", true);
-        boolean allowAdmin = prefs.getBoolean("admin", true);
-        boolean allowMarketing = prefs.getBoolean("marketing", false);
-        if (!allowPush) {
-            return java.util.Collections.emptyList();
-        }
-        List<NotificationMessage> result = new java.util.ArrayList<>();
-        for (NotificationMessage msg : messages) {
-            String source = msg.getSource();
-            if (source == null || source.isEmpty()) {
-                source = "ORGANIZER";
-            }
-            if (source.equalsIgnoreCase("ORGANIZER") && !allowOrganizer) {
-                continue;
-            }
-            if (source.equalsIgnoreCase("ADMIN") && !allowAdmin) {
-                continue;
-            }
-            if (source.equalsIgnoreCase("MARKETING") && !allowMarketing) {
-                continue;
-            }
-            result.add(msg);
-        }
-        return result;
     }
 }

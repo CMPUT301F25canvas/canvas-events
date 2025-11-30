@@ -20,7 +20,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "MAPS_API_KEY", "\${MAPS_API_KEY}\"")
+        buildConfigField("String", "MAPS_API_KEY", "\"\${MAPS_API_KEY}\"")
     }
 
     buildTypes {
@@ -61,12 +61,13 @@ dependencies {
     implementation(libs.play.services.location)
     implementation(libs.firebase.auth)
     testImplementation(libs.junit)
-    testImplementation("org.robolectric:robolectric:4.11.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.6")
     androidTestImplementation("androidx.test:core:1.5.0")
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    androidTestImplementation("androidx.fragment:fragment-testing:1.8.5")
+    testImplementation("org.mockito:mockito-core:4.11.0")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
     debugImplementation("androidx.fragment:fragment-testing:1.8.5")
     // Glide
     implementation("com.github.bumptech.glide:glide:4.12.0")

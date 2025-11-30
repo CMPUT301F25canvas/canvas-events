@@ -62,7 +62,7 @@ public class OrganizerEventCreateFragmentTest {
                 .perform(typeText("Test Event Description"), closeSoftKeyboard());
 
         // Fill in event date
-        onView(withId(R.id.event_date_input_text))
+        onView(withId(R.id.start_date_input_text))
                 .perform(typeText("2025-11-20"), closeSoftKeyboard());
 
 
@@ -108,8 +108,8 @@ public class OrganizerEventCreateFragmentTest {
                 .perform(typeText("Test Event Description"), closeSoftKeyboard());
 
         // Fill in event date
-        onView(withId(R.id.event_date_input_text))
-                .perform(typeText("2025-11-20"), closeSoftKeyboard());
+        //onView(withId(R.id.event_date_input_text))
+                //.perform(typeText("2025-11-20"), closeSoftKeyboard());
 
 
         // Fill in event start time

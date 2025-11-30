@@ -262,6 +262,7 @@ public class EventDetailFragment extends Fragment {
                             eventData.put("status", "WAITING");
                             waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
                                 joinLeaveButton.setText("Leave Waiting List");
+                                NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
                                 Toast.makeText(getContext(), "You were added to the waiting list!", Toast.LENGTH_SHORT).show();
                                 updateAvailableSpotsMessage(db);
                             });
@@ -273,7 +274,6 @@ public class EventDetailFragment extends Fragment {
                         // Leave the waitlist
                         waitlistRef.delete().addOnSuccessListener(aVoid -> joinLeaveButton.setText("Join Waiting List"));
                         userRef.update("enrolled_events", FieldValue.arrayRemove(eventId));
-                        NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
                         Toast.makeText(getContext(), "You were removed from the waiting list!", Toast.LENGTH_SHORT).show();
                         updateAvailableSpotsMessage(db);
                     }

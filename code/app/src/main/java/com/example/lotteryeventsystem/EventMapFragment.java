@@ -64,9 +64,6 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         // Gets the MapView from the XML layout and creates it
         mapView = (MapView) v.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
-
-        mapView.getMapAsync(this);
-
         return v;
     }
 
@@ -84,6 +81,7 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
 
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mapView.getMapAsync(this);
 
         // Load the event - use current location of organizer?
         Bundle args = getArguments();

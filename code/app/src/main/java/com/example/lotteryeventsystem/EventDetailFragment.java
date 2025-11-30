@@ -1,6 +1,8 @@
 package com.example.lotteryeventsystem;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -25,12 +27,20 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 
 import com.example.lotteryeventsystem.di.ServiceLocator;
 import com.example.lotteryeventsystem.model.Event;
+import com.google.android.gms.location.CurrentLocationRequest;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.Priority;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
@@ -57,22 +67,16 @@ public class EventDetailFragment extends Fragment {
     private String deviceId;
     private TextView message;
 
+    // Temporary variables to allow the locatinoPermissionLauncher to access values
+    private DocumentReference pendingWaitlistRef;
+    private DocumentReference pendingUserRef;
+    private FirebaseFirestore pendingDb;
+
     public static final String ARG_EVENT_ID = "event_id";
 
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
-
-                boolean fine = Boolean.TRUE.equals(result.get(android.Manifest.permission.ACCESS_FINE_LOCATION));
-                boolean coarse = Boolean.TRUE.equals(result.get(android.Manifest.permission.ACCESS_COARSE_LOCATION));
-
-                if (fine || coarse) {
-                    loadEventRequirementsAndSetup(); // permission granted → reload UI
-                } else {
-                    message.setText("This event requires your location permission to join.");
-                    joinLeaveButton.setText("Requires Location");
-                    joinLeaveButton.setEnabled(true);
-                    joinLeaveButton.setAlpha(1f);
-                }
+                handleLocationPermissionResult(result);
             });
 
     private boolean hasLocationPermission() {
@@ -156,33 +160,11 @@ public class EventDetailFragment extends Fragment {
                                 .into(posterImage);
                     }
 
-                    boolean requiresGeolocation =
-                            Boolean.TRUE.equals(doc.getBoolean("geolocationRequirement"));
-
-                    if (requiresGeolocation && !hasLocationPermission()) {
-
-                        joinLeaveButton.setText("Requires Location");
-                        joinLeaveButton.setEnabled(true);
-                        joinLeaveButton.setAlpha(1f);
-
-                        message.setText("This event requires location access before joining. \nClick the button to allow location services ");
-
-                        joinLeaveButton.setOnClickListener(v -> {
-                            locationPermissionLauncher.launch(new String[]{
-                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
-                                    android.Manifest.permission.ACCESS_COARSE_LOCATION
-                            });
-                        });
-                        return;
-                    }
-
                     if (((MainActivity) requireActivity()).getAdmin()) {
                         setupDeleteEventButton(db);
                     } else {
                         setupJoinLeaveButton(db);
                     }
-
-
                 });
     }
 
@@ -255,17 +237,14 @@ public class EventDetailFragment extends Fragment {
                             // Event full
                             message.setText("EVENT FULL");
                         } else {
-                            // Add to waitlist
-                            Map<String, Object> eventData = new HashMap<>();
-                            eventData.put("status", "WAITING");
-                            waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
-                                joinLeaveButton.setText("Leave Waiting List");
-                                NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
-                                updateAvailableSpotsMessage(db);
-                            });
 
-                            // Update user's enrolled_events array
-                            userRef.update("enrolled_events", FieldValue.arrayUnion(eventId));
+                            // Check if location is required to join the event
+                            if (documentSnapshot.getBoolean("geolocationRequirement")) {
+                                checkLocationPermission(waitlistRef, userRef, db);
+                                return;
+                            } else { // Join waitlist normally
+                                addToWaitlist(new HashMap<>(), waitlistRef, userRef, db);
+                            }
                         }
                     } else {
                         // Leave the waitlist
@@ -329,6 +308,90 @@ public class EventDetailFragment extends Fragment {
             });
         });
     }
+
+    /**
+     * Refactored joining the waitlist - to allow the Geolocation Requirement to function
+     * @param waitlistRef
+     * @param userRef
+     * @param db
+     */
+    private void addToWaitlist(Map<String, Object> eventData, DocumentReference waitlistRef, DocumentReference userRef, FirebaseFirestore db) {
+        // Add to waitlist
+        eventData.put("status", "WAITING");
+        waitlistRef.set(eventData).addOnSuccessListener(aVoid -> {
+            joinLeaveButton.setText("Leave Waiting List");
+            NotificationsManager.sendJoinedWaitlist(getContext(), eventId, userRef.getId());
+            updateAvailableSpotsMessage(db);
+        });
+
+        // Update user's enrolled_events array
+        userRef.update("enrolled_events", FieldValue.arrayUnion(eventId));
+    }
+
+    /**
+     *
+     * @param waitlistRef
+     * @param userRef
+     * @param db
+     */
+    private void checkLocationPermission(DocumentReference waitlistRef, DocumentReference userRef, FirebaseFirestore db) {
+        if (hasLocationPermission()) {
+            jointWaitlistGeolocationApproved(waitlistRef, userRef, db);
+            return;
+        } else {
+            pendingWaitlistRef = waitlistRef;
+            pendingUserRef = userRef;
+            pendingDb = db;
+
+            locationPermissionLauncher.launch(new String[] {
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+            });
+        }
+    }
+
+    private void handleLocationPermissionResult(Map<String, Boolean> result) {
+        boolean fineLocationGranted = Boolean.TRUE.equals(
+                result.get(Manifest.permission.ACCESS_FINE_LOCATION));
+
+        if (!fineLocationGranted) {
+            message.setText("Location permission required to join this event.");
+            return;
+        }
+
+        // Has permission, join the waitlist
+        jointWaitlistGeolocationApproved(pendingWaitlistRef, pendingUserRef, pendingDb);
+    }
+
+    private void jointWaitlistGeolocationApproved(DocumentReference waitlistRef, DocumentReference userRef, FirebaseFirestore db) {
+        FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
+        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) return;
+
+        // This line is already correct because it uses the full class path.
+        // It creates an instance of the NEW LocationRequest.
+        CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
+                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                .build();
+
+        // The fusedLocationClient.getCurrentLocation() method expects the new LocationRequest,
+        // which it now correctly receives.
+        fusedLocationClient.getCurrentLocation(locationRequest, null).addOnSuccessListener(location -> {
+            // Check if location is null
+            if (location == null) {
+                message.setText("Unable to retrieve location. Please try again.");
+                return;
+            }
+
+            Map<String, Object> eventData = new HashMap<>();
+            eventData.put("latitude", location.getLatitude());
+            eventData.put("longitude", location.getLongitude());
+            addToWaitlist(eventData, waitlistRef, userRef, db);
+        });
+    }
+
+
+
 }
 
 

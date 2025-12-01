@@ -19,7 +19,7 @@ public class AdminPosterAdapter extends RecyclerView.Adapter<AdminPosterAdapter.
     private OnPosterDeleteListener deleteListener;
 
     public interface OnPosterDeleteListener {
-        void onPosterDelete(String posterUrl , int position);
+        void onPosterDelete(int position);
     }
 
 
@@ -46,11 +46,11 @@ public class AdminPosterAdapter extends RecyclerView.Adapter<AdminPosterAdapter.
 
         holder.posterImage.setOnClickListener(v -> {
             new AlertDialog.Builder(holder.posterImage.getContext())
-                    .setTitle("Delete Poster")
-                    .setMessage("Are you sure you want to delete this poster?")
+                    .setTitle("Remove Poster")
+                    .setMessage("Do you want to remove this poster image?")
                     .setPositiveButton("Yes", (dialog, which) -> {
                         if (deleteListener != null) {
-                            deleteListener.onPosterDelete(imageUrl, position);
+                            deleteListener.onPosterDelete(position);
                         }
                     })
                     .setNegativeButton("Cancel", null)

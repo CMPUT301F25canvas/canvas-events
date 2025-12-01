@@ -62,6 +62,7 @@ dependencies {
     androidTestImplementation("androidx.test:core:1.5.0")
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.navigation:navigation-testing:2.7.5")
     testImplementation("org.mockito:mockito-core:4.11.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")

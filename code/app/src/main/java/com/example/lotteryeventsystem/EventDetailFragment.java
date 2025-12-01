@@ -58,6 +58,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import com.bumptech.glide.Glide;
 
@@ -229,6 +230,10 @@ public class EventDetailFragment extends Fragment {
         waitlistRef.get().addOnSuccessListener( documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 joinLeaveButton.setText("Leave Waiting List");
+                String userStatus = documentSnapshot.getString("status");
+                if (Objects.equals(userStatus, "INVITED")) {
+                    joinLeaveButton.setText("Invited");
+                }
             } else {
                 joinLeaveButton.setText("Join Waiting List");
             }
@@ -332,8 +337,10 @@ public class EventDetailFragment extends Fragment {
             eventRef.collection("waitlist").get().addOnSuccessListener(waitlistSnapshot -> {
                 int currentEnrollment = waitlistSnapshot.size();
                 long availableSpots = finalEntrantLimit - currentEnrollment;
-
-                if (availableSpots > 0 && finalEntrantLimit != Long.MAX_VALUE) {
+                if (joinLeaveButton.getText() == "Invited") {
+                    joinLeaveButton.setEnabled(false);
+                    message.setText("Please check your notifications to accept/reject");
+                } else if (availableSpots > 0 && finalEntrantLimit != Long.MAX_VALUE) {
                     message.setText("Available spots: " + availableSpots);
                     joinLeaveButton.setEnabled(true);
                     joinLeaveButton.setAlpha(1.0f);

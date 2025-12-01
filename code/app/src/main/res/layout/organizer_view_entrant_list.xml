@@ -3,7 +3,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:background="#FFFFFF"
     android:layout_height="match_parent">
 
     <FrameLayout
@@ -22,18 +21,23 @@
 
         <ImageButton
             android:id="@+id/back_button"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:background="@drawable/ic_back_arrow"
-            android:contentDescription="Back Button" />
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:contentDescription="Go Back"
+            android:src="@drawable/ic_back_arrow" />
+
 
         <ImageButton
             android:id="@+id/btnFilter"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:layout_gravity="end"
-            android:background="@drawable/ic_filter"
-            android:contentDescription="Filter Button" />
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:contentDescription="Go Back"
+            android:src="@drawable/ic_filter" />
 
     </FrameLayout>
 

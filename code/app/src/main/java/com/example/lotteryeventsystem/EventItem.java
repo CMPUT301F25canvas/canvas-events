@@ -1,3 +1,7 @@
+/**
+ * This class acts as a model for the HomeEventAdapter UI.
+ */
+
 package com.example.lotteryeventsystem;
 
 import com.google.firebase.firestore.QueryDocumentSnapshot;
@@ -10,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Class that holds Event data for display
+ * Holds Event data for display
  */
 public class EventItem {
 

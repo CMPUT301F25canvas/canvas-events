@@ -58,17 +58,21 @@ public class SampleEntrantsManager {
         waitlistRepository.getWaitingEntrants(eventId, new RepositoryCallback<List<WaitlistEntry>>() {
             @Override
             public void onComplete(List<WaitlistEntry> result, Exception error) {
+                boolean isSingleSample = sampleSize == -1;
                 if (error != null) {
-                    Toast.makeText(context, "Error loading entrants: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    if (!isSingleSample) {
+                        Toast.makeText(context, "Error loading entrants: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                     if (callback != null) callback.onComplete(error);
                     return;
                 }
                 if (result == null || result.isEmpty()) {
-                    Toast.makeText(context, "No waiting entrants found", Toast.LENGTH_SHORT).show();
+                    if (!isSingleSample) {
+                        Toast.makeText(context, "No waiting entrants found", Toast.LENGTH_SHORT).show();
+                    }
                     if (callback != null) callback.onComplete(null);
                     return;
                 }
-                boolean isSingleSample = sampleSize == -1;
                 int actualSampleSize = isSingleSample ? 1 : sampleSize;
                 List<WaitlistEntry> selectedEntrants;
                 List<WaitlistEntry> notSelectedEntrants;

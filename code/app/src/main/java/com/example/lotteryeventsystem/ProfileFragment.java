@@ -1,3 +1,9 @@
+/**
+ * The Profile page, one of three main fragments in the MainActivity.
+ * Model and Controller code are mixed in OnViewCreated and helper functions,
+ * but View is specified in onCreateView
+ */
+
 package com.example.lotteryeventsystem;
 
 import static android.view.View.INVISIBLE;

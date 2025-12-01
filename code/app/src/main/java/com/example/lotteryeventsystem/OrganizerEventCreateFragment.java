@@ -62,6 +62,7 @@ import java.util.function.Consumer;
 /**
  * Fragment class for the OrganizerEventCreate screen.
  * Stores logic for the event creation form and creates a new Event if input is correct
+ * Also used to edit event details if event is already created
  */
 public class OrganizerEventCreateFragment extends Fragment {
     private EventCreationForm eventCreationForm;
@@ -73,11 +74,16 @@ public class OrganizerEventCreateFragment extends Fragment {
     private String existingEventId;
     private Event existingEvent;
 
-    // Callback Interface for when an image is uploaded
+    /**
+     * Interface for uploading an event poster image to Firebase. Calls the onUploaded method when the upload is complete.
+     */
     public interface ImageUploadCallback {
         void onUploaded(String imageUrl);
     }
 
+    /**
+     * Interface for uploading a QR code to Firebase. Calls the onQRCodeUploaded method when the upload is complete.
+     */
     public interface QRCodeUploadCallback {
         void onQRCodeUploaded(String qrCodeURL);
     }
@@ -112,7 +118,14 @@ public class OrganizerEventCreateFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_event_create, container, false);
     }
 
-
+    /**
+     * Called when the fragment's view has been created.
+     * Sets up all of the input layouts, input text fields, buttons, and other UI elements.
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         if (getArguments() != null) {
@@ -123,7 +136,7 @@ public class OrganizerEventCreateFragment extends Fragment {
         eventCreationForm = new EventCreationForm();
         Event event = new Event();
 
-        // Connecting all of the elements
+        // CONNECTING ALL OF THE UI ELEMENTS //
         // Back Button
         ImageButton backButton = view.findViewById(R.id.back_button);
         backButton.setOnClickListener(v -> {
@@ -142,6 +155,7 @@ public class OrganizerEventCreateFragment extends Fragment {
         setupTextWatcher(eventDescriptionInput, event::setDescription);
 
         // Event Location
+            // Location Input - uses the Google Places API
         TextInputLayout eventLocationLayout = view.findViewById(R.id.event_location_input_layout);
         TextInputEditText eventLocationInput = view.findViewById(R.id.event_location_input);
         eventLocationInput.setOnClickListener(v -> {
@@ -164,6 +178,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout startDateLayout = view.findViewById(R.id.start_date_input_layout);
         TextInputEditText startDateInput = view.findViewById(R.id.start_date_input_text);
         startDateInput.addTextChangedListener(new TextWatcher() {
+            /**
+             * Called when the user edits the text in the input field.
+             * Sets the event's start date based on the input.
+             * Ensures that the input is in the correct format.
+             *
+             * @param s The updated text in the input field.
+             */
             @Override
             public void afterTextChanged(Editable s) {
                 String date = s.toString();
@@ -209,6 +230,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout endDateLayout = view.findViewById(R.id.end_date_input_layout);
         TextInputEditText endDateInput = view.findViewById(R.id.end_date_input_text);
         endDateInput.addTextChangedListener(new TextWatcher() {
+            /**
+             * Called when the user edits the text in the input field.
+             * Sets the event's end date based on the input.
+             * Ensures that the input is in the correct format
+             *
+             * @param s The updated text in the input field.
+             */
             @Override
             public void afterTextChanged(Editable s) {
                 String date = s.toString();
@@ -255,6 +283,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout startTimeLayout = view.findViewById(R.id.start_time_input_layout);
         TextInputEditText startTimeInput = view.findViewById(R.id.start_time_input_text);
         startTimeInput.addTextChangedListener(new TextWatcher() {
+            /**
+             * Called when the user edits the text in the input field.
+             * Sets the event's start time based on the input.
+             * Ensures that the input is in the correct format
+             *
+             * @param s The updated text in the input field.
+             */
             @Override
             public void afterTextChanged(Editable s) {
                 String time = s.toString();
@@ -303,6 +338,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout endTimeLayout = view.findViewById(R.id.end_time_input_layout);
         TextInputEditText endTimeInput = view.findViewById(R.id.end_time_input_text);
         endTimeInput.addTextChangedListener(new TextWatcher() {
+            /**
+             * Called when the user edits the text in the input field.
+             * Sets the event's end time based on the input.
+             * Ensures that the input is in the correct format
+             *
+             * @param s The updated text in the input field.
+             */
             @Override
             public void afterTextChanged(Editable s) {
                 String time = s.toString();
@@ -352,6 +394,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout registrationStartLayout = view.findViewById(R.id.registration_start_input_layout);
         TextInputEditText registrationStartInput = view.findViewById(R.id.registration_start_input_text);
         registrationStartInput.addTextChangedListener(new TextWatcher() {
+            /**
+             * Called when the user edits the text in the input field.
+             * Sets the event's registration start date based on the input.
+             * Ensures that the input is in the correct format
+             *
+             * @param s The updated text in the input field.
+             */
             @Override
             public void afterTextChanged(Editable s) {
                 String date = s.toString();
@@ -397,6 +446,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         TextInputLayout registrationEndLayout = view.findViewById(R.id.registration_end_input_layout);
         TextInputEditText registrationEndInput = view.findViewById(R.id.registration_end_input_text);
         registrationEndInput.addTextChangedListener(new TextWatcher() {
+            /**
+             * Called when the user edits the text in the input field.
+             * Sets the event's registration end date based on the input.
+             * Ensures that the input is in the correct format
+             *
+             * @param s The updated text in the input field.
+             */
             @Override
             public void afterTextChanged(Editable s) {
                 String date = s.toString();
@@ -510,6 +566,13 @@ public class OrganizerEventCreateFragment extends Fragment {
 
         CheckBox entrantLimitCheckBox = view.findViewById(R.id.entrant_limit_checkbox);
         entrantLimitCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            /**
+             * Logic for if the EntrantLimit checkbox is checked or not.
+             * Unhides the EntrantLimit text input if selected.
+             *
+             * @param buttonView The compound button view whose state has changed.
+             * @param isChecked  The new checked state of buttonView.
+             */
             @Override
             public void onCheckedChanged(@NonNull CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
@@ -533,6 +596,10 @@ public class OrganizerEventCreateFragment extends Fragment {
             createEventButton.setText("Create Event");
         }
         createEventButton.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Logic for when the Create Event/Edit event button is clicked
+             * @param v The view that was clicked.
+             */
             @Override
             public void onClick(View v) {
 
@@ -793,16 +860,17 @@ public class OrganizerEventCreateFragment extends Fragment {
 
     /**
      * Method for creating the Event, filling in the parameters and adding it to the Firestore database
+     *
+     * @param event The Event Class to be created
      */
     private void createEvent(Event event) {
         // Load the organizerID to store into database
         String organizerID = Settings.Secure.getString(requireContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID);
 
-        // TODO: REFACTOR HOW EVENT_ID IS GENERATED?
         eventRepository.generateEventID().addOnSuccessListener(snapshot -> {
             long count = snapshot.getCount() + 1;
-            String eventID = "event_id" + Instant.now().toString();
+            String eventID = "event_id" + Instant.now().toString(); // Generate a unique event ID
 
             event.setEventID(eventID);
             event.setOrganizerID(organizerID);
@@ -824,7 +892,7 @@ public class OrganizerEventCreateFragment extends Fragment {
 
                         // Move to Event List Screen
                         NavController navController = Navigation.findNavController(requireView());
-                        navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+                        navController.navigate(R.id.action_organizerEventCreateFragment_to_homeFragment);
                     });
                 });
             // Else create an event without uploading the event poster
@@ -840,63 +908,17 @@ public class OrganizerEventCreateFragment extends Fragment {
 
                     // Move to Event List Screen
                     NavController navController = Navigation.findNavController(requireView());
-                    navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+                    navController.navigate(R.id.action_organizerEventCreateFragment_to_homeFragment);
                 });
             }
         });
     }
 
-    private void choosePicture() {
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-    }
-
-
-
-    private Bitmap decodeSampledBitmapFromUri(Uri uri, int reqWidth, int reqHeight) {
-        try {
-            // First decode bounds only
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-
-            InputStream stream1 = requireContext().getContentResolver().openInputStream(uri);
-            BitmapFactory.decodeStream(stream1, null, options);
-            stream1.close();
-
-            // Calculate scaling factor
-            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
-            options.inJustDecodeBounds = false;
-
-            // Decode the bitmap with the scaling factor
-            InputStream stream2 = requireContext().getContentResolver().openInputStream(uri);
-            Bitmap bitmap = BitmapFactory.decodeStream(stream2, null, options);
-            stream2.close();
-
-            return bitmap;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        int height = options.outHeight;
-        int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-            int halfHeight = height / 2;
-            int halfWidth = width / 2;
-
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return inSampleSize;
-    }
-
+    /**
+     * Sets the event's categories based on the selected checkboxes.
+     *
+     * @param event The event to set the categories for.
+     */
     private void setEventCategories(Event event) {
         ArrayList<String> categories = new ArrayList<>();
         if (isSport) {
@@ -914,6 +936,18 @@ public class OrganizerEventCreateFragment extends Fragment {
         event.setCategories(categories);
     }
 
+    /**
+     * Called when a result from an activity is received.
+     *
+     * @param requestCode The integer request code originally supplied to
+     *                    startActivityForResult(), allowing you to identify who this
+     *                    result came from.
+     * @param resultCode The integer result code returned by the child activity
+     *                   through its setResult().
+     * @param data An Intent, which can return result data to the caller
+     *               (various data can be attached to Intent "extras").
+     *
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -928,9 +962,6 @@ public class OrganizerEventCreateFragment extends Fragment {
                         getView().findViewById(R.id.event_location_input);
                 eventLocationInput.setText(place.getAddress());
 
-//                // Also update your event object
-//                eventCreationForm.setLocation(place.getAddress());
-
                 Log.d("LOCATION", "Selected: " + place.getAddress());
 
             } else if (resultCode == getActivity().RESULT_CANCELED) {
@@ -938,5 +969,4 @@ public class OrganizerEventCreateFragment extends Fragment {
             }
         }
     }
-
 }

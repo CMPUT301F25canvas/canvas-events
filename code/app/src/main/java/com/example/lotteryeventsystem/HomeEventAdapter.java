@@ -1,3 +1,11 @@
+/**
+ * This adapter is in use wherever events are displayed in a list.
+ * @see com.example.lotteryeventsystem.HomeFragment
+ * @see com.example.lotteryeventsystem.EventHistoryFragment
+ * @see com.example.lotteryeventsystem.OrganizerEventListFragment
+ *
+ */
+
 package com.example.lotteryeventsystem;
 
 import android.view.LayoutInflater;

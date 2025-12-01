@@ -69,31 +69,26 @@ public class AdminViewProfiles extends Fragment {
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, itemsList);
         listView.setAdapter(adapter);
 
-        if (cachedItems != null) {
-            itemsList.addAll(cachedItems);
-            adapter.notifyDataSetChanged();
-        } else {
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            db.collection("users")
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        for (QueryDocumentSnapshot doc : querySnapshot) {
-                            String docId = doc.getId();
-                            String userName = doc.getString("name");
-                            if (userName != null && !userName.trim().isEmpty()) {
-                                itemsList.add(userName);
-                                idList.add(docId);
-                            }
-                            else {
-                                itemsList.add(docId);
-                                idList.add(docId);
-                            }
-
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        String docId = doc.getId();
+                        String userName = doc.getString("name");
+                        if (userName != null && !userName.trim().isEmpty()) {
+                            itemsList.add(userName);
+                            idList.add(docId);
                         }
-                        cachedItems = new ArrayList<>(itemsList);
-                        adapter.notifyDataSetChanged();
-                    });
-        }
+                        else {
+                            itemsList.add(docId);
+                            idList.add(docId);
+                        }
+
+                    }
+                    cachedItems = new ArrayList<>(itemsList);
+                    adapter.notifyDataSetChanged();
+                });
 
         searchView.setOnClickListener( v -> {
             Toast.makeText(getContext(), "Events search returned", Toast.LENGTH_SHORT).show();
@@ -102,7 +97,7 @@ public class AdminViewProfiles extends Fragment {
 
         listView.setOnItemClickListener((parent, itemView, position, id) -> {
             String profileId = idList.get(position);
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
+//            FirebaseFirestore db = FirebaseFirestore.getInstance();
             LayoutInflater inflater = LayoutInflater.from(requireContext());
             View dialogView = inflater.inflate(R.layout.dialog_user_profile, null);
 

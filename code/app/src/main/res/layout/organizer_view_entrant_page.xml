@@ -5,7 +5,6 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
     tools:context=".OrganizerEntrantListFragment">
 
     <FrameLayout
@@ -18,18 +17,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_gravity="bottom"
-            android:background="@android:color/darker_gray" />
-
         <ImageButton
             android:id="@+id/back_button"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
-            android:background="@drawable/ic_back_arrow"
-            android:contentDescription="Back Button" />
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:contentDescription="Go Back"
+            android:src="@drawable/ic_back_arrow" />
 
     </FrameLayout>
 
@@ -124,6 +119,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
+                android:textSize="20sp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:text="See Entrants"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -151,6 +149,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
+                android:textSize="20sp"
+                android:paddingTop="15dp"
+                android:paddingBottom="15dp"
                 android:text="Sample Entrants"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -184,10 +185,11 @@
 
                 <ImageView
                     android:id="@+id/poster"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="299dp"
+                    android:layout_height="299dp"
+                    android:contentDescription="Poster"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/qrcodeplaceholder" />
+                    app:shapeAppearanceOverlay="@style/RoundedPoster"/>
 
                 <ImageButton
                     android:id="@+id/editEvent"

@@ -14,7 +14,11 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import com.example.lotteryeventsystem.data.FirebaseWaitlistRepository;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
+
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
@@ -172,6 +176,23 @@ public class OrganizerEntrantListFragment extends Fragment {
                 args.putString("EVENT_ID", eventId);
                 NavController navController = Navigation.findNavController(requireView());
                 navController.navigate(R.id.action_organizerEntrantListFragment_to_eventMapFragment, args);
+            }
+        });
+        btnDownloadQR.setOnClickListener(new View.OnClickListener() {
+            /**
+             * Downloads the QR code from Firebase Firestore
+             * @param v The view that was clicked.
+             */
+            @Override
+            public void onClick(View v) {
+                StorageReference storageRef = FirebaseStorage.getInstance().getReference()
+                        .child("qrcodes/" + eventId + ".jpg");
+
+                File localFile = new File(requireContext().getExternalFilesDir(null), eventId + ".jpg");
+                storageRef.getFile(localFile)
+                        .addOnSuccessListener(taskSnapshot -> {
+                            Toast.makeText(requireContext(), "QR code downloaded successfully", Toast.LENGTH_SHORT).show();
+                        });
             }
         });
         return view;

@@ -234,6 +234,12 @@ public class EventDetailFragment extends Fragment {
                 if (Objects.equals(userStatus, "INVITED")) {
                     joinLeaveButton.setText("Invited");
                 }
+                if (Objects.equals(userStatus, "CONFIRMED")) {
+                    joinLeaveButton.setText("Accepted Invite");
+                }
+                if (Objects.equals(userStatus, "DECLINED")) {
+                    joinLeaveButton.setText("Declined Invite");
+                }
             } else {
                 joinLeaveButton.setText("Join Waiting List");
             }
@@ -340,6 +346,12 @@ public class EventDetailFragment extends Fragment {
                 if (joinLeaveButton.getText() == "Invited") {
                     joinLeaveButton.setEnabled(false);
                     message.setText("Please check your notifications to accept/reject");
+                } else if(joinLeaveButton.getText() == "Accepted Invite") {
+                    joinLeaveButton.setEnabled(false);
+                    message.setText("See you at the event!");
+                } else if(joinLeaveButton.getText() == "Declined Invite") {
+                    joinLeaveButton.setEnabled(false);
+                    message.setText("Sorry to see you go!");
                 } else if (availableSpots > 0 && finalEntrantLimit != Long.MAX_VALUE) {
                     message.setText("Available spots: " + availableSpots);
                     joinLeaveButton.setEnabled(true);

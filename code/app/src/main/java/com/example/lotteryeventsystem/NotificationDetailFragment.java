@@ -122,6 +122,7 @@ public class NotificationDetailFragment extends Fragment {
 
     /**
      * Writes Accept/Reject back to Firestore correctly.
+     * @param newResponse The user's choice ("Accepted" or "Rejected").
      */
     private void updateResponse(String newResponse) {
 
@@ -159,6 +160,12 @@ public class NotificationDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Controls progress bar visibility and button disabling during Firestore operations.
+     *
+     * @param loading true: show progress bar and lock buttons
+     *                false: hide progress bar and unlock UI
+     */
     private void setLoading(boolean loading) {
         progress.setVisibility(loading ? View.VISIBLE : View.GONE);
         acceptBtn.setEnabled(!loading);

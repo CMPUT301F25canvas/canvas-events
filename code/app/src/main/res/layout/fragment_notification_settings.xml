@@ -42,30 +42,6 @@
         android:textColor="#2C1B47"
         android:textSize="16sp" />
 
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_organizer"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/notification_organizer_messages"
-        android:textColor="#2C1B47"
-        android:textSize="16sp" />
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_admin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/notification_admin_messages"
-        android:textColor="#2C1B47"
-        android:textSize="16sp" />
-
-    <com.google.android.material.switchmaterial.SwitchMaterial
-        android:id="@+id/switch_marketing"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/notification_marketing"
-        android:textColor="#2C1B47"
-        android:textSize="16sp" />
-
     <TextView
         android:id="@+id/settings_footer"
         android:layout_width="match_parent"

@@ -64,10 +64,6 @@ public class NotificationAdapter extends RecyclerView.Adapter<NotificationAdapte
         long diff = now - m.getTimestamp();
         h.timestamp.setText(TimeAgo.formatTimeDiff(diff));
 
-        // ------------------------------------------------------
-        // STATUS BADGE LOGIC (using your existing drawables)
-        // ------------------------------------------------------
-
         if (m.getType().equals("selected_notification")) {
 
             String r = m.getResponse();   // response from Firestore

@@ -18,6 +18,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
+/**
+ * Fragment displaying all notifications sent to the current device (Using userid/deviceid).
+ */
 public class NotificationFragment extends Fragment implements NotificationAdapter.Listener {
 
     private RecyclerView recyclerView;
@@ -51,7 +54,12 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         recyclerView.setAdapter(adapter);
 
-        // Get device user ID
+        ImageButton settingsBtn = view.findViewById(R.id.button_notification_settings);
+
+        settingsBtn.setOnClickListener(v -> {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_to_notificationSettingsFragment);
+        });
         userId = Settings.Secure.getString(
                 requireContext().getContentResolver(),
                 Settings.Secure.ANDROID_ID
@@ -64,6 +72,9 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         listenToNotifications();
     }
 
+    /**
+     * Begins listening to Firestore for real-time notification updates.
+     */
     private void listenToNotifications() {
         progressView.setVisibility(View.VISIBLE);
 
@@ -90,15 +101,15 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         });
     }
 
+    /**
+     * Called when a notification item is clicked by the user and marks the notification as "seen" in Firestore
+     */
     @Override
     public void onOpen(NotificationMessage msg) {
         if (!isAdded()) return;
 
         NotificationRepository repo = new NotificationRepository();
-        userId = Settings.Secure.getString(
-                requireContext().getContentResolver(),
-                Settings.Secure.ANDROID_ID
-        );
+        userId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         repo.markAsSeen(msg.getType(), msg.getEventId(), userId);
 
         Bundle args = new Bundle();
@@ -111,4 +122,5 @@ public class NotificationFragment extends Fragment implements NotificationAdapte
         NavController navController = Navigation.findNavController(requireView());
         navController.navigate(R.id.action_notificationFragment_to_notificationDetailFragment, args);
     }
+
 }

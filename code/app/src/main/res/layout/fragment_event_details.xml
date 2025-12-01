@@ -44,15 +44,36 @@
         android:layout_marginTop="8dp" />
 
     <!-- Event date -->
-    <TextView
-        android:id="@+id/event_date"
+    <LinearLayout
+        android:id="@+id/date_block"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Date: MM/DD/YYYY"
         app:layout_constraintTop_toBottomOf="@id/event_description"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:id="@+id/event_start_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MM/DD/YYYY"
+             />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" to "
+            />
+        <TextView
+            android:id="@+id/event_end_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="MM/DD/YYYY"
+            />
+
+
+    </LinearLayout>
+
 
     <!-- Event times -->
     <LinearLayout
@@ -60,7 +81,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/event_date"
+        app:layout_constraintTop_toBottomOf="@id/date_block"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp">

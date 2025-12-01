@@ -28,7 +28,7 @@
                 android:padding="8dp" />
 
             <TextView
-                android:id="@+id/user_name"
+                android:id="@+id/event_history_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"

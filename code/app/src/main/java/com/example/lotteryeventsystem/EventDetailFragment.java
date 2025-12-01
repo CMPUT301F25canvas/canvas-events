@@ -3,6 +3,7 @@ package com.example.lotteryeventsystem;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -106,7 +107,16 @@ public class EventDetailFragment extends Fragment {
         });
 
         if (getArguments() != null) {
-            eventId = getArguments().getString(ARG_EVENT_ID); // Grab the event ID passed in
+            String raweventId = getArguments().getString(ARG_EVENT_ID); // Grab the event ID passed in
+
+            if (raweventId != null && raweventId.startsWith("app://")) {
+                Uri uri = Uri.parse(raweventId);
+                eventId = uri.getQueryParameter("eventID");
+            } else {
+                eventId = raweventId;
+            }
+
+
         }
 
         deviceId = Settings.Secure.getString(getActivity().getContentResolver(), Settings.Secure.ANDROID_ID);
@@ -121,7 +131,8 @@ public class EventDetailFragment extends Fragment {
 
     private void loadEventRequirementsAndSetup() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        eventId = getArguments().getString("event_id");
+
+//        eventId = getArguments().getString("event_id");
 
         db.collection("events").document(eventId)
                 .get()

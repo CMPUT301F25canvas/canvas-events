@@ -824,7 +824,7 @@ public class OrganizerEventCreateFragment extends Fragment {
 
                         // Move to Event List Screen
                         NavController navController = Navigation.findNavController(requireView());
-                        navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+                        navController.navigate(R.id.action_organizerEventCreateFragment_to_homeFragment);
                     });
                 });
             // Else create an event without uploading the event poster
@@ -840,7 +840,7 @@ public class OrganizerEventCreateFragment extends Fragment {
 
                     // Move to Event List Screen
                     NavController navController = Navigation.findNavController(requireView());
-                    navController.navigate(R.id.action_organizerEventCreateFragment_to_organizerEventListFragment);
+                    navController.navigate(R.id.action_organizerEventCreateFragment_to_homeFragment);
                 });
             }
         });

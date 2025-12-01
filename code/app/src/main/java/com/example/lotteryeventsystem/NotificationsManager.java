@@ -72,7 +72,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendInviteCancelled(Context context, String eventId, String userId) {
-        write("invite_cancelled_notification", eventId, userId);
+        write("invite_cancelled_notification", eventId, userId, context);
     }
 
     /**
@@ -101,7 +101,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendNotSelected(Context context, String eventId, String userId) {
-        write("not_selected_notification", eventId, userId);
+        write("not_selected_notification", eventId, userId, context);
     }
 
     /**
@@ -110,7 +110,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendSelected(Context context, String eventId, String userId) {
-        write("selected_notification", eventId, userId);
+        write("selected_notification", eventId, userId, context);
     }
 
     /**
@@ -173,8 +173,6 @@ public class NotificationsManager {
      * @param content The message displayed inside the notification.
      */
     private static void showAndroidNotification(Context context, String title, String content) {
-
-        // Create channel for Android 8+
         NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
                 "App Notifications",

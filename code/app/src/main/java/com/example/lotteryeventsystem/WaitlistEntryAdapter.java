@@ -16,7 +16,7 @@ import java.util.HashMap;
  * showing entrant names in a list format for organizer viewing.
  *
  * @author Emily Lan
- * @version 1.1
+ * @version 1.2
  * @see WaitlistEntry
  */
 public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
@@ -94,13 +94,10 @@ public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
         if (entrant == null || entrant.getId() == null) {
             return 1; // fallback
         }
-
         String entrantId = entrant.getId();
         if (anonymousIdMap != null && anonymousIdMap.containsKey(entrantId)) {
             return anonymousIdMap.get(entrantId);
         }
-
-        // If for some reason this entrant wasn't in our map, assign a new number
         int newNumber = anonymousIdMap.size() + 1;
         anonymousIdMap.put(entrantId, newNumber);
         return newNumber;
@@ -116,7 +113,6 @@ public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
         if (entrant == null) {
             return null;
         }
-
         if (entrant.getUser() != null && entrant.getUser().getName() != null && !entrant.getUser().getName().isEmpty()) {
             return entrant.getUser().getName();
         }
@@ -136,7 +132,6 @@ public class WaitlistEntryAdapter extends ArrayAdapter<WaitlistEntry> {
         if (entrant == null) {
             return true;
         }
-
         boolean hasUserName = entrant.getUser() != null &&
                 entrant.getUser().getName() != null &&
                 !entrant.getUser().getName().isEmpty();

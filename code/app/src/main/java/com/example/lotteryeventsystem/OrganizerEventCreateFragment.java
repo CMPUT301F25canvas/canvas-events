@@ -589,21 +589,19 @@ public class OrganizerEventCreateFragment extends Fragment {
     }
 
     /**
-     * Load existing event data for prefilling (edit event)
-     * @author Emily Lan
+     * Loads existing event data from Firestore for prefilling the form in edit mode.
+     * Retrieves the event document by ID and populates the form fields with current values.
+     * If the event doesn't exist or loading fails, displays an error message.
      */
     private void loadExistingEventData() {
         if (existingEventId == null || existingEventId.isEmpty()) {
             return;
         }
-
         eventRepository.getEventById(existingEventId).addOnSuccessListener(documentSnapshot -> {
             if (documentSnapshot.exists()) {
                 existingEvent = documentSnapshot.toObject(Event.class);
                 if (existingEvent != null) {
-                    // Make sure the event ID is set
                     existingEvent.setEventID(existingEventId);
-                    // Pre-fill all form fields with existing data
                     preFillFormFields(existingEvent);
                 }
             }
@@ -613,69 +611,61 @@ public class OrganizerEventCreateFragment extends Fragment {
     }
 
     /**
-     * Pre-fill the form fields with existing event data
-     * @author Emily Lan
+     * Pre-fills all form fields with existing event data for editing.
+     * Populates text inputs, checkboxes, and image views with current event values.
+     * Handles null values by leaving fields empty or using default states.
+     *
+     * @param event the Event object containing the existing event data to pre-fill the form
      */
     private void preFillFormFields(Event event) {
-        // Event Name
         TextInputEditText eventNameInput = getView().findViewById(R.id.event_name_input);
         if (event.getName() != null) {
             eventNameInput.setText(event.getName());
         }
-
         // Event Description
         TextInputEditText eventDescriptionInput = getView().findViewById(R.id.event_description_input);
         if (event.getDescription() != null) {
             eventDescriptionInput.setText(event.getDescription());
         }
-
         // Start Date
         TextInputEditText startDateInput = getView().findViewById(R.id.start_date_input_text);
         if (event.getStartDate() != null) {
             startDateInput.setText(event.getStartDate());
         }
-
         // End Date
         TextInputEditText endDateInput = getView().findViewById(R.id.end_date_input_text);
         if (event.getEndDate() != null) {
             endDateInput.setText(event.getEndDate());
         }
-
         // Start Time
         TextInputEditText startTimeInput = getView().findViewById(R.id.start_time_input_text);
         if (event.getStartTime() != null) {
             startTimeInput.setText(event.getStartTime());
         }
-
         // End Time
         TextInputEditText endTimeInput = getView().findViewById(R.id.end_time_input_text);
         if (event.getEndTime() != null) {
             endTimeInput.setText(event.getEndTime());
         }
-
         // Registration Start
         TextInputEditText registrationStartInput = getView().findViewById(R.id.registration_start_input_text);
         if (event.getRegistrationStart() != null) {
             registrationStartInput.setText(event.getRegistrationStart());
         }
-
         // Registration End
         TextInputEditText registrationEndInput = getView().findViewById(R.id.registration_end_input_text);
         if (event.getRegistrationEnd() != null) {
             registrationEndInput.setText(event.getRegistrationEnd());
         }
-
         // Sample Size
         TextInputEditText sampleSizeInput = getView().findViewById(R.id.sample_size_input_text);
         if (event.getSampleSize() != null) {
             sampleSizeInput.setText(String.valueOf(event.getSampleSize()));
         }
-
         // Load Event Poster Image from URL
         if (event.getPosterURL() != null && !event.getPosterURL().isEmpty()) {
             loadImageFromUrl(event.getPosterURL(), eventPoster);
         }
-
         // Entrant Limit
         TextInputEditText entrantLimitInput = getView().findViewById(R.id.entrant_limit_input_text);
         CheckBox entrantLimitCheckBox = getView().findViewById(R.id.entrant_limit_checkbox);
@@ -687,47 +677,100 @@ public class OrganizerEventCreateFragment extends Fragment {
             entrantLimitCheckBox.setChecked(false);
             entrantLimitInput.setVisibility(View.INVISIBLE);
         }
-
         // Geolocation Requirement
         CheckBox geolocationCheckBox = getView().findViewById(R.id.geolocation_requirement_checkbox);
         geolocationCheckBox.setChecked(event.getGeolocationRequirement());
-
+        // Location
+        TextInputEditText eventLocationInput = getView().findViewById(R.id.event_location_input);
+        if (event.getLocation() != null) {
+            eventLocationInput.setText(event.getLocation());
+        }
+        // Event categories
+        preFillCategoryCheckboxes(event);
     }
 
     /**
-     * Update existing event in Firestore
-     * @author Emily Lan
+     * Pre-fills the category checkboxes based on the event's existing categories.
+     * Resets all checkboxes first, then checks the appropriate ones based on the event's category list.
+     * Updates both the UI checkboxes and the corresponding boolean flags.
+     *
+     * @param event the Event object containing the categories to pre-fill
+     */
+    private void preFillCategoryCheckboxes(Event event) {
+        CheckBox isConcertCheckbox = getView().findViewById(R.id.concert_category_checkbox);
+        CheckBox isSportCheckbox = getView().findViewById(R.id.sports_category_checkbox);
+        CheckBox isArtCheckbox = getView().findViewById(R.id.arts_category_checkbox);
+        CheckBox isFamilyCheckbox = getView().findViewById(R.id.family_category_checkbox);
+        // Reset all checkboxes first
+        isConcertCheckbox.setChecked(false);
+        isSportCheckbox.setChecked(false);
+        isArtCheckbox.setChecked(false);
+        isFamilyCheckbox.setChecked(false);
+        isConcert = false;
+        isSport = false;
+        isArt = false;
+        isFamily = false;
+        // Check if event has categories
+        if (event.getCategories() != null) {
+            for (String category : event.getCategories()) {
+                switch (category) {
+                    case "Concert":
+                        isConcertCheckbox.setChecked(true);
+                        isConcert = true;
+                        break;
+                    case "Sports":
+                        isSportCheckbox.setChecked(true);
+                        isSport = true;
+                        break;
+                    case "Art":
+                        isArtCheckbox.setChecked(true);
+                        isArt = true;
+                        break;
+                    case "Family":
+                        isFamilyCheckbox.setChecked(true);
+                        isFamily = true;
+                        break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates an existing event in Firestore with the modified data.
+     * Preserves original organizer ID, QR code URL, and handles poster image updates.
+     * If a new poster image is selected, uploads it first before updating the event.
+     * If no new image is selected, preserves the existing poster URL.
+     *
+     * @param updatedEvent the Event object containing the updated event data
      */
     private void updateEvent(Event updatedEvent) {
-        // Set the existing event ID
         updatedEvent.setEventID(existingEventId);
-
-        // Keep the original organizer ID, QR code, and other preserved fields
         if (existingEvent != null) {
             updatedEvent.setOrganizerID(existingEvent.getOrganizerID());
             updatedEvent.setQRCodeURL(existingEvent.getQRCodeURL());
         }
-        // Handle poster update if changed
         if (eventCreationForm.getLocalImageUri() != null) {
             eventRepository.uploadPosterToFirebase(requireContext(), eventCreationForm.getLocalImageUri(), existingEventId, new OrganizerEventCreateFragment.ImageUploadCallback() {
                 @Override
                 public void onUploaded(String imageUrl) {
                     updatedEvent.setPosterURL(imageUrl);
-                    // Update event after image upload
-                    eventRepository.addEvent(updatedEvent); // Use addEvent since it uses set() which overwrites
+                    eventRepository.addEvent(updatedEvent);
                     navigateAfterUpdate();
                 }
             });
         } else {
-            // Keep existing poster URL
             if (existingEvent != null) {
                 updatedEvent.setPosterURL(existingEvent.getPosterURL());
             }
-            eventRepository.addEvent(updatedEvent); // Use addEvent since it uses set() which overwrites
+            eventRepository.addEvent(updatedEvent);
             navigateAfterUpdate();
         }
     }
 
+    /**
+     * Navigates back to the previous fragment after successfully updating an event.
+     * Displays a success toast message and pops the current fragment from the back stack.
+     */
     private void navigateAfterUpdate() {
         Toast.makeText(getContext(), "Event updated successfully", Toast.LENGTH_SHORT).show();
         // Navigate back to the event details page
@@ -735,6 +778,13 @@ public class OrganizerEventCreateFragment extends Fragment {
         navController.popBackStack();
     }
 
+    /**
+     * Loads an image from a URL using the Picasso library.
+     * Used to display event posters from their stored URLs.
+     *
+     * @param imageUrl the URL of the image to load
+     * @param imageButton the ImageButton to display the loaded image in
+     */
     private void loadImageFromUrl(String imageUrl, ImageButton imageButton) {
         Picasso.get()
                 .load(imageUrl)

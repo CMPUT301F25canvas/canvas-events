@@ -122,13 +122,10 @@ public class EventRepository {
 
     /**
      * Get event by ID from Firestore
-     * @author Emily Lan
      */
     public Task<DocumentSnapshot> getEventById(String eventId) {
         return db.collection("events")
                 .document(eventId)
                 .get();
     }
-
-
 }

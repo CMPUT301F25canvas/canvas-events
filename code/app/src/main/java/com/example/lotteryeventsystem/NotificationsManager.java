@@ -72,8 +72,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendInviteCancelled(Context context, String eventId, String userId) {
-        write("invite_cancelled_notification", eventId, userId, context);
-        pushLocalNotification(context, "invite_cancelled_notification", eventId, userId);
+        write("invite_cancelled_notification", eventId, userId);
     }
 
     /**
@@ -102,8 +101,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendNotSelected(Context context, String eventId, String userId) {
-        write("not_selected_notification", eventId, userId, context);
-        pushLocalNotification(context, "not_selected_notification", eventId, userId);
+        write("not_selected_notification", eventId, userId);
     }
 
     /**
@@ -112,8 +110,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendSelected(Context context, String eventId, String userId) {
-        write("selected_notification", eventId, userId, context);
-        pushLocalNotification(context, "selected_notification", eventId, userId);
+        write("selected_notification", eventId, userId);
     }
 
     /**

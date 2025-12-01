@@ -41,19 +41,43 @@ public class AdminPosterFragment extends Fragment {
         posterRecycleView = view.findViewById(R.id.postersRecyclerView);
         posterRecycleView.setLayoutManager(new GridLayoutManager(getContext(), 2)); // 2 rows
 
-        adapter = new AdminPosterAdapter(posterUrls, (posterUrl, position) -> {
-            FirebaseFirestore.getInstance()
-                    .collection("events")
-                    .whereEqualTo("posterURL", posterUrl)
-                    .get()
-                    .addOnSuccessListener(querySnapshot -> {
-                        for (DocumentSnapshot doc : querySnapshot) {
-                            doc.getReference().delete();
-                        }
-                        posterUrls.remove(position);
-                        adapter.notifyItemRemoved(position);
-                    });
+
+        adapter = new AdminPosterAdapter(posterUrls, new AdminPosterAdapter.OnPosterDeleteListener() {
+            @Override
+            public void onPosterDelete(int position) {
+                String posterUrl = posterUrls.get(position);
+
+                FirebaseFirestore.getInstance()
+                        .collection("events")
+                        .whereEqualTo("posterURL", posterUrl)
+                        .get()
+                        .addOnSuccessListener(querySnapshot -> {
+                            if (querySnapshot.isEmpty()) {
+                                return;
+                            }
+                            for (DocumentSnapshot doc : querySnapshot) {
+                                doc.getReference()
+                                        .update("posterURL", "")
+                                        .addOnSuccessListener(aVoid -> {
+                                            posterUrls.remove(position);
+                                            adapter.notifyItemRemoved(position);
+                                            Toast.makeText(getContext(), "Poster removed successfully.", Toast.LENGTH_SHORT).show();
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(getContext(),
+                                                    "Failed to remove poster from event.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        });
+                            }
+                        })
+                        .addOnFailureListener(e -> {
+                            Toast.makeText(getContext(), "Error finding event for poster.", Toast.LENGTH_SHORT).show();
+                        });
+            }
         });
+
+
+
         posterRecycleView.setAdapter(adapter);
 
         loadPosters();
@@ -64,6 +88,10 @@ public class AdminPosterFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Loads all poster URLs from the Firestore "events" collection
+     * and updates the adapter with the data.
+     */
     private void loadPosters() {
         FirebaseFirestore.getInstance()
                 .collection("events")

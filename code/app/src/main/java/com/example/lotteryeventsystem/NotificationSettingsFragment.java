@@ -27,9 +27,6 @@ import java.util.Map;
 public class NotificationSettingsFragment extends Fragment {
     private static final String PREFS_NAME = "notification_prefs";
     private static final String KEY_ALLOW_PUSH = "allow_push";
-    private static final String KEY_ORGANIZER = "organizer";
-    private static final String KEY_ADMIN = "admin";
-    private static final String KEY_MARKETING = "marketing";
 
     @Nullable
     @Override
@@ -42,29 +39,30 @@ public class NotificationSettingsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         ImageButton backButton = view.findViewById(R.id.settings_back);
         SwitchMaterial allowPush = view.findViewById(R.id.switch_allow_push);
-        SwitchMaterial organizerMessages = view.findViewById(R.id.switch_organizer);
-        SwitchMaterial adminMessages = view.findViewById(R.id.switch_admin);
-        SwitchMaterial marketing = view.findViewById(R.id.switch_marketing);
 
         SharedPreferences prefs = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         allowPush.setChecked(prefs.getBoolean(KEY_ALLOW_PUSH, true));
-        organizerMessages.setChecked(prefs.getBoolean(KEY_ORGANIZER, true));
-        adminMessages.setChecked(prefs.getBoolean(KEY_ADMIN, true));
-        marketing.setChecked(prefs.getBoolean(KEY_MARKETING, false));
-
         backButton.setOnClickListener(v -> Navigation.findNavController(view).navigateUp());
 
         allowPush.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_ALLOW_PUSH, isChecked));
-        organizerMessages.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_ORGANIZER, isChecked));
-        adminMessages.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_ADMIN, isChecked));
-        marketing.setOnCheckedChangeListener((buttonView, isChecked) -> saveAndSync(prefs, KEY_MARKETING, isChecked));
     }
 
+    /**
+     * Saves the updated preference locally and triggers sync to Firestore.
+     *
+     * @param prefs The SharedPreferences instance storing notification settings.
+     * @param key The preference key being updated.
+     * @param value The new boolean value chosen by the user.
+     */
     private void saveAndSync(SharedPreferences prefs, String key, boolean value) {
         prefs.edit().putBoolean(key, value).apply();
         syncToFirestore(prefs);
     }
 
+    /**
+     * Writes the current notification preference to Firestore under the
+     * logged-in device's user document.
+     */
     private void syncToFirestore(SharedPreferences prefs) {
         String deviceId = Settings.Secure.getString(requireContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         if (deviceId == null || deviceId.isEmpty()) {
@@ -72,9 +70,6 @@ public class NotificationSettingsFragment extends Fragment {
         }
         Map<String, Object> payload = new HashMap<>();
         payload.put(KEY_ALLOW_PUSH, prefs.getBoolean(KEY_ALLOW_PUSH, true));
-        payload.put(KEY_ORGANIZER, prefs.getBoolean(KEY_ORGANIZER, true));
-        payload.put(KEY_ADMIN, prefs.getBoolean(KEY_ADMIN, true));
-        payload.put(KEY_MARKETING, prefs.getBoolean(KEY_MARKETING, false));
         FirebaseFirestore.getInstance()
                 .collection("users")
                 .document(deviceId)

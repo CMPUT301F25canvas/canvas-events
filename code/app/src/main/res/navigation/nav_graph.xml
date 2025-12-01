@@ -95,6 +95,9 @@
         <action
             android:id="@+id/action_notificationFragment_to_adminNotificationsFragment"
             app:destination="@id/adminNotificationsFragment"/>
+        <action
+            android:id="@+id/action_to_notificationSettingsFragment"
+            app:destination="@id/notificationSettingsFragment" />
     </fragment>
 
     <fragment

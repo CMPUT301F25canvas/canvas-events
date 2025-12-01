@@ -26,7 +26,17 @@ public class NotificationsManager {
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String CHANNEL_ID = "app_notifications_channel";
 
-    private static void write(String docName, String eventId, String userId) {
+    /**
+     * Adds the notification document to firestore
+     * @param docName The type of notification to be sent
+     * @param eventId The id of the event
+     * @param userId The user's id
+     * @param context Context
+     */
+    private static void write(String docName, String eventId, String userId, Context context) {
+        if (!notificationsEnabled(context) && !docName.equals("selected_notification")) {
+            return;
+        }
         Map<String, Object> data = createNotifDetails(docName);
         db.collection("notifications")
                 .document(docName)
@@ -52,7 +62,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendInviteAccepted(Context context, String eventId, String userId) {
-        write("invite_accepted_notification", eventId, userId);
+        write("invite_accepted_notification", eventId, userId, context);
         pushLocalNotification(context, "invite_accepted_notification", eventId, userId);
     }
 
@@ -62,7 +72,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendInviteCancelled(Context context, String eventId, String userId) {
-        write("invite_cancelled_notification", eventId, userId);
+        write("invite_cancelled_notification", eventId, userId, context);
         pushLocalNotification(context, "invite_cancelled_notification", eventId, userId);
     }
 
@@ -72,7 +82,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendInviteRejected(Context context, String eventId, String userId) {
-        write("invite_rejected_notification", eventId, userId);
+        write("invite_rejected_notification", eventId, userId, context);
         pushLocalNotification(context, "invite_rejected_notification", eventId, userId);
     }
 
@@ -82,7 +92,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendJoinedWaitlist(Context context, String eventId, String userId) {
-        write("joined_waitlist_notification", eventId, userId);
+        write("joined_waitlist_notification", eventId, userId, context);
         pushLocalNotification(context, "joined_waitlist_notification", eventId, userId);
     }
 
@@ -92,7 +102,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendNotSelected(Context context, String eventId, String userId) {
-        write("not_selected_notification", eventId, userId);
+        write("not_selected_notification", eventId, userId, context);
         pushLocalNotification(context, "not_selected_notification", eventId, userId);
     }
 
@@ -102,7 +112,7 @@ public class NotificationsManager {
      * @param userId The user id to whom the notification was sent to
      */
     public static void sendSelected(Context context, String eventId, String userId) {
-        write("selected_notification", eventId, userId);
+        write("selected_notification", eventId, userId, context);
         pushLocalNotification(context, "selected_notification", eventId, userId);
     }
 
@@ -131,7 +141,9 @@ public class NotificationsManager {
      * @param userId The ID of the user receiving the notification (not used for UI, but kept for consistency/logging).
      */
     public static void pushLocalNotification(Context context, String notifType, String eventId, String userId) {
-
+        if (!notificationsEnabled(context) && !notifType.equals("selected_notification")) {
+            return;
+        }
         db.collection("notifications")
                 .document(notifType)
                 .get()
@@ -191,4 +203,9 @@ public class NotificationsManager {
         }
         notificationManager.notify(notificationId, builder.build());
     }
+    private static boolean notificationsEnabled(Context context) {
+        return context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
+                .getBoolean("allow_push", true);
+    }
+
 }

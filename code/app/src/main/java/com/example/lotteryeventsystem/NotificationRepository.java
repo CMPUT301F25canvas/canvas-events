@@ -29,6 +29,12 @@ public class NotificationRepository {
         void onResult(List<NotificationMessage> list, @Nullable Exception e);
     }
 
+    /**
+     * Listens to all notification types for a given user, and returns the document if when it's created.
+     *
+     * @param userId User id
+     * @param callback callback returning updated notifications
+     */
     public void listenToUserNotifications(String userId, Callback callback) {
         clear();
         List<NotificationMessage> all = new ArrayList<>();
@@ -126,11 +132,17 @@ public class NotificationRepository {
         }
     }
 
+    /**
+     * Removes all Firestore listeners.
+     */
     public void clear() {
         for (ListenerRegistration r : regs) r.remove();
         regs.clear();
     }
 
+    /**
+     * Marks a specific notification as "seen" by the user.
+     */
     public void markAsSeen(String type, String eventId, String userId) {
         db.collection("notifications")
                 .document(type)

@@ -405,6 +405,7 @@ public class EntrantListFragment extends Fragment {
                             entrantsList.remove(entrantPosition);
                             entrantPosition = -1;
                             adapter.notifyDataSetChanged();
+                            Toast.makeText(requireContext(), "Sampled new entrant", Toast.LENGTH_SHORT).show();
                             sampleManager.sampleSingleEntrantAfterDeletion(new SampleEntrantsManager.SamplingCallback() {
                                 /**
                                  * Handles completion of entrant sampling operation.

@@ -32,7 +32,7 @@ import java.time.format.DateTimeFormatter;
 public class OrganizerEntrantListFragment extends Fragment {
     private Button btnViewEntrants, btnSample;
     private ImageButton btnViewMap, btnEdit, btnDownloadQR, btnBack;
-    private TextView eventName, eventDescription, eventStartTime, eventEndTime, eventDate, eventCriteria, startDate, endDate;
+    private TextView eventName, eventDescription, eventStartTime, eventEndTime, startDate, endDate;
     private Event currentEvent;
     private String eventId;
     private ImageView posterImageView;
@@ -78,7 +78,6 @@ public class OrganizerEntrantListFragment extends Fragment {
         eventEndTime = view.findViewById(R.id.event_end_time);
         startDate = view.findViewById(R.id.start_date);
         endDate = view.findViewById(R.id.end_date);
-        eventCriteria = view.findViewById(R.id.event_criteria);
         btnViewEntrants = view.findViewById(R.id.btnViewEntrants);
         btnBack = view.findViewById(R.id.back_button);
         btnEdit = view.findViewById(R.id.editEvent);

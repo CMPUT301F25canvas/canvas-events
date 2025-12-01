@@ -49,10 +49,14 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.DateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import com.bumptech.glide.Glide;
@@ -142,9 +146,21 @@ public class EventDetailFragment extends Fragment {
                     View view = getView();
                     if (view == null) return;
 
+                    LocalDate parsed = parseDate(doc.getString("endDate"));
+                    String endDate = parsed != null
+                            ? parsed.format(DateTimeFormatter.ofPattern("MMM dd"))
+                            : "";
+
+                    parsed = parseDate(doc.getString("startDate"));
+                    String startDate = parsed != null
+                            ? parsed.format(DateTimeFormatter.ofPattern("MMM dd"))
+                            : "";
+
+
                     ((TextView) view.findViewById(R.id.header_title)).setText(doc.getString("name"));
                     ((TextView) view.findViewById(R.id.event_description)).setText(doc.getString("description"));
-                    ((TextView) view.findViewById(R.id.event_date)).setText(doc.getString("date"));
+                    ((TextView) view.findViewById(R.id.event_start_date)).setText(startDate);
+                    ((TextView) view.findViewById(R.id.event_end_date)).setText(endDate);
                     ((TextView) view.findViewById(R.id.event_start_time)).setText(doc.getString("startTime"));
                     ((TextView) view.findViewById(R.id.event_end_time)).setText(doc.getString("endTime"));
 
@@ -176,6 +192,8 @@ public class EventDetailFragment extends Fragment {
                     } else {
                         setupJoinLeaveButton(db);
                     }
+
+                    updateAvailableSpotsMessage(db);
                 });
     }
 
@@ -399,6 +417,32 @@ public class EventDetailFragment extends Fragment {
             eventData.put("longitude", location.getLongitude());
             addToWaitlist(eventData, waitlistRef, userRef, db);
         });
+    }
+
+    private String formatRange(String raw) {
+        String[] patterns = {"yyyy-MM-dd", "MMM dd, yyyy", "MMM dd yyyy"};
+        for (String pattern : patterns) {
+            try {
+                LocalDate date = LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+                return date.format(DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        return raw;
+    }
+
+    private LocalDate parseDate(String raw) {
+        if (raw == null || raw.isEmpty()) {
+            return null;
+        }
+        String[] patterns = {"yyyy-MM-dd", "MM/dd/yyyy", "MMM dd, yyyy", "MMM dd yyyy"};
+        for (String pattern : patterns) {
+            try {
+                return LocalDate.parse(raw, DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH));
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        return null;
     }
 
 

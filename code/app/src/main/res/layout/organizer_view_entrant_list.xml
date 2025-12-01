@@ -18,8 +18,7 @@
             android:textSize="30sp"
             android:gravity="center"
             android:padding="16dp"
-            android:textStyle="bold"
-            android:background="@color/purple" />
+            android:textStyle="bold" />
 
         <ImageButton
             android:id="@+id/back_button"
@@ -49,12 +48,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Delete Entrant"
-        android:textColor="@color/black"
         android:layout_marginStart="10dp"
         android:layout_marginBottom="10dp"
-        android:visibility="gone"
-        android:backgroundTint="@color/purple"
-        android:textSize="25sp" />
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/btnExportCSV"

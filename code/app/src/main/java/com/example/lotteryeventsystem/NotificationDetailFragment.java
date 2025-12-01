@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.example.lotteryeventsystem.data.WaitlistRepository;
+import com.example.lotteryeventsystem.di.ServiceLocator;
 import com.google.android.material.button.MaterialButton;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,6 +30,7 @@ public class NotificationDetailFragment extends Fragment {
     private MaterialButton acceptBtn, declineBtn;
     private ProgressBar progress;
     private FirebaseFirestore db;
+    private SampleEntrantsManager sampleManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -46,6 +49,11 @@ public class NotificationDetailFragment extends Fragment {
             title = getArguments().getString("title");
             eventId = getArguments().getString("eventId");
             response = getArguments().getString("response", "None");
+        }
+
+        if (eventId != null && !eventId.isEmpty()) {
+            WaitlistRepository waitlistRepository = ServiceLocator.provideWaitlistRepository();
+            sampleManager = new SampleEntrantsManager(requireContext(), waitlistRepository, eventId);
         }
 
         // Views
@@ -98,11 +106,23 @@ public class NotificationDetailFragment extends Fragment {
 
         // Click actions
         acceptBtn.setOnClickListener(v2 -> updateResponse("Accepted"));
-        declineBtn.setOnClickListener(v2 -> updateResponse("Rejected"));
+        declineBtn.setOnClickListener(v2 -> {
+            updateResponse("Rejected");
+            // Call sampleSingleEntrantAfterDeletion when decline button is clicked
+            if (sampleManager != null) {
+                sampleManager.sampleSingleEntrantAfterDeletion(new SampleEntrantsManager.SamplingCallback() {
+                    @Override
+                    public void onComplete(Exception error) {
+                        // Handle completion Silently
+                    }
+                });
+            }
+        });
     }
 
     /**
      * Writes Accept/Reject back to Firestore correctly.
+     * @param newResponse The user's choice ("Accepted" or "Rejected").
      */
     private void updateResponse(String newResponse) {
 
@@ -140,6 +160,12 @@ public class NotificationDetailFragment extends Fragment {
                 });
     }
 
+    /**
+     * Controls progress bar visibility and button disabling during Firestore operations.
+     *
+     * @param loading true: show progress bar and lock buttons
+     *                false: hide progress bar and unlock UI
+     */
     private void setLoading(boolean loading) {
         progress.setVisibility(loading ? View.VISIBLE : View.GONE);
         acceptBtn.setEnabled(!loading);

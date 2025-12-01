@@ -61,10 +61,16 @@ public class OrganizerEventCreateFragmentTest {
         onView(withId(R.id.event_description_input))
                 .perform(typeText("Test Event Description"), closeSoftKeyboard());
 
+        onView(withId(R.id.event_location_input))
+                .perform(typeText("Test Event Location"), closeSoftKeyboard());
+
         // Fill in event date
         onView(withId(R.id.start_date_input_text))
-                .perform(typeText("2025-11-20"), closeSoftKeyboard());
+                .perform(typeText("2026-01-01"), closeSoftKeyboard());
 
+        // Fill in event end date
+        onView(withId(R.id.end_date_input_text))
+                .perform(typeText("2026-02-01"), closeSoftKeyboard());
 
         // Fill in event start time
         onView(withId(R.id.start_time_input_text))
@@ -76,16 +82,19 @@ public class OrganizerEventCreateFragmentTest {
 
         // Fill in registration start date
         onView(withId(R.id.registration_start_input_text))
-                .perform(click(), replaceText("2025-11-10"), closeSoftKeyboard());
+                .perform(click(), replaceText("2025-12-10"), closeSoftKeyboard());
 
         // Fill in registration end date
         onView(withId(R.id.registration_end_input_text))
-                .perform(click(), replaceText("2025-11-18"), closeSoftKeyboard());
+                .perform(click(), replaceText("2025-12-31"), closeSoftKeyboard());
 
         // Fill in sample size
         onView(withId(R.id.sample_size_input_text))
                 .perform(typeText("100"), closeSoftKeyboard());
 
+        // Scroll to selectSportsCategory checkbox and click
+        onView(withId(R.id.sports_category_checkbox))
+                .perform(scrollTo(), click());
 
         // Scroll to Enable geolocation checkbox and click
         onView(withId(R.id.geolocation_requirement_checkbox))

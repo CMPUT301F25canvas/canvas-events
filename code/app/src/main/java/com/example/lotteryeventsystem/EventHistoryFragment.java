@@ -1,3 +1,9 @@
+/**
+ * This page is accessible by the Profile page. It displays all events a user has signed up for,
+ * whether or not they were selected. Model and Controller code is mixed in OnViewCreated,
+ * View code is specified in XML and linked in OnCreateView
+ */
+
 package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
@@ -42,7 +48,7 @@ public class EventHistoryFragment extends Fragment {
     public EventHistoryFragment() {}
 
     /**
-     * Called to have the EventHistoyFragment instantiate its user interface view.
+     * Called to have the EventHistoryFragment instantiate its user interface view.
      * This method inflates the fragment's layout, retrieves arguments, and initializes
      * the UI components and data loading.
      *

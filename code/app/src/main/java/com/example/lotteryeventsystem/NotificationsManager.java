@@ -1,11 +1,15 @@
 package com.example.lotteryeventsystem;
 
+import static java.lang.Boolean.TRUE;
+
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.provider.Settings;
+import android.telecom.Call;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -22,10 +26,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import kotlin.reflect.KCallable;
+
 public class NotificationsManager {
     private static final FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final String CHANNEL_ID = "app_notifications_channel";
-
+    public interface BooleanCallback {
+        void onResult(boolean value);
+    }
+    public interface Callback {
+        void onResult(boolean allowPush);
+    }
     /**
      * Adds the notification document to firestore
      * @param docName The type of notification to be sent
@@ -34,26 +45,29 @@ public class NotificationsManager {
      * @param context Context
      */
     private static void write(String docName, String eventId, String userId, Context context) {
-        if (!notificationsEnabled(context) && !docName.equals("selected_notification")) {
-            return;
-        }
-        Map<String, Object> data = createNotifDetails(docName);
-        db.collection("notifications")
-                .document(docName)
-                .collection(eventId)
-                .document(userId)
-                .set(data);
-        db.collection("notifications")
-                .document(docName)
-                .update("event_collection", FieldValue.arrayUnion(eventId))
-                .addOnFailureListener(e -> {
-                    // If document doesn't exist, create it
-                    Map<String, Object> newData = new HashMap<>();
-                    newData.put("event_collection", new ArrayList<String>() {{
-                        add(eventId);
-                    }});
-                    db.collection("notifications").document(docName).set(newData);
-                });
+        notificationsEnabled(context, userId, allow -> {
+            if (!allow && !docName.equals("selected_notification")) {
+                return;
+            } else {
+                Map<String, Object> data = createNotifDetails(docName);
+                db.collection("notifications")
+                        .document(docName)
+                        .collection(eventId)
+                        .document(userId)
+                        .set(data);
+                db.collection("notifications")
+                        .document(docName)
+                        .update("event_collection", FieldValue.arrayUnion(eventId))
+                        .addOnFailureListener(e -> {
+                            // If document doesn't exist, create it
+                            Map<String, Object> newData = new HashMap<>();
+                            newData.put("event_collection", new ArrayList<String>() {{
+                                add(eventId);
+                            }});
+                            db.collection("notifications").document(docName).set(newData);
+                        });
+            }
+        });
     }
 
     /**
@@ -138,31 +152,34 @@ public class NotificationsManager {
      * @param userId The ID of the user receiving the notification (not used for UI, but kept for consistency/logging).
      */
     public static void pushLocalNotification(Context context, String notifType, String eventId, String userId) {
-        if (!notificationsEnabled(context) && !notifType.equals("selected_notification")) {
-            return;
-        }
-        db.collection("notifications")
-                .document(notifType)
-                .get()
-                .addOnSuccessListener(notifDoc -> {
+        notificationsEnabled(context, userId, allow -> {
+                    if (!allow && !notifType.equals("selected_notification")) {
 
-                    if (!notifDoc.exists()) return;
+                    } else {
+                        db.collection("notifications")
+                                .document(notifType)
+                                .get()
+                                .addOnSuccessListener(notifDoc -> {
 
-                    String title = notifDoc.getString("title");
-                    String contentTemplate = notifDoc.getString("content");
+                                    if (!notifDoc.exists()) return;
 
-                    // Get event name
-                    db.collection("events")
-                            .document(eventId)
-                            .get()
-                            .addOnSuccessListener(eventDoc -> {
+                                    String title = notifDoc.getString("title");
+                                    String contentTemplate = notifDoc.getString("content");
 
-                                if (!eventDoc.exists()) return;
+                                    // Get event name
+                                    db.collection("events")
+                                            .document(eventId)
+                                            .get()
+                                            .addOnSuccessListener(eventDoc -> {
 
-                                String eventName = eventDoc.getString("name");
-                                String finalContent = contentTemplate.replace("{{eventName}}", eventName);
-                                showAndroidNotification(context, title, finalContent);
-                            });
+                                                if (!eventDoc.exists()) return;
+
+                                                String eventName = eventDoc.getString("name");
+                                                String finalContent = contentTemplate.replace("{{eventName}}", eventName);
+                                                showAndroidNotification(context, title, finalContent);
+                                            });
+                                });
+                    }
                 });
     }
 
@@ -198,9 +215,26 @@ public class NotificationsManager {
         }
         notificationManager.notify(notificationId, builder.build());
     }
-    private static boolean notificationsEnabled(Context context) {
-        return context.getSharedPreferences("notification_prefs", Context.MODE_PRIVATE)
-                .getBoolean("allow_push", true);
+    public static void notificationsEnabled(Context context, String userId, Callback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("users")
+                .document(userId)
+                .collection("preferences")
+                .document("notifications")
+                .get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        Boolean allow = doc.getBoolean("allow_push");
+                        if (allow == null) allow = true;  // default
+                        callback.onResult(allow);
+                    } else {
+                        callback.onResult(true); // default if doc missing
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    callback.onResult(true); // default on failure
+                });
     }
 
 }

@@ -420,14 +420,12 @@ public class HomeFragment extends Fragment {
         android.widget.RadioGroup categoryGroup = dialogView.findViewById(R.id.category_group);
         TextInputEditText dateFrom = dialogView.findViewById(R.id.date_from_input);
         TextInputEditText dateTo = dialogView.findViewById(R.id.date_to_input);
-        android.widget.CheckBox availability = dialogView.findViewById(R.id.availability_check);
 
         dialogView.findViewById(R.id.filter_cancel_button).setOnClickListener(v -> dialog.dismiss());
         dialogView.findViewById(R.id.filter_clear_button).setOnClickListener(v -> {
             categoryGroup.check(R.id.category_any);
             dateFrom.setText("");
             dateTo.setText("");
-            availability.setChecked(false);
             filterState.category = "any";
             filterState.fromDate = null;
             filterState.toDate = null;
@@ -470,7 +468,6 @@ public class HomeFragment extends Fragment {
             }
             filterState.fromDate = parseDate(dateFrom.getText() != null ? dateFrom.getText().toString() : null);
             filterState.toDate = parseDate(dateTo.getText() != null ? dateTo.getText().toString() : null);
-            filterState.onlyAvailable = availability.isChecked();
             applyFilter(searchInputValueSafe());
             dialog.dismiss();
         });

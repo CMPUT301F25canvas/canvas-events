@@ -486,14 +486,6 @@ public class HomeFragment extends Fragment {
         return searchInput.getText().toString();
     }
 
-    private Double safeParseDouble(String text) {
-        try {
-            return Double.parseDouble(text);
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
-
     private double[] tryGetUserLocation() {
         android.location.LocationManager locationManager = (android.location.LocationManager) requireContext().getSystemService(android.content.Context.LOCATION_SERVICE);
         if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&

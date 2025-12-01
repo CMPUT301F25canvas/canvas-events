@@ -60,7 +60,6 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
         requestLocationPermissions();
 
-
         // Gets the MapView from the XML layout and creates it
         mapView = (MapView) v.findViewById(R.id.mapView);
         mapView.onCreate(savedInstanceState);
@@ -110,7 +109,7 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
                             boolean coarseLocationGranted = Boolean.TRUE.equals(
                                     result.get(Manifest.permission.ACCESS_COARSE_LOCATION));
 
-
+                            // If fine location is granted, set the default starting location of the Map View
                             if (fineLocationGranted) {
                                 defaultMapLocation();
                             }
@@ -123,6 +122,11 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         });
     }
 
+    /**
+     * Sets the default location of where the MapView will load.
+     * If location is allowed and can be found, the location is set to the Organizer's last known location
+     * Else, the default location is set to 0, 0, 0
+     */
     private void defaultMapLocation() {
         if (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation()
@@ -142,6 +146,10 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
 
+    /**
+     * Adds markers to the MapView corresponding to the location of entrants on the map
+     * @param eventID The ID of the event whose map is being viewed
+     */
     private void addEntrantMarkers(String eventID) {
         // Get the waiting list for the event
         Task<QuerySnapshot> waitingList = eventRepository.getEntrants(eventID);
@@ -185,14 +193,14 @@ public class EventMapFragment extends Fragment implements OnMapReadyCallback{
         mapView.onDestroy();
     }
 
-    // Setting up buttons
+    /**
+     * Setting up the back button
+     * @param v The view of the fragment
+     */
     public void setBackButton(View v) {
         backButton.setOnClickListener(view -> {
             NavController navController = Navigation.findNavController(v);
             navController.navigateUp();
         });
     }
-
-
-
 }

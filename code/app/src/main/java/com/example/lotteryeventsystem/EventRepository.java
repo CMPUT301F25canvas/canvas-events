@@ -32,6 +32,7 @@ public class EventRepository {
     /**
      * Adds an Event object to the Firestore "events" collection. Also adds the event to the user's
      * "organized_events" list.
+     *
      * @param event the event to add to the database
      */
     public void addEvent(Event event) {
@@ -49,6 +50,7 @@ public class EventRepository {
 
     /**
      * Generates a new eventID by counting the number of events and adding 1 to the end
+     *
      * @return The new event_ID string
      */
     public Task<AggregateQuerySnapshot> generateEventID() {
@@ -60,6 +62,7 @@ public class EventRepository {
 
     /**
      * Retrieves the waitlist for the given event
+     *
      * @param eventID the event to get retrieve waitlist from
      * @return - the waitlist of the given event
      */
@@ -72,6 +75,7 @@ public class EventRepository {
 
     /**
      * Uploads an image to firebase and calls a callback function to save that URL to the event
+     *
      * @param uri Image URI to upload to firebase
      * @param eventID eventID of the event linked to the poster
      * @param callback Callback function to handle the URL
@@ -101,12 +105,18 @@ public class EventRepository {
     }
 
 
+    /**
+     * Firebase Repository function for uploading the event QR code to Firebase Storage.
+     *
+     * @param qrBitmap Bitmap of the QR code to upload
+     * @param eventID Event ID associated with the QR code
+     * @param callback Callback function to handle how to store the URL
+     */
     public void uploadQRCodeToFirebase(Bitmap qrBitmap, String eventID, OrganizerEventCreateFragment.QRCodeUploadCallback callback) {
         if (qrBitmap == null) return;
 
         StorageReference ref = storage.getReference()
                 .child("qrcodes/" + eventID + ".jpg");
-
 
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         qrBitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes);
@@ -122,6 +132,9 @@ public class EventRepository {
 
     /**
      * Get event by ID from Firestore
+     *
+     * @param eventId The ID of the event to retrieve
+     * @return Task to retrieve the event
      */
     public Task<DocumentSnapshot> getEventById(String eventId) {
         return db.collection("events")

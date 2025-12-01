@@ -7,14 +7,13 @@ import com.google.zxing.WriterException;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 /**
- * Class to generate thr QR code for newly created event
+ * Class to generate thr QR code for newly created event.
  */
 public class QRCodeGenerator {
-// TODO: incomplete class
     /**
-     *
+     *  Method to create the QR code for a newly created event.
      * @param eventID eventID of the event to link the QR code to
-     * @return QRCode Bitmap
+     * @return QRCode Bitmap, null if error
      */
     public static Bitmap generateQRCode(String eventID) {
         String text = "app://lotteryeventsystem/event?eventID=" + eventID;

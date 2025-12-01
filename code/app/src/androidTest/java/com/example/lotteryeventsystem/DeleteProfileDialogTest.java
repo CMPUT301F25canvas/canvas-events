@@ -1,11 +1,16 @@
 package com.example.lotteryeventsystem;
 
+import android.Manifest;
+
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.Espresso;
 import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.assertion.ViewAssertions;
 import androidx.test.espresso.matcher.ViewMatchers;
+import androidx.test.ext.junit.rules.ActivityScenarioRule;
+import androidx.test.rule.GrantPermissionRule;
 
+import org.junit.Rule;
 import org.junit.Test;
 
 /**
@@ -14,8 +19,14 @@ import org.junit.Test;
  * @author Ethan Kinch
  */
 public class DeleteProfileDialogTest {
+    /**
+     * stops android permissions from impeding tests
+     */
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.POST_NOTIFICATIONS);
+
     @Test
-    public void testNavigationProfileToPersonalInfo() {
+    public void testDeleteProfileDialog() {
         // Launch MainActivity
         ActivityScenario<MainActivity> scenario = ActivityScenario.launch(MainActivity.class);
 

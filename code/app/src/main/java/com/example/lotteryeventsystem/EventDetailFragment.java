@@ -72,13 +72,15 @@ public class EventDetailFragment extends Fragment {
     private String deviceId;
     private TextView message;
 
-    // Temporary variables to allow the locatinoPermissionLauncher to access values
+    // Temporary variables to allow the locationPermissionLauncher to access values
     private DocumentReference pendingWaitlistRef;
     private DocumentReference pendingUserRef;
     private FirebaseFirestore pendingDb;
-
     public static final String ARG_EVENT_ID = "event_id";
 
+    /**
+     * Launcher for requesting location permissions
+     */
     private final ActivityResultLauncher<String[]> locationPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
                 handleLocationPermissionResult(result);
@@ -287,6 +289,11 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Sets up the "Delete Event" button for an event.
+     *
+     * @param db
+     */
     private void setupDeleteEventButton(FirebaseFirestore db) {
         joinLeaveButton.setText("Delete Event");
         joinLeaveButton.setOnClickListener(v -> {
@@ -295,6 +302,11 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Updates the message to show the number of available spots
+     *
+     * @param db Firestore database instance
+     */
     private void updateAvailableSpotsMessage(FirebaseFirestore db) {
         DocumentReference eventRef = db.collection("events").document(eventId);
 
@@ -340,9 +352,11 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Refactored joining the waitlist - to allow the Geolocation Requirement to function
-     * @param waitlistRef
-     * @param userRef
-     * @param db
+     *
+     * @param eventData Map of event data
+     * @param waitlistRef DocumentReference to the event's waitlist Firestore document
+     * @param userRef DocumentReference to the user's Firestore document
+     * @param db Firestore database instance
      */
     private void addToWaitlist(Map<String, Object> eventData, DocumentReference waitlistRef, DocumentReference userRef, FirebaseFirestore db) {
         // Add to waitlist
@@ -358,10 +372,11 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
+     * Checks if the user has location permission. If not, requests it.
      *
-     * @param waitlistRef
-     * @param userRef
-     * @param db
+     * @param waitlistRef DocumentReference to the event's waitlist Firestore document
+     * @param userRef DocumentReference to the user's Firestore document
+     * @param db Firestore database instance
      */
     private void checkLocationPermission(DocumentReference waitlistRef, DocumentReference userRef, FirebaseFirestore db) {
         if (hasLocationPermission()) {
@@ -379,6 +394,11 @@ public class EventDetailFragment extends Fragment {
         }
     }
 
+    /**
+     * Handles the result of the location permission request.
+     *
+     * @param result Result of the location permission request
+     */
     private void handleLocationPermissionResult(Map<String, Boolean> result) {
         boolean fineLocationGranted = Boolean.TRUE.equals(
                 result.get(Manifest.permission.ACCESS_FINE_LOCATION));
@@ -392,19 +412,23 @@ public class EventDetailFragment extends Fragment {
         jointWaitlistGeolocationApproved(pendingWaitlistRef, pendingUserRef, pendingDb);
     }
 
+    /**
+     * Function to call when the location permission is granted and the user clicks the "Join Waiting List" button
+     *
+     * @param waitlistRef DocumentReference to the event's waitlist Firestore document
+     * @param userRef DocumentReference to the user's Firestore document
+     * @param db Firestore database instance
+     */
     private void jointWaitlistGeolocationApproved(DocumentReference waitlistRef, DocumentReference userRef, FirebaseFirestore db) {
         FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) return;
 
-        // This line is already correct because it uses the full class path.
-        // It creates an instance of the NEW LocationRequest.
+        // Requests location
         CurrentLocationRequest locationRequest = new CurrentLocationRequest.Builder()
                 .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
                 .build();
 
-        // The fusedLocationClient.getCurrentLocation() method expects the new LocationRequest,
-        // which it now correctly receives.
         fusedLocationClient.getCurrentLocation(locationRequest, null).addOnSuccessListener(location -> {
             // Check if location is null
             if (location == null) {
@@ -412,6 +436,7 @@ public class EventDetailFragment extends Fragment {
                 return;
             }
 
+            // Add location to waitlist
             Map<String, Object> eventData = new HashMap<>();
             eventData.put("latitude", location.getLatitude());
             eventData.put("longitude", location.getLongitude());

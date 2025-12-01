@@ -7,6 +7,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+/**
+ * Class that holds Event methods for ensuring correct event creation
+ */
 public class EventCreationForm {
 
     private Uri localImageUri = null;
@@ -39,6 +42,7 @@ public class EventCreationForm {
 
     /**
      * Verifies that the event date is after the current date
+     *
      * @param date date of the event
      * @return boolean value
      */
@@ -48,10 +52,18 @@ public class EventCreationForm {
         return eventDate.isAfter(currentDate);
     }
 
+    /**
+     * Verifies that the start date is before or equal to the end date
+     *
+     * @param startDate start date of the event
+     * @param endDate end date of the event
+     * @param formatter date formatter
+     * @return boolean value
+     */
     public boolean startEndDateValid(String startDate, String endDate, DateTimeFormatter formatter) {
         LocalDate start = LocalDate.parse(startDate, formatter);
         LocalDate end = LocalDate.parse(endDate, formatter);
-        return end.isAfter(start);
+        return end.isAfter(start) || end.isEqual(start);
     }
 
     /**

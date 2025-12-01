@@ -25,10 +25,15 @@ public class Event {
     private Boolean sampled;
 
 
-    // For firestore
+    /**
+     * Empty Event Constructor for Firestore
+     */
     public Event() {
     }
 
+    /**
+     * Event Constructor
+     */
     public Event(String eventID, String organizerID, String name, String description,
                  String startDate, String endDate, String startTime, String endTime) {
         this.eventID = eventID;
@@ -106,9 +111,11 @@ public class Event {
     public Integer getEntrantLimit() {
         return entrantLimit;
     }
+
     public String getQRCodeURL() {
         return QRCodeURL;
     }
+
     public String getLocation() {
         return location;
     }
@@ -133,6 +140,7 @@ public class Event {
     public void setStartDate(String startDate) {
         this.startDate = startDate;
     }
+
     public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
@@ -176,6 +184,7 @@ public class Event {
     public void setQRCodeURL(String QRCodeURL) {
         this.QRCodeURL = QRCodeURL;
     }
+
     public void setLocation(String location) {
         this.location = location;
     }

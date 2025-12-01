@@ -1,3 +1,8 @@
+/**
+ * This file displays and models the Personal Info page. Model and View code
+ * are naturally separated, but Model and Controller code are mixed.
+ */
+
 package com.example.lotteryeventsystem;
 
 import android.os.Bundle;
@@ -60,7 +65,7 @@ public class PersonalInfoFragment extends Fragment {
      * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state
      */
     public void onViewCreated(@NotNull View view, @Nullable Bundle savedInstanceState) {
-        // View stuff
+        // Model/Controller stuff
         ImageButton backButton = view.findViewById(R.id.back_button);
         backButton.setOnClickListener( v -> {
             NavController navController = Navigation.findNavController(requireView());
